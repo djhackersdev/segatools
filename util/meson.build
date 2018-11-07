@@ -9,5 +9,7 @@ util_lib = static_library(
     sources : [
         'dprintf.c',
         'dprintf.h',
+        'setupapi.c',
+        'setupapi.h',
     ],
 )
