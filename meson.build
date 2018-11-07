@@ -16,3 +16,5 @@ add_project_link_arguments(
 
 inc = include_directories('.')
 capnhook = subproject('capnhook')
+
+subdir('util')
