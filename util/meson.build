@@ -7,5 +7,7 @@ util_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'dprintf.c',
+        'dprintf.h',
     ],
 )
