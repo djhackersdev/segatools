@@ -11,5 +11,7 @@ jvs_lib = static_library(
         'jvs-bus.h',
         'jvs-frame.c',
         'jvs-frame.h',
+        'jvs-util.c',
+        'jvs-util.h',
     ],
 )
