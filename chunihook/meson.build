@@ -16,5 +16,7 @@ shared_library(
         util_lib,
     ],
     sources : [
+        'jvs.c',
+        'jvs.h',
     ],
 )
