@@ -15,6 +15,8 @@ nu_lib = static_library(
         'gpio.c',
         'gpio.h',
         'guid.c',
+        'jvs.c',
+        'jvs.h',
         'hwmon.c',
         'hwmon.h',
         'nusec.c',
