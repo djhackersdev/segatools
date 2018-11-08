@@ -8,6 +8,8 @@ nu_lib = static_library(
         capnhook.get_variable('hooklib_dep'),
     ],
     sources : [
+        'ds.c',
+        'ds.h',
         'eeprom.c',
         'eeprom.h',
         'guid.c',
