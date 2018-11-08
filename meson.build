@@ -21,3 +21,5 @@ subdir('board')
 subdir('jvs')
 subdir('nu')
 subdir('util')
+
+subdir('minihook')
