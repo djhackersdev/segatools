@@ -11,6 +11,8 @@ util_lib = static_library(
         'crc.h',
         'dprintf.c',
         'dprintf.h',
+        'dump.c',
+        'dump.h',
         'setupapi.c',
         'setupapi.h',
     ],
