@@ -18,5 +18,7 @@ shared_library(
     sources : [
         'jvs.c',
         'jvs.h',
+        'slider.c',
+        'slider.h',
     ],
 )
