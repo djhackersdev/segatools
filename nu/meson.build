@@ -13,5 +13,7 @@ nu_lib = static_library(
         'guid.c',
         'nvram.c',
         'nvram.h',
+        'sram.c',
+        'sram.h',
     ],
 )
