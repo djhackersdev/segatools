@@ -22,4 +22,5 @@ subdir('jvs')
 subdir('nu')
 subdir('util')
 
+subdir('chunihook')
 subdir('minihook')
