@@ -9,5 +9,7 @@ board_lib = static_library(
     sources : [
         'io3.c',
         'io3.h',
+        'slider-frame.c',
+        'slider-frame.h',
     ],
 )
