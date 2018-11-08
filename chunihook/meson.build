@@ -16,6 +16,7 @@ shared_library(
         util_lib,
     ],
     sources : [
+        'dllmain.c',
         'jvs.c',
         'jvs.h',
         'slider.c',
