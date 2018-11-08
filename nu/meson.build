@@ -12,6 +12,8 @@ nu_lib = static_library(
         'ds.h',
         'eeprom.c',
         'eeprom.h',
+        'gpio.c',
+        'gpio.h',
         'guid.c',
         'nvram.c',
         'nvram.h',
