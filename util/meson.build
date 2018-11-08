@@ -19,5 +19,7 @@ util_lib = static_library(
         'gfx.h',
         'setupapi.c',
         'setupapi.h',
+        'spike.c',
+        'spike.h',
     ],
 )
