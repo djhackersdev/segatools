@@ -9,6 +9,7 @@ jvs_lib = static_library(
     sources : [
         'jvs-bus.c',
         'jvs-bus.h',
+        'jvs-cmd.h',
         'jvs-frame.c',
         'jvs-frame.h',
         'jvs-util.c',
