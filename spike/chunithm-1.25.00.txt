@@ -1,0 +1,24 @@
+# libam(?) logging functions
+
+j_printf    0x007E9041
+j_wprintf   0x007F9AF1
+j_puts      0x00AFBB71
+j_perror    0x00AFE3BF
+
+# Log levels
+
+levels      0x01907904 2
+levels      0x01907B10 1
+levels      0x01907C44 1
+levels      0x01974CB0 1
+levels      0x019751B8 14
+levels      0x01975F00 5
+levels      0x01A720D4 4
+levels      0x01A7B22C 2
+levels      0x01A7B608 2
+
+# ALLNET logging
+
+c_fputs     0x019763E8
+levels      0x019763DC 1
+levels      0x019763E4 1
