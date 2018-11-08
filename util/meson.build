@@ -7,6 +7,8 @@ util_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'crc.c',
+        'crc.h',
         'dprintf.c',
         'dprintf.h',
         'setupapi.c',
