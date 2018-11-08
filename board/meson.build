@@ -7,5 +7,7 @@ board_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'io3.c',
+        'io3.h',
     ],
 )
