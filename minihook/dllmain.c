@@ -5,6 +5,7 @@
 #include "nu/ds.h"
 #include "nu/nusec.h"
 
+#include "util/clock.h"
 #include "util/dprintf.h"
 
 static process_entry_t app_startup;
@@ -15,6 +16,7 @@ static DWORD CALLBACK app_pre_startup(void)
 
     ds_hook_init();
     nusec_hook_init();
+    clock_skew_hook_init();
 
     dprintf("---  End  %s ---\n", __func__);
 
