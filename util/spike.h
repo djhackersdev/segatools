@@ -1,3 +1,3 @@
 #pragma once
 
-void spike_hook_init(void);
+void spike_hook_init(const char *path);

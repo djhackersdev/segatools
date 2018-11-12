@@ -121,7 +121,7 @@ static void spike_insert_log_levels(ptrdiff_t rva, size_t count)
 
 /* Config reader */
 
-void spike_hook_init(void)
+void spike_hook_init(const char *path)
 {
     int match;
     int count;
@@ -130,7 +130,7 @@ void spike_hook_init(void)
     char *ret;
     FILE *f;
 
-    f = fopen("spike.txt", "r");
+    f = fopen(path, "r");
 
     if (f == NULL) {
         return;

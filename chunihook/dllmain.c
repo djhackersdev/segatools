@@ -64,7 +64,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init();
+    spike_hook_init("chunispike.txt");
     gfx_set_windowed();
 
     dprintf("---  End  chuni_pre_startup ---\n");
