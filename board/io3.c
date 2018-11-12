@@ -368,11 +368,19 @@ static HRESULT io3_cmd_read_switches(
             req.bytes_per_player);
 #endif
 
-    if (req.num_players != 2 || req.bytes_per_player != 2) {
-        dprintf("JVS I/O: Invalid read size\n");
+    if (req.num_players > 2 || req.bytes_per_player != 2) {
+        dprintf("JVS I/O: Invalid read size "
+                        "num_players=%i "
+                        "bytes_per_player=%i\n",
+                req.num_players,
+                req.bytes_per_player);
         hr = iobuf_write_8(resp_buf, 0x02);
 
-        return S_OK;
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        return E_FAIL;
     }
 
     /* Build response */
@@ -395,16 +403,20 @@ static HRESULT io3_cmd_read_switches(
         return hr;
     }
 
-    hr = iobuf_write_be16(resp_buf, state.p1);
+    if (req.num_players > 0) {
+        hr = iobuf_write_be16(resp_buf, state.p1);
 
-    if (FAILED(hr)) {
-        return hr;
+        if (FAILED(hr)) {
+            return hr;
+        }
     }
 
-    hr = iobuf_write_be16(resp_buf, state.p2);
+    if (req.num_players > 1) {
+        hr = iobuf_write_be16(resp_buf, state.p2);
 
-    if (FAILED(hr)) {
-        return hr;
+        if (FAILED(hr)) {
+            return hr;
+        }
     }
 
     return hr;
@@ -529,15 +541,21 @@ static HRESULT io3_cmd_write_gpio(
         return hr;
     }
 
-    if (nbytes != 3) {
-        dprintf("JVS I/O: Invalid GPIO write size\n");
+    if (nbytes > 3) {
+        dprintf("JVS I/O: Invalid GPIO write size %i\n", nbytes);
+        hr = iobuf_write_8(resp_buf, 0x02);
 
-        return iobuf_write_8(resp_buf, 0x02);
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        return E_FAIL;
     }
 
     /* Read payload */
 
-    hr = iobuf_read(req_buf, bytes, sizeof(bytes));
+    memset(bytes, 0, sizeof(bytes));
+    hr = iobuf_read(req_buf, bytes, nbytes);
 
     if (FAILED(hr)) {
         return hr;
