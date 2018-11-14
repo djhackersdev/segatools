@@ -25,6 +25,10 @@ enum {
     NUSEC_IOCTL_PUT_TRACE_LOG_DATA      = 0x22E190,
 };
 
+struct nusec_log_record {
+    uint8_t unknown[60];
+};
+
 static HRESULT nusec_handle_irp(struct irp *irp);
 static HRESULT nusec_handle_open(struct irp *irp);
 static HRESULT nusec_handle_close(struct irp *irp);
@@ -50,12 +54,15 @@ static HANDLE nusec_fd;
 static uint32_t nusec_nearfull;
 static uint32_t nusec_play_count;
 static uint32_t nusec_play_limit;
+static struct nusec_log_record nusec_log[7154];
+static size_t nusec_log_head;
+static size_t nusec_log_tail;
 
 void nusec_hook_init(void)
 {
     nusec_nearfull = 0x00010200;
     nusec_play_count = 0;
-    nusec_play_limit = 1000;
+    nusec_play_limit = 1024;
     nusec_fd = iohook_open_dummy_fd();
     iohook_push_handler(nusec_handle_irp);
 }
@@ -162,16 +169,25 @@ static HRESULT nusec_ioctl_ping(struct irp *irp)
 
 static HRESULT nusec_ioctl_erase_trace_log(struct irp *irp)
 {
-    uint32_t cell;
+    uint32_t count;
+    size_t avail;
     HRESULT hr;
 
-    hr = iobuf_read_le32(&irp->write, &cell);
+    hr = iobuf_read_le32(&irp->write, &count);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    dprintf("Security: %s(cell=%i)\n", __func__, cell);
+    dprintf("Security: %s(count=%i)\n", __func__, count);
+
+    avail = nusec_log_head - nusec_log_tail;
+
+    if (count < avail) {
+        count = avail;
+    }
+
+    nusec_log_tail += count;
 
     return S_OK;
 }
@@ -286,9 +302,17 @@ static HRESULT nusec_ioctl_get_nearfull(struct irp *irp)
 
 static HRESULT nusec_ioctl_get_nvram_available(struct irp *irp)
 {
-    dprintf("Security: %s\n", __func__);
+    size_t used;
+    size_t avail;
 
-    return iobuf_write_le32(&irp->read, 1024);
+    used = nusec_log_head - nusec_log_tail;
+    avail = _countof(nusec_log) - used;
+
+    dprintf("Security: %s: used=%i avail=%i\n", __func__,
+            (int) used,
+            (int) avail);
+
+    return iobuf_write_le32(&irp->read, avail);
 }
 
 static HRESULT nusec_ioctl_get_nvram_geometry(struct irp *irp)
@@ -297,8 +321,8 @@ static HRESULT nusec_ioctl_get_nvram_geometry(struct irp *irp)
 
     dprintf("Security: %s\n", __func__);
 
-         iobuf_write_le32(&irp->read, 10);
-    hr = iobuf_write_le32(&irp->read, 4096);
+         iobuf_write_le32(&irp->read, 10);      /* Num NVRAMs */
+    hr = iobuf_write_le32(&irp->read, 4096);    /* Num addresses (per NVRAM?) */
 
     return hr;
 }
@@ -319,42 +343,61 @@ static HRESULT nusec_ioctl_get_play_limit(struct irp *irp)
 
 static HRESULT nusec_ioctl_get_trace_log_data(struct irp *irp)
 {
-    uint32_t param0;
-    uint32_t param1;
+    uint32_t pos;
+    uint32_t count;
+    size_t avail;
     HRESULT hr;
 
     dprintf("Security: %s\n", __func__);
 
-    hr = iobuf_read_le32(&irp->write, &param0);
+    hr = iobuf_read_le32(&irp->write, &pos);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    hr = iobuf_read_le32(&irp->write, &param1);
+    hr = iobuf_read_le32(&irp->write, &count);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    dprintf("\tPARAM %i %i\n", param0, param1);
+    dprintf("    Params: %i %i Buf: %i\n", pos, count, irp->read.nbytes);
 
-    return E_FAIL;
+    avail = irp->read.nbytes - irp->read.pos;
+
+    if (avail < count * sizeof(struct nusec_log_record)) {
+        dprintf("\tError: Insufficient buffer\n");
+
+        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+    }
+
+    while (count > 0 && pos != nusec_log_head) {
+        memcpy( &irp->read.bytes[irp->read.pos],
+                &nusec_log[pos % _countof(nusec_log)],
+                sizeof(struct nusec_log_record));
+
+        irp->read.pos += sizeof(struct nusec_log_record);
+        pos++;
+        count--;
+    }
+
+    return S_OK;
 }
 
 static HRESULT nusec_ioctl_get_trace_log_state(struct irp *irp)
 {
     HRESULT hr;
 
-    dprintf("Security: %s\n", __func__);
+    dprintf("Security: %s H: %i T: %i\n",
+            __func__,
+            (int) nusec_log_head,
+            (int) nusec_log_tail);
 
-    hr = iobuf_write_le32(&irp->read, 0);
+         iobuf_write_le32(&irp->read, nusec_log_head - nusec_log_tail);
+    hr = iobuf_write_le32(&irp->read, nusec_log_tail);
 
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    return iobuf_write_le32(&irp->read, 0);
+    return hr;
 }
 
 static HRESULT nusec_ioctl_put_nearfull(struct irp *irp)
@@ -377,6 +420,26 @@ static HRESULT nusec_ioctl_put_trace_log_data(struct irp *irp)
 {
     dprintf("Security: %s\n", __func__);
     dump_const_iobuf(&irp->write);
+
+    if (irp->write.nbytes != sizeof(struct nusec_log_record)) {
+        dprintf("    Log record size is incorrect\n");
+
+        return E_INVALIDARG;
+    }
+
+    if (nusec_log_head - nusec_log_tail >= _countof(nusec_log)) {
+        dprintf("    Log buffer is full!\n");
+
+        return HRESULT_FROM_WIN32(ERROR_DISK_FULL);
+    }
+
+    memcpy( &nusec_log[nusec_log_head % _countof(nusec_log)],
+            irp->write.bytes,
+            sizeof(struct nusec_log_record));
+
+    nusec_log_head++;
+
+    dprintf("    H: %i T: %i\n", (int) nusec_log_head, (int) nusec_log_tail);
 
     return S_OK;
 }
