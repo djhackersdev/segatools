@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "board/slider-frame.h"
+#include "chunihook/slider-frame.h"
 
 #include "hook/iobuf.h"
 

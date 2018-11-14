@@ -19,7 +19,10 @@ shared_library(
         'dllmain.c',
         'jvs.c',
         'jvs.h',
-        'slider.c',
-        'slider.h',
+        'slider-cmd.h',
+        'slider-frame.c',
+        'slider-frame.h',
+        'slider-hook.c',
+        'slider-hook.h',
     ],
 )

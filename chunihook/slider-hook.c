@@ -9,8 +9,9 @@
 #include "util/dprintf.h"
 #include "util/dump.h"
 
-#include "board/slider-cmd.h"
-#include "board/slider-frame.h"
+#include "chunihook/slider-cmd.h"
+#include "chunihook/slider-frame.h"
+#include "chunihook/slider-hook.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
