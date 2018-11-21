@@ -9,6 +9,11 @@ board_lib = static_library(
     sources : [
         'io3.c',
         'io3.h',
+        'sg-cmd.c',
+        'sg-cmd.h',
+        'sg-nfc.c',
+        'sg-nfc.h',
+        'sg-nfc-cmd.h',
         'sg-frame.c',
         'sg-frame.h',
     ],
