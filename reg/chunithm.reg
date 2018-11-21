@@ -1,0 +1,27 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA]
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA\SystemProperty]
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA\SystemProperty\keychip]
+"systemFlag"=dword:00000064
+"modelType"=dword:00000001
+"region"=dword:00000001
+"serverIpIpv4"=hex:c0,a8,8b,00
+"keychipId"=hex:41,36,39,45,2d,30,31,41,39,39,39,39,39,39,39,39
+"platformId"=hex:41,41,56
+"gameId"=hex:53,42,5a,56
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA\SystemProperty\static]
+"CpuTempWarning"=dword:0000003c
+"CpuTempError"=dword:00000050
+"PlatformId"=hex:41,41,56
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA\SystemProperty\wirelessNetwork]
+"main_nic"=dword:00000000
+
+[HKEY_LOCAL_MACHINE\SYSTEM\SEGA\SystemProperty\mount]
+"AMFS"="E:\\"
+"APPDATA"="Y:\\"
+
