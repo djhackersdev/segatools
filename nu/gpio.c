@@ -71,7 +71,7 @@ static const struct gpio_ports gpio_ports = {
     },
 };
 
-_Static_assert(sizeof(gpio_ports) == 129, "GPIO port map size");
+static_assert(sizeof(gpio_ports) == 129, "GPIO port map size");
 
 void gpio_hook_init(void)
 {
