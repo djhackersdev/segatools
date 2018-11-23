@@ -42,9 +42,9 @@ static const struct hook_symbol clock_hook_syms[] = {
 /* FILETIME is expressed in 100ns i.e. 0.1us i.e. 10^-7 sec units.
    No official name for these units is given so let's call them "jiffies". */
 
-static const int64_t jiffies_per_sec = 10000000LL;
-static const int64_t jiffies_per_hour = jiffies_per_sec * 3600LL;
-static const int64_t jiffies_per_day = jiffies_per_hour * 24LL;
+#define jiffies_per_sec     10000000LL
+#define jiffies_per_hour    (jiffies_per_sec * 3600LL)
+#define jiffies_per_day     (jiffies_per_hour * 24LL)
 
 static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
 {
