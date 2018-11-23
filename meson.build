@@ -9,6 +9,7 @@ add_project_arguments(
 )
 
 add_project_link_arguments(
+    '-Wl,--exclude-all-symbols',
     '-Wl,--gc-sections',
     '-static-libgcc',
     language: 'c',

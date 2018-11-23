@@ -1,4 +1,0 @@
-LIBRARY chunihook
-
-EXPORTS
-    DllMain@12 @1 NONAME
