@@ -1,4 +1,4 @@
-project('capnhook', 'c', version: '0.1.0')
+project('segatools', 'c', version: '0.1.0')
 
 add_project_arguments(
     '-Wall',
