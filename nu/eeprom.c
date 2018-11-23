@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include <assert.h>
+
 #include "hook/iohook.h"
 
 #include "nu/eeprom.h"

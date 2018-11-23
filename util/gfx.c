@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <d3d9.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "hook/com-proxy.h"
