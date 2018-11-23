@@ -1,4 +1,4 @@
 [wrap-git]
 directory = capnhook
 url = https://github.com/decafcode/capnhook
-revision = v0.2.1
+revision = v0.2.2
