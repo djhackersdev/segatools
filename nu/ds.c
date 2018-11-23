@@ -1,4 +1,15 @@
+#define WIN32_NO_STATUS
 #include <windows.h>
+#undef WIN32_NO_STATUS
+#include <winternl.h>
+
+#ifdef __GNUC__
+#include <ntdef.h>
+#else
+#include <winnt.h>
+#endif
+#include <devioctl.h>
+#include <ntdddisk.h>
 #include <ntstatus.h>
 
 #include <assert.h>

@@ -1,5 +1,13 @@
 #include <windows.h>
 
+#ifdef __GNUC__
+#include <ntdef.h>
+#else
+#include <winnt.h>
+#endif
+#include <devioctl.h>
+#include <ntdddisk.h>
+
 #include <assert.h>
 
 #include "hook/iohook.h"
