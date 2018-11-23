@@ -46,20 +46,20 @@ static BOOL WINAPI my_SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet);
 
 /* Links */
 
-static HDEVINFO WINAPI (*next_SetupDiGetClassDevsW)(
+static HDEVINFO (WINAPI *next_SetupDiGetClassDevsW)(
         const GUID *ClassGuid,
         wchar_t *Enumerator,
         HWND hwndParent,
         DWORD Flags);
 
-static BOOL WINAPI (*next_SetupDiEnumDeviceInterfaces)(
+static BOOL (WINAPI *next_SetupDiEnumDeviceInterfaces)(
         HDEVINFO DeviceInfoSet,
         SP_DEVINFO_DATA *DeviceInfoData,
         const GUID *InterfaceClassGuid,
         DWORD MemberIndex,
         SP_DEVICE_INTERFACE_DATA *DeviceInterfaceData);
 
-static BOOL WINAPI (*next_SetupDiGetDeviceInterfaceDetailW)(
+static BOOL (WINAPI *next_SetupDiGetDeviceInterfaceDetailW)(
         HDEVINFO DeviceInfoSet,
         SP_DEVICE_INTERFACE_DATA *DeviceInterfaceData,
         SP_DEVICE_INTERFACE_DETAIL_DATA_W *DeviceInterfaceDetailData,
@@ -67,7 +67,7 @@ static BOOL WINAPI (*next_SetupDiGetDeviceInterfaceDetailW)(
         DWORD *RequiredSize,
         SP_DEVINFO_DATA *DeviceInfoData);
 
-static BOOL WINAPI (*next_SetupDiDestroyDeviceInfoList)(HDEVINFO DeviceInfoSet);
+static BOOL (WINAPI *next_SetupDiDestroyDeviceInfoList)(HDEVINFO DeviceInfoSet);
 
 /* Hook tbl */
 
