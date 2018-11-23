@@ -17,7 +17,7 @@ static DWORD CALLBACK app_pre_startup(void)
 
     ds_hook_init();
     nusec_hook_init();
-    clock_skew_hook_init();
+    clock_hook_init();
     spike_hook_init("minispike.txt");
 
     dprintf("---  End  %s ---\n", __func__);

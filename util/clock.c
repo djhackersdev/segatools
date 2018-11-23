@@ -16,18 +16,12 @@ static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo);
 static BOOL (WINAPI * next_GetSystemTimeAsFileTime)(FILETIME *out);
 static int64_t clock_current_day;
 
-static const struct hook_symbol clock_skew_hook_syms[] = {
-    /* Canonical time */
-
+static const struct hook_symbol clock_hook_syms[] = {
     {
         .name   = "GetSystemTimeAsFileTime",
         .patch  = my_GetSystemTimeAsFileTime,
         .link   = (void **) &next_GetSystemTimeAsFileTime,
-    },
-
-    /* Derived time */
-
-    {
+    }, {
         .name   = "GetLocalTime",
         .patch  = my_GetLocalTime,
     }, {
@@ -36,11 +30,7 @@ static const struct hook_symbol clock_skew_hook_syms[] = {
     }, {
         .name   = "GetTimeZoneInformation",
         .patch  = my_GetTimeZoneInformation,
-    },
-};
-
-static const struct hook_symbol clock_set_hook_syms[] = {
-    {
+    }, {
         .name   = "SetSystemTime",
         .patch  = my_SetSystemTime,
     }, {
@@ -182,20 +172,11 @@ static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *in)
     return TRUE;
 }
 
-void clock_set_hook_init(void)
+void clock_hook_init(void)
 {
     hook_table_apply(
             NULL,
             "kernel32.dll",
-            clock_set_hook_syms,
-            _countof(clock_set_hook_syms));
-}
-
-void clock_skew_hook_init(void)
-{
-    hook_table_apply(
-            NULL,
-            "kernel32.dll",
-            clock_skew_hook_syms,
-            _countof(clock_skew_hook_syms));
+            clock_hook_syms,
+            _countof(clock_hook_syms));
 }

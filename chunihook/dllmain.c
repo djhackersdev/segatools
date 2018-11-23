@@ -43,8 +43,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Hook Win32 APIs */
 
-    clock_set_hook_init();
-    clock_skew_hook_init();
+    clock_hook_init();
     gfx_hook_init();
     serial_hook_init();
 
