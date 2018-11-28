@@ -26,6 +26,17 @@ static void spike_fn_fputs(const char *msg)
     OutputDebugStringA(msg);
 }
 
+static void spike_fn_printf(const char *fmt, ...)
+{
+    char line[512];
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsprintf_s(line, _countof(line), fmt, ap);
+    strcat(line, "\n");
+    OutputDebugStringA(line);
+}
+
 static void spike_fn_vprintf(
         const char *proc,
         int line_no,
@@ -165,6 +176,12 @@ void spike_hook_init(const char *path)
 
         if (match == 1) {
             spike_insert_jmp((ptrdiff_t) rva, spike_fn_vwprintf);
+        }
+
+        match = sscanf(line, "j_printf %i", &rva);
+
+        if (match == 1) {
+            spike_insert_jmp((ptrdiff_t) rva, spike_fn_printf);
         }
 
         match = sscanf(line, "j_puts %i", &rva);
