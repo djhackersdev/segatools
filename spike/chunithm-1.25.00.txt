@@ -1,3 +1,9 @@
+# Title server WinHTTP
+
+j_printf    0x00BE5BD2
+j_printf    0x00BE7B95
+j_printf    0x00BE9B29
+
 # libam(?) logging functions
 
 j_printf    0x007E9041
