@@ -215,21 +215,29 @@ static HRESULT sg_nfc_cmd_mifare_poll(
         const struct sg_req_header *req,
         struct sg_nfc_resp_mifare_poll *resp)
 {
+    uint32_t uid;
     HRESULT hr;
 
-    hr = nfc->ops->mifare_poll(nfc->ops_ctx);
+    uid = 0;
+    hr = nfc->ops->mifare_poll(nfc->ops_ctx, &uid);
 
     if (hr == S_OK) {
+        if (uid == 0 || uid == -1) {
+            sg_nfc_dprintf(nfc, "nfc->ops->mifare_poll returned bad uid\n");
+
+            return E_UNEXPECTED;
+        }
+
         sg_nfc_dprintf(nfc, "Mifare card is present\n");
 
         sg_resp_init(&resp->resp, req, sizeof(resp->payload.some));
-        resp->payload.some[0] = 0x01;   /* Chunk size? */
-        resp->payload.some[1] = 0x10;   /* Unknown */
-        resp->payload.some[2] = 0x04;   /* Chunk size? */
-        resp->payload.some[3] = 0x52;   /* UID byte 0 */
-        resp->payload.some[4] = 0xCC;   /* UID byte 1 */
-        resp->payload.some[5] = 0x55;   /* UID byte 2 */
-        resp->payload.some[6] = 0x25;   /* UID byte 3 */
+        resp->payload.some[0] = 0x01;       /* Chunk size? */
+        resp->payload.some[1] = 0x10;       /* Unknown */
+        resp->payload.some[2] = 0x04;       /* Chunk size? */
+        resp->payload.some[3] = uid >> 24;  /* UID byte 0 */
+        resp->payload.some[4] = uid >> 16;  /* UID byte 1 */
+        resp->payload.some[5] = uid >>  8;  /* UID byte 2 */
+        resp->payload.some[6] = uid      ;  /* UID byte 3 */
 
         return S_OK;
     } else if (hr == S_FALSE) {

@@ -13,13 +13,14 @@
 
 #include "hooklib/uart.h"
 
+#include "util/crc.h"
 #include "util/dprintf.h"
 #include "util/dump.h"
 
 static HRESULT com12_handle_irp(struct irp *irp);
 static HRESULT com12_handle_irp_locked(struct irp *irp);
 
-static HRESULT com12_mifare_poll(void *ctx);
+static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid);
 static HRESULT com12_mifare_read_luid(void *ctx, uint8_t *luid, size_t nbytes);
 static HRESULT com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 
@@ -117,7 +118,7 @@ static HRESULT com12_handle_irp_locked(struct irp *irp)
     return hr;
 }
 
-static HRESULT com12_mifare_poll(void *ctx)
+static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid)
 {
     HRESULT hr;
     FILE *f;
@@ -151,6 +152,13 @@ static HRESULT com12_mifare_poll(void *ctx)
 
         com12_aime_luid[i] = byte;
     }
+
+    /* NOTE: We are just arbitrarily using the CRC32 of the LUID here, real
+       cards do not work like this! However, neither the application code nor
+       the network protocol care what the UID is, it just has to be a stable
+       unique identifier for over-the-air NFC communications. */
+
+    *uid = crc32(com12_aime_luid, sizeof(com12_aime_luid), 0);
 
     hr = S_OK;
 
