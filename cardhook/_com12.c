@@ -145,7 +145,7 @@ static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid)
         r = fscanf(f, "%02x ", &byte);
 
         if (r != 1) {
-            dprintf("Aime reader: fscanf[%i] failed: %i\n", i, r);
+            dprintf("Aime reader: fscanf[%i] failed: %i\n", (int) i, r);
 
             goto end;
         }

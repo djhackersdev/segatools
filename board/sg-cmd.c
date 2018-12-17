@@ -41,7 +41,7 @@ static HRESULT sg_req_validate(const void *ptr, size_t nbytes)
     if (req->hdr.frame_len != nbytes) {
         dprintf("SG Cmd: Frame length mismatch: got %i exp %i\n",
                 req->hdr.frame_len,
-                nbytes);
+                (int) nbytes);
 
         return E_FAIL;
     }
@@ -51,7 +51,7 @@ static HRESULT sg_req_validate(const void *ptr, size_t nbytes)
     if (req->payload_len != payload_len) {
         dprintf("SG Cmd: Payload length mismatch: got %i exp %i\n",
                 req->payload_len,
-                payload_len);
+                (int) payload_len);
 
         return E_FAIL;
     }

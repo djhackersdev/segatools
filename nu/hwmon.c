@@ -70,10 +70,10 @@ static HRESULT hwmon_handle_ioctl(struct irp *irp)
         return hwmon_ioctl_read_cpu_temp(irp);
 
     default:
-        dprintf("Hwmon: Unknown ioctl %08x write %i read %i\n",
+        dprintf("Hwmon: Unknown ioctl %08x, write %i read %i\n",
                 irp->ioctl,
-                irp->write.nbytes,
-                irp->read.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }

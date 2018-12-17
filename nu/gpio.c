@@ -131,10 +131,10 @@ static HRESULT gpio_handle_ioctl(struct irp *irp)
         return gpio_ioctl_describe(irp);
 
     default:
-        dprintf("GPIO: IOCTL %08x write %i read %i\n",
+        dprintf("GPIO: Unknown ioctl %08x, write %i read %i\n",
                 irp->ioctl,
-                irp->write.nbytes,
-                irp->read.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }

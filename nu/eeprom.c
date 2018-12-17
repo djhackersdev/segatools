@@ -100,8 +100,8 @@ static HRESULT eeprom_handle_ioctl(struct irp *irp)
     default:
         dprintf("EEPROM: Unknown ioctl %x, write %i read %i\n",
                 irp->ioctl,
-                irp->write.nbytes,
-                irp->read.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }
@@ -143,7 +143,7 @@ static HRESULT eeprom_handle_read(struct irp *irp)
 
     dprintf("EEPROM: Read off %x len %x\n",
             (int) irp->ovl->Offset,
-            irp->read.nbytes);
+            (int) irp->read.nbytes);
 
     return iohook_invoke_next(irp);
 }
@@ -158,7 +158,7 @@ static HRESULT eeprom_handle_write(struct irp *irp)
 
     dprintf("EEPROM: Write off %x len %x\n",
             (int) irp->ovl->Offset,
-            irp->write.nbytes);
+            (int) irp->write.nbytes);
 
     return iohook_invoke_next(irp);
 }

@@ -159,10 +159,10 @@ static HRESULT ds_handle_ioctl(struct irp *irp)
         return ds_ioctl_read_sector(irp);
 
     default:
-        dprintf("DS: Unknown ioctl %x, write %i read %i\n",
+        dprintf("DS: Unknown ioctl %08x, write %i read %i\n",
                 irp->ioctl,
-                irp->write.nbytes,
-                irp->read.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }

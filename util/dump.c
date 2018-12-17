@@ -24,7 +24,7 @@ void dump(const void *ptr, size_t nbytes)
     bytes = ptr;
 
     for (i = 0 ; i < nbytes ; i += 16) {
-        dprintf("    %08x:", i);
+        dprintf("    %08x:", (int) i);
 
         for (j = 0 ; i + j < nbytes && j < 16 ; j++) {
             dprintf(" %02x", bytes[i + j]);

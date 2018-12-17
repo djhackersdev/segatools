@@ -96,8 +96,8 @@ static HRESULT sram_handle_ioctl(struct irp *irp)
     default:
         dprintf("SRAM: Unknown ioctl %x, write %i read %i\n",
                 irp->ioctl,
-                irp->write.nbytes,
-                irp->read.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }

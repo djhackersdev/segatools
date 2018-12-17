@@ -151,10 +151,10 @@ static HRESULT nusec_handle_ioctl(struct irp *irp)
         return nusec_ioctl_put_trace_log_data(irp);
 
     default:
-        dprintf("Security: Unhandled ioctl %#08x: read %i write %i\n",
+        dprintf("Security: Unknown ioctl %#08x, write %i read %i\n",
                 irp->ioctl,
-                irp->read.nbytes,
-                irp->write.nbytes);
+                (int) irp->write.nbytes,
+                (int) irp->read.nbytes);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }
@@ -241,9 +241,17 @@ static HRESULT nusec_ioctl_get_billing_ca_cert(struct irp *irp)
     irp->op = IRP_OP_READ;
     irp->fd = fd;
 
-    dprintf(">>> %p:%i/%i\n", irp->read.bytes, irp->read.pos, irp->read.nbytes);
+    dprintf(">>> %p:%i/%i\n",
+            irp->read.bytes,
+            (int) irp->read.pos,
+            (int) irp->read.nbytes);
+
     hr = iohook_invoke_next(irp);
-    dprintf("<<< %p:%i/%i\n", irp->read.bytes, irp->read.pos, irp->read.nbytes);
+
+    dprintf("<<< %p:%i/%i\n",
+            irp->read.bytes,
+            (int) irp->read.pos,
+            (int) irp->read.nbytes);
 
     if (FAILED(hr)) {
         dprintf("ReadFile transformation failed: %x\n", (int) hr);
@@ -280,9 +288,17 @@ static HRESULT nusec_ioctl_get_billing_pubkey(struct irp *irp)
     irp->op = IRP_OP_READ;
     irp->fd = fd;
 
-    dprintf(">>> %p:%i/%i\n", irp->read.bytes, irp->read.pos, irp->read.nbytes);
+    dprintf(">>> %p:%i/%i\n",
+            irp->read.bytes,
+            (int) irp->read.pos,
+            (int) irp->read.nbytes);
+
     hr = iohook_invoke_next(irp);
-    dprintf("<<< %p:%i/%i\n", irp->read.bytes, irp->read.pos, irp->read.nbytes);
+
+    dprintf("<<< %p:%i/%i\n",
+            irp->read.bytes,
+            (int) irp->read.pos,
+            (int) irp->read.nbytes);
 
     if (FAILED(hr)) {
         dprintf("ReadFile transformation failed: %x\n", (int) hr);
@@ -362,7 +378,7 @@ static HRESULT nusec_ioctl_get_trace_log_data(struct irp *irp)
         return hr;
     }
 
-    dprintf("    Params: %i %i Buf: %i\n", pos, count, irp->read.nbytes);
+    dprintf("    Params: %i %i Buf: %i\n", pos, count, (int) irp->read.nbytes);
 
     avail = irp->read.nbytes - irp->read.pos;
 
