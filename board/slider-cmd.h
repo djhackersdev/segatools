@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chunihook/slider-frame.h"
+#include "board/slider-frame.h"
 
 enum {
     SLIDER_CMD_AUTO_SCAN = 0x01,

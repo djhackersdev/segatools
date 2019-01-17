@@ -6,17 +6,18 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "util/dprintf.h"
-#include "util/dump.h"
+#include "board/slider-cmd.h"
+#include "board/slider-frame.h"
 
-#include "chunihook/slider-cmd.h"
-#include "chunihook/slider-frame.h"
 #include "chunihook/slider-hook.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
 #include "hooklib/uart.h"
+
+#include "util/dprintf.h"
+#include "util/dump.h"
 
 static HRESULT slider_handle_irp(struct irp *irp);
 static HRESULT slider_handle_irp_locked(struct irp *irp);

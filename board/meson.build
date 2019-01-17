@@ -22,5 +22,8 @@ board_lib = static_library(
         'sg-nfc-cmd.h',
         'sg-frame.c',
         'sg-frame.h',
+        'slider-cmd.h',
+        'slider-frame.c',
+        'slider-frame.h',
     ],
 )
