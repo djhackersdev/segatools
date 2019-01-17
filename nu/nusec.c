@@ -162,8 +162,6 @@ static HRESULT nusec_handle_ioctl(struct irp *irp)
 
 static HRESULT nusec_ioctl_ping(struct irp *irp)
 {
-    dprintf("Security: %s\n", __func__);
-
     return S_OK;
 }
 
