@@ -9,7 +9,11 @@
 
 struct sg_nfc_ops {
     HRESULT (*mifare_poll)(void *ctx, uint32_t *uid);
-    HRESULT (*mifare_read_luid)(void *ctx, uint8_t *luid, size_t nbytes);
+    HRESULT (*mifare_read_luid)(
+            void *ctx,
+            uint32_t uid,
+            uint8_t *luid,
+            size_t nbytes);
 };
 
 struct sg_nfc {

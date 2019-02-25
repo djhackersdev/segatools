@@ -44,10 +44,12 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
 
 static HRESULT sg_nfc_mifare_read_block_1(
         const struct sg_nfc *nfc,
+        uint32_t uid,
         uint8_t *block);
 
 static HRESULT sg_nfc_mifare_read_block_2(
         const struct sg_nfc *nfc,
+        uint32_t uid,
         uint8_t *block);
 
 static HRESULT sg_nfc_cmd_dummy(
@@ -261,22 +263,29 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
         const struct sg_nfc_req_mifare_read_block *req,
         struct sg_nfc_resp_mifare_read_block *resp)
 {
+    uint32_t uid;
+
     if (req->req.payload_len != sizeof(req->payload)) {
         sg_nfc_dprintf(nfc, "%s: Payload size is incorrect\n", __func__);
 
         return E_FAIL;
     }
 
-    sg_nfc_dprintf(nfc, "Read block %i\n", req->payload.block_no);
+    uid =   (req->payload.uid[0] << 24) |
+            (req->payload.uid[1] << 16) |
+            (req->payload.uid[2] <<  8) |
+            (req->payload.uid[3]      ) ;
+
+    sg_nfc_dprintf(nfc, "Read uid %08x block %i\n", uid, req->payload.block_no);
 
     sg_resp_init(&resp->resp, &req->req, sizeof(resp->block));
 
     switch (req->payload.block_no) {
     case 1:
-        return sg_nfc_mifare_read_block_1(nfc, resp->block);
+        return sg_nfc_mifare_read_block_1(nfc, uid, resp->block);
 
     case 2:
-        return sg_nfc_mifare_read_block_2(nfc, resp->block);
+        return sg_nfc_mifare_read_block_2(nfc, uid, resp->block);
 
     case 0:
     case 3:
@@ -299,6 +308,7 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
 
 static HRESULT sg_nfc_mifare_read_block_1(
         const struct sg_nfc *nfc,
+        uint32_t uid,
         uint8_t *block)
 {
     memcpy(block, sg_nfc_block_1, sizeof(sg_nfc_block_1));
@@ -308,11 +318,12 @@ static HRESULT sg_nfc_mifare_read_block_1(
 
 static HRESULT sg_nfc_mifare_read_block_2(
         const struct sg_nfc *nfc,
+        uint32_t uid,
         uint8_t *block)
 {
     HRESULT hr;
 
-    hr = nfc->ops->mifare_read_luid(nfc->ops_ctx, &block[6], 10);
+    hr = nfc->ops->mifare_read_luid(nfc->ops_ctx, uid, &block[6], 10);
 
     if (FAILED(hr)) {
         return hr;

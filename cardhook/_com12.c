@@ -21,7 +21,11 @@ static HRESULT com12_handle_irp(struct irp *irp);
 static HRESULT com12_handle_irp_locked(struct irp *irp);
 
 static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid);
-static HRESULT com12_mifare_read_luid(void *ctx, uint8_t *luid, size_t nbytes);
+static HRESULT com12_mifare_read_luid(
+        void *ctx,
+        uint32_t uid,
+        uint8_t *luid,
+        size_t nbytes);
 static HRESULT com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 
 static const struct sg_nfc_ops com12_nfc_ops = {
@@ -170,7 +174,11 @@ end:
     return hr;
 }
 
-static HRESULT com12_mifare_read_luid(void *ctx, uint8_t *luid, size_t nbytes)
+static HRESULT com12_mifare_read_luid(
+        void *ctx,
+        uint32_t uid,
+        uint8_t *luid,
+        size_t nbytes)
 {
     assert(luid != NULL);
     assert(nbytes == sizeof(com12_aime_luid));
