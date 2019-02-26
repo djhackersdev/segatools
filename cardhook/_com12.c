@@ -26,7 +26,7 @@ static HRESULT com12_mifare_read_luid(
         uint32_t uid,
         uint8_t *luid,
         size_t nbytes);
-static HRESULT com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
+static void com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 
 static const struct sg_nfc_ops com12_nfc_ops = {
     .mifare_poll        = com12_mifare_poll,
@@ -188,7 +188,6 @@ static HRESULT com12_mifare_read_luid(
     return S_OK;
 }
 
-static HRESULT com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b)
+static void com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b)
 {
-    return S_OK;
 }

@@ -160,23 +160,17 @@ static HRESULT sg_led_cmd_set_color(
         const struct sg_led *led,
         const struct sg_led_req_set_color *req)
 {
-    HRESULT hr;
-
     if (req->req.payload_len != sizeof(req->payload)) {
         sg_led_dprintf(led, "%s: Payload size is incorrect\n", __func__);
 
         goto fail;
     }
 
-    hr = led->ops->set_color(
+    led->ops->set_color(
             led->ops_ctx,
             req->payload[0],
             req->payload[1],
             req->payload[2]);
-
-    if (FAILED(hr)) {
-        sg_led_dprintf(led, "led->ops->set_color: Error %x\n", hr);
-    }
 
 fail:
     /* No response */

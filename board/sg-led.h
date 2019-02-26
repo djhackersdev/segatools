@@ -8,7 +8,7 @@
 
 struct sg_led_ops {
     HRESULT (*reset)(void *ctx);
-    HRESULT (*set_color)(void *ctx, uint8_t r, uint8_t g, uint8_t b);
+    void (*set_color)(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 };
 
 struct sg_led {
