@@ -1,0 +1,8 @@
+LIBRARY aimeio
+
+EXPORTS
+    aime_io_fini
+    aime_io_init
+    aime_io_led_set_color
+    aime_io_mifare_poll
+    aime_io_mifare_read_luid

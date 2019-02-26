@@ -2,7 +2,8 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
+
+#include "aimeio/aimeio.h"
 
 #include "board/sg-led.h"
 #include "board/sg-nfc.h"
@@ -13,7 +14,6 @@
 
 #include "hooklib/uart.h"
 
-#include "util/crc.h"
 #include "util/dprintf.h"
 #include "util/dump.h"
 
@@ -40,16 +40,21 @@ static const struct sg_led_ops com12_led_ops = {
 static struct sg_nfc com12_nfc;
 static struct sg_led com12_led;
 
-static const char com12_aime_path[] = "DEVICE\\aime.txt";
-
 static CRITICAL_SECTION com12_lock;
 static struct uart com12_uart;
 static uint8_t com12_written_bytes[520];
 static uint8_t com12_readable_bytes[520];
-static uint8_t com12_aime_luid[10];
 
-void com12_hook_init(void)
+HRESULT com12_hook_init(void)
 {
+    HRESULT hr;
+
+    hr = aime_io_init();
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     sg_nfc_init(&com12_nfc, 0x00, &com12_nfc_ops, NULL);
     sg_led_init(&com12_led, 0x08, &com12_led_ops, NULL);
 
@@ -61,7 +66,7 @@ void com12_hook_init(void)
     com12_uart.readable.bytes = com12_readable_bytes;
     com12_uart.readable.nbytes = sizeof(com12_readable_bytes);
 
-    iohook_push_handler(com12_handle_irp);
+    return iohook_push_handler(com12_handle_irp);
 }
 
 static HRESULT com12_handle_irp(struct irp *irp)
@@ -124,70 +129,19 @@ static HRESULT com12_handle_irp_locked(struct irp *irp)
 
 static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid)
 {
-    HRESULT hr;
-    FILE *f;
-    size_t i;
-    int byte;
-    int r;
-
-    hr = S_FALSE;
-    f = NULL;
-
-    if (!(GetAsyncKeyState(VK_RETURN) & 0x8000)) {
-        goto end;
-    }
-
-    f = fopen(com12_aime_path, "r");
-
-    if (f == NULL) {
-        dprintf("Aime reader: Failed to open %s\n", com12_aime_path);
-
-        goto end;
-    }
-
-    for (i = 0 ; i < sizeof(com12_aime_luid) ; i++) {
-        r = fscanf(f, "%02x ", &byte);
-
-        if (r != 1) {
-            dprintf("Aime reader: fscanf[%i] failed: %i\n", (int) i, r);
-
-            goto end;
-        }
-
-        com12_aime_luid[i] = byte;
-    }
-
-    /* NOTE: We are just arbitrarily using the CRC32 of the LUID here, real
-       cards do not work like this! However, neither the application code nor
-       the network protocol care what the UID is, it just has to be a stable
-       unique identifier for over-the-air NFC communications. */
-
-    *uid = crc32(com12_aime_luid, sizeof(com12_aime_luid), 0);
-
-    hr = S_OK;
-
-end:
-    if (f != NULL) {
-        fclose(f);
-    }
-
-    return hr;
+    return aime_io_mifare_poll(0, uid);
 }
 
 static HRESULT com12_mifare_read_luid(
         void *ctx,
         uint32_t uid,
         uint8_t *luid,
-        size_t nbytes)
+        size_t luid_size)
 {
-    assert(luid != NULL);
-    assert(nbytes == sizeof(com12_aime_luid));
-
-    memcpy(luid, com12_aime_luid, nbytes);
-
-    return S_OK;
+    return aime_io_mifare_read_luid(0, uid, luid, luid_size);
 }
 
 static void com12_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b)
 {
+    aime_io_led_set_color(0, r, g, b);
 }

@@ -31,6 +31,7 @@ subdir('jvs')
 subdir('nu')
 subdir('util')
 
+subdir('aimeio')
 subdir('cardhook')
 subdir('chunihook')
 subdir('minihook')

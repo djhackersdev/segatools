@@ -1,3 +1,5 @@
 #pragma once
 
-void com12_hook_init(void);
+#include <windows.h>
+
+HRESULT com12_hook_init(void);

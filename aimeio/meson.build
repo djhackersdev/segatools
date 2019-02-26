@@ -1,23 +1,17 @@
-shared_library(
-    'cardhook',
+aimeio_dll = shared_library(
+    'aimeio',
     name_prefix : '',
     include_directories: inc,
     implicit_include_directories : false,
+    vs_module_defs : 'aimeio.def',
     c_pch : [
         '../precompiled.c',
         '../precompiled.h',
     ],
-    dependencies : [
-        capnhook.get_variable('hook_dep'),
-        capnhook.get_variable('hooklib_dep'),
-    ],
     link_with : [
-        aimeio_dll,
-        board_lib,
         util_lib,
     ],
     sources : [
-        '_com12.c',
-        'dllmain.c',
+        'aimeio.c',
     ],
 )
