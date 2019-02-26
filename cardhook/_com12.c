@@ -7,19 +7,13 @@
 
 #include "board/sg-led.h"
 #include "board/sg-nfc.h"
+#include "board/sg-reader.h"
 
 #include "cardhook/_com12.h"
 
 #include "hook/iohook.h"
 
-#include "hooklib/uart.h"
-
-#include "util/dprintf.h"
-#include "util/dump.h"
-
 static HRESULT com12_handle_irp(struct irp *irp);
-static HRESULT com12_handle_irp_locked(struct irp *irp);
-
 static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid);
 static HRESULT com12_mifare_read_luid(
         void *ctx,
@@ -37,13 +31,7 @@ static const struct sg_led_ops com12_led_ops = {
     .set_color          = com12_led_set_color,
 };
 
-static struct sg_nfc com12_nfc;
-static struct sg_led com12_led;
-
-static CRITICAL_SECTION com12_lock;
-static struct uart com12_uart;
-static uint8_t com12_written_bytes[520];
-static uint8_t com12_readable_bytes[520];
+static struct sg_reader com12_reader;
 
 HRESULT com12_hook_init(void)
 {
@@ -55,76 +43,16 @@ HRESULT com12_hook_init(void)
         return hr;
     }
 
-    sg_nfc_init(&com12_nfc, 0x00, &com12_nfc_ops, NULL);
-    sg_led_init(&com12_led, 0x08, &com12_led_ops, NULL);
-
-    InitializeCriticalSection(&com12_lock);
-
-    uart_init(&com12_uart, 12);
-    com12_uart.written.bytes = com12_written_bytes;
-    com12_uart.written.nbytes = sizeof(com12_written_bytes);
-    com12_uart.readable.bytes = com12_readable_bytes;
-    com12_uart.readable.nbytes = sizeof(com12_readable_bytes);
+    sg_reader_init(&com12_reader, 12, &com12_nfc_ops, &com12_led_ops, NULL);
 
     return iohook_push_handler(com12_handle_irp);
 }
 
 static HRESULT com12_handle_irp(struct irp *irp)
 {
-    HRESULT hr;
-
     assert(irp != NULL);
 
-    if (!uart_match_irp(&com12_uart, irp)) {
-        return iohook_invoke_next(irp);
-    }
-
-    EnterCriticalSection(&com12_lock);
-    hr = com12_handle_irp_locked(irp);
-    LeaveCriticalSection(&com12_lock);
-
-    return hr;
-}
-
-static HRESULT com12_handle_irp_locked(struct irp *irp)
-{
-    HRESULT hr;
-
-#if 0
-    if (irp->op == IRP_OP_WRITE) {
-        dprintf("WRITE:\n");
-        dump_const_iobuf(&irp->write);
-    }
-#endif
-
-#if 0
-    if (irp->op == IRP_OP_READ) {
-        dprintf("READ:\n");
-        dump_iobuf(&com12_uart.readable);
-    }
-#endif
-
-    hr = uart_handle_irp(&com12_uart, irp);
-
-    if (FAILED(hr) || irp->op != IRP_OP_WRITE) {
-        return hr;
-    }
-
-    sg_nfc_transact(
-            &com12_nfc,
-            &com12_uart.readable,
-            com12_uart.written.bytes,
-            com12_uart.written.pos);
-
-    sg_led_transact(
-            &com12_led,
-            &com12_uart.readable,
-            com12_uart.written.bytes,
-            com12_uart.written.pos);
-
-    com12_uart.written.pos = 0;
-
-    return hr;
+    return sg_reader_handle_irp(&com12_reader, irp);
 }
 
 static HRESULT com12_mifare_poll(void *ctx, uint32_t *uid)
