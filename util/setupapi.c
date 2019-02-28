@@ -9,6 +9,7 @@
 
 #include "hook/table.h"
 
+#include "util/dprintf.h"
 #include "util/setupapi.h"
 
 struct setupapi_class {
@@ -193,8 +194,13 @@ static BOOL WINAPI my_SetupDiEnumDeviceInterfaces(
 
     if (    DeviceInfoSet == INVALID_HANDLE_VALUE ||
             DeviceInterfaceData == NULL ||
-            DeviceInterfaceData->cbSize != sizeof(*DeviceInterfaceData) ||
-            MemberIndex != 0) {
+            DeviceInterfaceData->cbSize != sizeof(*DeviceInterfaceData)) {
+        goto pass;
+    }
+
+    if (MemberIndex > 0) {
+        MemberIndex--;
+
         goto pass;
     }
 
@@ -205,6 +211,10 @@ static BOOL WINAPI my_SetupDiEnumDeviceInterfaces(
             i++) {
         if (DeviceInfoSet == setupapi_classes[i].cur_handle) {
             class_ = &setupapi_classes[i];
+
+            dprintf("SetupAPI: Interface {%08lx-...} -> Device node %S\n",
+                    class_->guid->Data1,
+                    class_->path);
 
             memcpy( &DeviceInterfaceData->InterfaceClassGuid,
                     class_->guid,
@@ -256,7 +266,8 @@ static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
     for (   i = 0, match = false ;
             i < setupapi_nclasses && !match ;
             i++) {
-        if (DeviceInfoSet == setupapi_classes[i].cur_handle) {
+        if (    DeviceInfoSet == setupapi_classes[i].cur_handle &&
+                DeviceInterfaceData->Reserved == (ULONG_PTR) setupapi_classes[i].path) {
             match = true;
         }
     }
