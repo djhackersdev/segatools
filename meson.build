@@ -3,6 +3,7 @@ project('segatools', 'c', version: '0.1.0')
 add_project_arguments(
     '-DCOBJMACROS',
     '-DWIN32_LEAN_AND_MEAN',
+    '-D_WIN32_WINNT=_WIN32_WINNT_WIN7',
     language: 'c',
 )
 
