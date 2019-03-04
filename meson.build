@@ -24,6 +24,9 @@ if meson.get_compiler('c').get_id() != 'msvc'
     )
 endif
 
+cc = meson.get_compiler('c')
+xinput_lib = cc.find_library('xinput')
+
 inc = include_directories('.')
 capnhook = subproject('capnhook')
 
