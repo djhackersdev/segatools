@@ -1,9 +1,10 @@
 #include <windows.h>
 
+#include "amex/ds.h"
+
 #include "hook/process.h"
 
-#include "nu/ds.h"
-#include "nu/nusec.h"
+#include "platform/nusec.h"
 
 #include "util/clock.h"
 #include "util/dprintf.h"
@@ -15,10 +16,10 @@ static DWORD CALLBACK app_pre_startup(void)
 {
     dprintf("--- Begin %s ---\n", __func__);
 
+    spike_hook_init("minispike.txt");
+    clock_hook_init();
     ds_hook_init();
     nusec_hook_init();
-    clock_hook_init();
-    spike_hook_init("minispike.txt");
 
     dprintf("---  End  %s ---\n", __func__);
 

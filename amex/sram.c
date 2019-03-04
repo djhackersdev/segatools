@@ -10,10 +10,10 @@
 
 #include <assert.h>
 
-#include "hook/iohook.h"
+#include "amex/sram.h"
+#include "amex/nvram.h"
 
-#include "nu/sram.h"
-#include "nu/nvram.h"
+#include "hook/iohook.h"
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"

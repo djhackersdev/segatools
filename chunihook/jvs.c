@@ -5,11 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "amex/jvs.h"
+
 #include "board/io3.h"
 
 #include "jvs/jvs-bus.h"
-
-#include "nu/jvs.h"
 
 #include "util/dprintf.h"
 

@@ -30,9 +30,10 @@ xinput_lib = cc.find_library('xinput')
 inc = include_directories('.')
 capnhook = subproject('capnhook')
 
+subdir('amex')
 subdir('board')
 subdir('jvs')
-subdir('nu')
+subdir('platform')
 subdir('util')
 
 subdir('aimeio')

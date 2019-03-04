@@ -7,6 +7,8 @@
 
 #include "hook/iohook.h"
 
+#include "platform/nusec.h"
+
 enum {
     NUSEC_IOCTL_PING                    = 0x22A114,
     NUSEC_IOCTL_ERASE_TRACE_LOG         = 0x22E188,

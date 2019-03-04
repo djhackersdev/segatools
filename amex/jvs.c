@@ -8,12 +8,12 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "amex/jvs.h"
+
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
 #include "jvs/jvs-bus.h"
-
-#include "nu/jvs.h"
 
 #include "util/dprintf.h"
 #include "util/dump.h"

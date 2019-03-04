@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <string.h>
 
-#include "hook/iohook.h"
+#include "amex/gpio.h"
 
-#include "nu/gpio.h"
+#include "hook/iohook.h"
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"

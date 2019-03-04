@@ -18,11 +18,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "amex/ds.h"
+#include "amex/nvram.h"
+
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
-
-#include "nu/ds.h"
-#include "nu/nvram.h"
 
 #include "util/crc.h"
 #include "util/dprintf.h"

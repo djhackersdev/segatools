@@ -12,9 +12,10 @@ shared_library(
         capnhook.get_variable('hooklib_dep'),
     ],
     link_with : [
+        amex_lib,
         board_lib,
         jvs_lib,
-        nu_lib,
+        platform_lib,
         util_lib,
     ],
     sources : [

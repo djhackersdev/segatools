@@ -4,9 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "util/dprintf.h"
+#include "amex/nvram.h"
 
-#include "nu/nvram.h"
+#include "util/dprintf.h"
 
 HRESULT nvram_open_file(HANDLE *out, wchar_t *path, size_t size)
 {

@@ -1,7 +1,6 @@
-shared_library(
-    'minihook',
-    name_prefix : '',
-    include_directories: inc,
+platform_lib = static_library(
+    'platform',
+    include_directories : inc,
     implicit_include_directories : false,
     c_pch : [
         '../precompiled.c',
@@ -10,12 +9,10 @@ shared_library(
     dependencies : [
         capnhook.get_variable('hook_dep'),
     ],
-    link_with : [
-        amex_lib,
-        platform_lib,
-        util_lib,
-    ],
     sources : [
-        'dllmain.c',
+        'hwmon.c',
+        'hwmon.h',
+        'nusec.c',
+        'nusec.h',
     ],
 )

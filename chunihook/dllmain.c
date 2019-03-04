@@ -3,6 +3,12 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "amex/ds.h"
+#include "amex/eeprom.h"
+#include "amex/gpio.h"
+#include "amex/jvs.h"
+#include "amex/sram.h"
+
 #include "chunihook/jvs.h"
 #include "chunihook/slider-hook.h"
 
@@ -10,13 +16,8 @@
 
 #include "hooklib/serial.h"
 
-#include "nu/ds.h"
-#include "nu/eeprom.h"
-#include "nu/gpio.h"
-#include "nu/jvs.h"
-#include "nu/hwmon.h"
-#include "nu/nusec.h"
-#include "nu/sram.h"
+#include "platform/hwmon.h"
+#include "platform/nusec.h"
 
 #include "util/clock.h"
 #include "util/dprintf.h"
@@ -47,15 +48,18 @@ static DWORD CALLBACK chuni_pre_startup(void)
     gfx_hook_init();
     serial_hook_init();
 
-    /* Initialize Nu emulation */
+    /* Initialize platform API emulation */
 
-    eeprom_hook_init();
-    sram_hook_init();
-    ds_hook_init();
-    gpio_hook_init();
-    jvs_hook_init();
     hwmon_hook_init();
     nusec_hook_init();
+
+    /* Initialize AMEX emulation */
+
+    ds_hook_init();
+    gpio_hook_init();
+    eeprom_hook_init();
+    jvs_hook_init();
+    sram_hook_init();
 
     /* Initialize Chunithm board emulation */
 

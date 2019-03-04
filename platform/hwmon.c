@@ -7,7 +7,7 @@
 
 #include "hook/iohook.h"
 
-#include "nu/hwmon.h"
+#include "platform/hwmon.h"
 
 enum {
     HWMON_IOCTL_READ_CPU_TEMP = 0x80006000,

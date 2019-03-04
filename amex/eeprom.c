@@ -10,10 +10,10 @@
 
 #include <assert.h>
 
-#include "hook/iohook.h"
+#include "amex/eeprom.h"
+#include "amex/nvram.h"
 
-#include "nu/eeprom.h"
-#include "nu/nvram.h"
+#include "hook/iohook.h"
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"
