@@ -10,6 +10,8 @@ util_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'async.c',
+        'async.h',
         'clock.c',
         'clock.h',
         'crc.c',
