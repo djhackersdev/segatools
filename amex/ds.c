@@ -37,7 +37,8 @@ enum {
 
 struct ds_eeprom {
     uint32_t crc32;
-    uint8_t unk_04[5];
+    uint8_t unk_04[4];
+    uint8_t region;
     char serial_no[17];
     uint8_t unk_1A[6];
 };
@@ -62,36 +63,22 @@ static HANDLE ds_fd;
 HRESULT ds_hook_init(void)
 {
     HRESULT hr;
+    int region;
     FILE *f;
-    char c;
-    int i;
 
+    region = 0x01; /* Japan; use this default if ds.txt read fails */
     memset(&ds_eeprom, 0, sizeof(ds_eeprom));
 
     f = fopen(ds_serial_file, "r");
 
     if (f != NULL) {
-        i = 0;
-
-        for (;;) {
-            if (feof(f) || i >= sizeof(ds_eeprom.serial_no) - 1) {
-                break;
-            }
-
-            c = getc(f);
-
-            if (isspace(c)) {
-                break;
-            }
-
-            ds_eeprom.serial_no[i++] = c;
-        }
-
+        fscanf(f, "%16s %x", ds_eeprom.serial_no, &region);
         fclose(f);
     } else {
         dprintf("Failed to open %s\n", ds_serial_file);
     }
 
+    ds_eeprom.region = region;
     ds_eeprom.crc32 = crc32(&ds_eeprom.unk_04, 0x1C, 0);
 
     hr = iohook_push_handler(ds_handle_irp);
