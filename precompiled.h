@@ -10,6 +10,7 @@
 #include <winternl.h>
 #include <setupapi.h>
 #include <unknwn.h>
+#include <xinput.h>
 #include <d3d9.h>
 
 /* Win32 kernel-mode definitions */
