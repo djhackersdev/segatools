@@ -507,7 +507,7 @@ static HRESULT io3_cmd_read_analogs(
             state = 0;
         }
 
-        hr = iobuf_write_le16(resp_buf, state);
+        hr = iobuf_write_be16(resp_buf, state);
 
         if (FAILED(hr)) {
             return hr;
