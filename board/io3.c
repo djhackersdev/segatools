@@ -121,7 +121,7 @@ static uint8_t io3_features[] = {
        Param2  :    0 : N/A
        Param3  :    0 : N/A */
 
-    0x12, 3, 0, 0,
+    0x12, 20, 0, 0,
 
     /* Feature : 0x00 : End of capabilities */
 
