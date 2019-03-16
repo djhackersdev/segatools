@@ -12,6 +12,8 @@ platform_lib = static_library(
     sources : [
         'hwmon.c',
         'hwmon.h',
+        'pcbid.c',
+        'pcbid.h',
         'nusec.c',
         'nusec.h',
     ],
