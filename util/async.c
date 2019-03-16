@@ -60,6 +60,8 @@ HRESULT async_submit(struct async *async, struct irp *irp, async_task_t task)
         return task(async->ctx, irp);
     }
 
+    EnterCriticalSection(&async->lock);
+
     if (async->thread == NULL) {
         /* Ensure our worker thread is running */
         async->thread = (HANDLE) _beginthreadex(
@@ -74,8 +76,6 @@ HRESULT async_submit(struct async *async, struct irp *irp, async_task_t task)
             return HRESULT_FROM_WIN32(GetLastError());
         }
     }
-
-    EnterCriticalSection(&async->lock);
 
     while (async->task != NULL) {
         ok = SleepConditionVariableCS(&async->avail, &async->lock, INFINITE);
