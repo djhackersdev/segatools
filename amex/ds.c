@@ -1,16 +1,6 @@
-#define WIN32_NO_STATUS
 #include <windows.h>
-#undef WIN32_NO_STATUS
-#include <winternl.h>
-
-#ifdef __GNUC__
-#include <ntdef.h>
-#else
-#include <winnt.h>
-#endif
 #include <devioctl.h>
 #include <ntdddisk.h>
-#include <ntstatus.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -205,15 +195,6 @@ static HRESULT ds_ioctl_read_sector(struct irp *irp)
     src.pos = 0;
 
     iobuf_move(&irp->read, &src);
-
-    if (irp->ovl != NULL) {
-        irp->ovl->Internal = STATUS_SUCCESS;
-        irp->ovl->InternalHigh = irp->read.pos;
-
-        if (irp->ovl->hEvent != NULL) {
-            SetEvent(irp->ovl->hEvent);
-        }
-    }
 
     return S_OK;
 }
