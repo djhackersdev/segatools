@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "board/sg-led.h"
@@ -18,11 +19,10 @@ struct sg_reader {
     struct sg_led led;
 };
 
-void sg_reader_init(
+HRESULT sg_reader_init(
         struct sg_reader *reader,
-        unsigned int port_no,
-        const struct sg_nfc_ops *nfc_ops,
-        const struct sg_led_ops *led_ops,
-        void *ops_ctx);
+        unsigned int port_no);
+
+bool sg_reader_match_irp(const struct sg_reader *reader, const struct irp *irp);
 
 HRESULT sg_reader_handle_irp(struct sg_reader *reader, struct irp *irp);
