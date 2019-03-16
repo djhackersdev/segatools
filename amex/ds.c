@@ -46,7 +46,7 @@ static HRESULT ds_ioctl_get_geometry(struct irp *irp);
 static HRESULT ds_ioctl_setup(struct irp *irp);
 static HRESULT ds_ioctl_read_sector(struct irp *irp);
 
-static const char ds_serial_file[] = "DEVICE/ds.txt";
+static const char ds_serial_file[] = "DEVICE/pcbid.txt";
 static struct ds_eeprom ds_eeprom;
 static HANDLE ds_fd;
 
