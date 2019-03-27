@@ -84,7 +84,5 @@ static HRESULT hwmon_ioctl_read_cpu_temp(struct irp *irp)
     /* Assuming this is Celsius. It also seems to be biased by -23 (based on the
        caller code) despite being a 32-bit int. */
 
-    dprintf("Hwmon: Read CPU temperature\n");
-
     return iobuf_write_le32(&irp->read, 52);
 }
