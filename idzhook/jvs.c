@@ -28,6 +28,25 @@ static const struct io3_ops idz_jvs_io3_ops = {
 
 static struct io3 idz_jvs_io3;
 static bool idz_jvs_coin;
+static bool idz_jvs_shifting;
+static uint8_t idz_jvs_gear;
+
+static const uint16_t idz_jvs_gear_signals[] = {
+    /* Neutral */
+    0x0000,
+    /* 1: Left|Up */
+    0x2800,
+    /* 2: Left|Down */
+    0x1800,
+    /* 3: Up */
+    0x2000,
+    /* 4: Down */
+    0x1000,
+    /* 5: Right|Up */
+    0x2400,
+    /* 6: Right|Down */
+    0x1400,
+};
 
 void idz_jvs_init(void)
 {
@@ -37,6 +56,8 @@ void idz_jvs_init(void)
 
 static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
 {
+    bool shift_inc;
+    bool shift_dec;
     XINPUT_STATE xi;
     WORD xb;
 
@@ -46,10 +67,11 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     XInputGetState(0, &xi);
     xb = xi.Gamepad.wButtons;
 
-    /* Update gameplay buttons (P2 JVS input is not even polled) */
+    /* Update gameplay buttons */
 
     if (xb & XINPUT_GAMEPAD_START) {
         out->p1 |= 1 << 15;
+        idz_jvs_gear = 0; /* Reset to Neutral when start is pressed */
     }
 
     if (xb & XINPUT_GAMEPAD_DPAD_UP) {
@@ -71,6 +93,24 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     if (xb & XINPUT_GAMEPAD_BACK) {
         out->p1 |= 1 << 9;
     }
+
+    /* Update simulated six-speed shifter */
+
+    shift_inc = xb & XINPUT_GAMEPAD_X;
+    shift_dec = xb & XINPUT_GAMEPAD_Y;
+
+    if (!idz_jvs_shifting) {
+        if (shift_inc && idz_jvs_gear < 6) {
+            idz_jvs_gear++;
+        }
+
+        if (shift_dec && idz_jvs_gear > 0) {
+            idz_jvs_gear--;
+        }
+    }
+
+    idz_jvs_shifting = shift_inc || shift_dec;
+    out->p2 = idz_jvs_gear_signals[idz_jvs_gear];
 
     /* Update test/service buttons */
 
