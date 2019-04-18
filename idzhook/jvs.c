@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <xinput.h>
 
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -96,8 +97,8 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
 
     /* Update simulated six-speed shifter */
 
-    shift_inc = xb & XINPUT_GAMEPAD_X;
-    shift_dec = xb & XINPUT_GAMEPAD_Y;
+    shift_inc = xb & (XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_RIGHT_SHOULDER);
+    shift_dec = xb & (XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_LEFT_SHOULDER);
 
     if (!idz_jvs_shifting) {
         if (shift_inc && idz_jvs_gear < 6) {
@@ -128,7 +129,8 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
 static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no)
 {
     XINPUT_STATE xi;
-    int tmp;
+    int left;
+    int right;
 
     if (analog_no > 2) {
         return 0;
@@ -140,13 +142,28 @@ static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no)
     switch (analog_no) {
     case 0:
         /* Wheel */
-        tmp = xi.Gamepad.sThumbLX;
 
-        if (abs(tmp) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-            return tmp + 0x8000;
+        left = xi.Gamepad.sThumbLX;
+
+        if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+            left += XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+        } else if (left > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+            left -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
         } else {
-            return 0x8000;
+            left = 0;
         }
+
+        right = xi.Gamepad.sThumbRX;
+
+        if (right < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+            right += XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        } else if (right > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+            right -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        } else {
+            right = 0;
+        }
+
+        return 0x8000 + (left + right) / 2;
 
     case 1:
         /* Accel */
