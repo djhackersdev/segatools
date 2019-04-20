@@ -10,6 +10,7 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out);
 static BOOL WINAPI my_GetLocalTime(SYSTEMTIME *out);
 static BOOL WINAPI my_GetSystemTime(SYSTEMTIME *out);
 static DWORD WINAPI my_GetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo);
+static BOOL WINAPI my_SetLocalTime(SYSTEMTIME *in);
 static BOOL WINAPI my_SetSystemTime(SYSTEMTIME *in);
 static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo);
 
@@ -30,6 +31,9 @@ static const struct hook_symbol clock_hook_syms[] = {
     }, {
         .name   = "GetTimeZoneInformation",
         .patch  = my_GetTimeZoneInformation,
+    }, {
+        .name   = "SetLocalTime",
+        .patch  = my_SetLocalTime,
     }, {
         .name   = "SetSystemTime",
         .patch  = my_SetSystemTime,
@@ -158,9 +162,16 @@ static DWORD WINAPI my_GetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo)
     }
 }
 
+static BOOL WINAPI my_SetLocalTime(SYSTEMTIME *in)
+{
+    dprintf("Prevented application from screwing with the local time\n");
+
+    return TRUE;
+}
+
 static BOOL WINAPI my_SetSystemTime(SYSTEMTIME *in)
 {
-    dprintf("Prevented application from screwing with the system clock\n");
+    dprintf("Prevented application from screwing with the system time\n");
 
     return TRUE;
 }
