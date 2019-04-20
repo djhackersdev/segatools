@@ -55,6 +55,8 @@ static HRESULT gpio_ioctl_describe(struct irp *irp);
 static HRESULT gpio_ioctl_set_leds(struct irp *irp);
 
 static HANDLE gpio_fd;
+static uint8_t gpio_dipsw;
+static const char gpio_dipsw_file[] = "DEVICE/dipsw.txt";
 
 static const struct gpio_ports gpio_ports = {
     .ports = {
@@ -75,6 +77,22 @@ static_assert(sizeof(gpio_ports) == 129, "GPIO port map size");
 
 void gpio_hook_init(void)
 {
+    FILE *f;
+    int ival;
+
+    f = fopen(gpio_dipsw_file, "r");
+
+    if (f != NULL) {
+        ival = 0;
+        fscanf(f, "%02x", &ival);
+        gpio_dipsw = ival;
+        fclose(f);
+
+        dprintf("Set DIPSW to %02x\n", gpio_dipsw);
+    } else {
+        dprintf("Failed to open %s\n", gpio_dipsw_file);
+    }
+
     gpio_fd = iohook_open_dummy_fd();
     iohook_push_handler(gpio_handle_irp);
     setupapi_add_phantom_dev(&gpio_guid, L"$gpio");
@@ -144,7 +162,7 @@ static HRESULT gpio_ioctl_get_dipsw(struct irp *irp)
 {
     uint32_t dipsw;
 
-    dipsw = 0xff;
+    dipsw = gpio_dipsw;
     //dprintf("GPIO: Get dipsw %08x\n", dipsw);
 
     return iobuf_write_le32(&irp->read, dipsw);
