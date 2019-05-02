@@ -19,16 +19,17 @@
 
 static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out);
 static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no);
-static uint16_t idz_jvs_consume_coins(void *ctx, uint8_t slot_no);
+static uint16_t idz_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
 
 static const struct io3_ops idz_jvs_io3_ops = {
-    .read_switches  = idz_jvs_read_switches,
-    .read_analog    = idz_jvs_read_analog,
-    .consume_coins  = idz_jvs_consume_coins,
+    .read_switches      = idz_jvs_read_switches,
+    .read_analog        = idz_jvs_read_analog,
+    .read_coin_counter  = idz_jvs_read_coin_counter,
 };
 
 static struct io3 idz_jvs_io3;
 static bool idz_jvs_coin;
+static uint16_t idz_jvs_coins;
 static bool idz_jvs_shifting;
 static uint8_t idz_jvs_gear;
 
@@ -178,24 +179,21 @@ static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no)
     }
 }
 
-static uint16_t idz_jvs_consume_coins(void *ctx, uint8_t slot_no)
+static uint16_t idz_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
 {
     if (slot_no > 0) {
         return 0;
     }
 
     if (GetAsyncKeyState('3')) {
-        if (idz_jvs_coin) {
-            return 0;
-        } else {
+        if (!idz_jvs_coin) {
             dprintf("IDZero JVS: Coin drop\n");
             idz_jvs_coin = true;
-
-            return 1;
+            idz_jvs_coins++;
         }
     } else {
         idz_jvs_coin = false;
-
-        return 0;
     }
+
+    return idz_jvs_coins;
 }

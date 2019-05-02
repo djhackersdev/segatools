@@ -454,8 +454,8 @@ static HRESULT io3_cmd_read_coin(
     /* Write slot detail */
 
     for (i = 0 ; i < req.nslots ; i++) {
-        if (io3->ops->consume_coins != NULL) {
-            ncoins = io3->ops->consume_coins(io3->ops_ctx, i);
+        if (io3->ops->read_coin_counter != NULL) {
+            ncoins = io3->ops->read_coin_counter(io3->ops_ctx, i);
         } else {
             ncoins = 0;
         }

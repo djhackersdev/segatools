@@ -13,15 +13,16 @@
 #include "util/dprintf.h"
 
 static void diva_jvs_read_switches(void *ctx, struct io3_switch_state *out);
-static uint16_t diva_jvs_consume_coins(void *ctx, uint8_t slot_no);
+static uint16_t diva_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
 
 static const struct io3_ops diva_jvs_io3_ops = {
-    .read_switches  = diva_jvs_read_switches,
-    .consume_coins  = diva_jvs_consume_coins,
+    .read_switches      = diva_jvs_read_switches,
+    .read_coin_counter  = diva_jvs_read_coin_counter,
 };
 
 static struct io3 diva_jvs_io3;
 static bool diva_jvs_coin;
+static uint16_t diva_jvs_coins;
 
 void diva_jvs_init(void)
 {
@@ -70,24 +71,21 @@ static void diva_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     }
 }
 
-static uint16_t diva_jvs_consume_coins(void *ctx, uint8_t slot_no)
+static uint16_t diva_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
 {
     if (slot_no > 0) {
         return 0;
     }
 
     if (GetAsyncKeyState('3')) {
-        if (diva_jvs_coin) {
-            return 0;
-        } else {
+        if (!diva_jvs_coin) {
             dprintf("Diva JVS: Coin drop\n");
             diva_jvs_coin = true;
-
-            return 1;
+            diva_jvs_coins++;
         }
     } else {
         diva_jvs_coin = false;
-
-        return 0;
     }
+
+    return diva_jvs_coins;
 }
