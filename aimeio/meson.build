@@ -4,10 +4,7 @@ aimeio_dll = shared_library(
     include_directories: inc,
     implicit_include_directories : false,
     vs_module_defs : 'aimeio.def',
-    c_pch : [
-        '../precompiled.c',
-        '../precompiled.h',
-    ],
+    c_pch : '../precompiled.h',
     link_with : [
         util_lib,
     ],
