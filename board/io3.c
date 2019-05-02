@@ -119,7 +119,12 @@ static uint8_t io3_features[] = {
     /* Feature : 0x12 : GPIO outputs
        Param1  :    3 : Number of ports (8 bits per port)
        Param2  :    0 : N/A
-       Param3  :    0 : N/A */
+       Param3  :    0 : N/A
+
+       NOTE: This particular port count is what an IO-4 attached over JVS
+       advertises, an IO-3 only advertises 3. Still, this seems to be backwards
+       compatible with games that expect an IO-3, and the protocols seem to be
+       identical otherwise. */
 
     0x12, 20, 0, 0,
 
