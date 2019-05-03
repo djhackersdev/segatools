@@ -17,18 +17,14 @@
 #include "util/dprintf.h"
 #include "util/dump.h"
 
-static HRESULT sg_reader_handle_irp_locked(
-        struct sg_reader *reader,
-        struct irp *irp);
-
+static HRESULT sg_reader_handle_irp(struct irp *irp);
+static HRESULT sg_reader_handle_irp_locked(struct irp *irp);
 static HRESULT sg_reader_mifare_poll(void *ctx, uint32_t *uid);
-
 static HRESULT sg_reader_mifare_read_luid(
         void *ctx,
         uint32_t uid,
         uint8_t *luid,
         size_t luid_size);
-
 static void sg_reader_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 
 static const struct sg_nfc_ops sg_reader_nfc_ops = {
@@ -40,13 +36,16 @@ static const struct sg_led_ops sg_reader_led_ops = {
     .set_color          = sg_reader_led_set_color,
 };
 
-HRESULT sg_reader_init(
-        struct sg_reader *reader,
-        unsigned int port_no)
+static CRITICAL_SECTION sg_reader_lock;
+static struct uart sg_reader_uart;
+static uint8_t sg_reader_written_bytes[520];
+static uint8_t sg_reader_readable_bytes[520];
+static struct sg_nfc sg_reader_nfc;
+static struct sg_led sg_reader_led;
+
+HRESULT sg_reader_hook_init(unsigned int port_no)
 {
     HRESULT hr;
-
-    assert(reader != NULL);
 
     hr = aime_io_init();
 
@@ -54,45 +53,38 @@ HRESULT sg_reader_init(
         return hr;
     }
 
-    sg_nfc_init(&reader->nfc, 0x00, &sg_reader_nfc_ops, reader);
-    sg_led_init(&reader->led, 0x08, &sg_reader_led_ops, reader);
+    sg_nfc_init(&sg_reader_nfc, 0x00, &sg_reader_nfc_ops, NULL);
+    sg_led_init(&sg_reader_led, 0x08, &sg_reader_led_ops, NULL);
 
-    InitializeCriticalSection(&reader->lock);
+    InitializeCriticalSection(&sg_reader_lock);
 
-    uart_init(&reader->uart, port_no);
-    reader->uart.written.bytes = reader->written_bytes;
-    reader->uart.written.nbytes = sizeof(reader->written_bytes);
-    reader->uart.readable.bytes = reader->readable_bytes;
-    reader->uart.readable.nbytes = sizeof(reader->readable_bytes);
+    uart_init(&sg_reader_uart, port_no);
+    sg_reader_uart.written.bytes = sg_reader_written_bytes;
+    sg_reader_uart.written.nbytes = sizeof(sg_reader_written_bytes);
+    sg_reader_uart.readable.bytes = sg_reader_readable_bytes;
+    sg_reader_uart.readable.nbytes = sizeof(sg_reader_readable_bytes);
 
-    return S_OK;
+    return iohook_push_handler(sg_reader_handle_irp);
 }
 
-bool sg_reader_match_irp(const struct sg_reader *reader, const struct irp *irp)
-{
-    assert(reader != NULL);
-    assert(irp != NULL);
-
-    return uart_match_irp(&reader->uart, irp);
-}
-
-HRESULT sg_reader_handle_irp(struct sg_reader *reader, struct irp *irp)
+static HRESULT sg_reader_handle_irp(struct irp *irp)
 {
     HRESULT hr;
 
-    assert(reader != NULL);
     assert(irp != NULL);
 
-    EnterCriticalSection(&reader->lock);
-    hr = sg_reader_handle_irp_locked(reader, irp);
-    LeaveCriticalSection(&reader->lock);
+    if (!uart_match_irp(&sg_reader_uart, irp)) {
+        return iohook_invoke_next(irp);
+    }
+
+    EnterCriticalSection(&sg_reader_lock);
+    hr = sg_reader_handle_irp_locked(irp);
+    LeaveCriticalSection(&sg_reader_lock);
 
     return hr;
 }
 
-static HRESULT sg_reader_handle_irp_locked(
-        struct sg_reader *reader,
-        struct irp *irp)
+static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
 {
     HRESULT hr;
 
@@ -106,29 +98,29 @@ static HRESULT sg_reader_handle_irp_locked(
 #if 0
     if (irp->op == IRP_OP_READ) {
         dprintf("READ:\n");
-        dump_iobuf(&reader->uart.readable);
+        dump_iobuf(&sg_reader_uart.readable);
     }
 #endif
 
-    hr = uart_handle_irp(&reader->uart, irp);
+    hr = uart_handle_irp(&sg_reader_uart, irp);
 
     if (FAILED(hr) || irp->op != IRP_OP_WRITE) {
         return hr;
     }
 
     sg_nfc_transact(
-            &reader->nfc,
-            &reader->uart.readable,
-            reader->uart.written.bytes,
-            reader->uart.written.pos);
+            &sg_reader_nfc,
+            &sg_reader_uart.readable,
+            sg_reader_uart.written.bytes,
+            sg_reader_uart.written.pos);
 
     sg_led_transact(
-            &reader->led,
-            &reader->uart.readable,
-            reader->uart.written.bytes,
-            reader->uart.written.pos);
+            &sg_reader_led,
+            &sg_reader_uart.readable,
+            sg_reader_uart.written.bytes,
+            sg_reader_uart.written.pos);
 
-    reader->uart.written.pos = 0;
+    sg_reader_uart.written.pos = 0;
 
     return hr;
 }

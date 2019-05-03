@@ -14,7 +14,6 @@ shared_library(
         util_lib,
     ],
     sources : [
-        '_com12.c',
         'dllmain.c',
     ],
 )

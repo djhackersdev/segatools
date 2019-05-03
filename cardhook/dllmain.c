@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "cardhook/_com12.h"
+#include "board/sg-reader.h"
 
 #include "hook/process.h"
 
@@ -15,9 +15,10 @@ static DWORD CALLBACK app_pre_startup(void)
 {
     dprintf("--- Begin %s ---\n", __func__);
 
-    serial_hook_init();
     spike_hook_init("cardspike.txt");
-    com12_hook_init();
+
+    serial_hook_init();
+    sg_reader_hook_init(12);
 
     dprintf("---  End  %s ---\n", __func__);
 

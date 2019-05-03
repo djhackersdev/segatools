@@ -9,7 +9,8 @@
 #include "amex/jvs.h"
 #include "amex/sram.h"
 
-#include "divahook/_com10.h"
+#include "board/sg-reader.h"
+
 #include "divahook/jvs.h"
 #include "divahook/slider.h"
 
@@ -51,8 +52,8 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize Project Diva I/O board emulation */
 
-    com10_hook_init();
     diva_jvs_init();
+    sg_reader_hook_init(10);
     slider_hook_init();
 
     /* Initialize debug helpers */

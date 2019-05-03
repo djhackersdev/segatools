@@ -9,11 +9,12 @@
 #include "amex/jvs.h"
 #include "amex/sram.h"
 
+#include "board/sg-reader.h"
+
 #include "hook/process.h"
 
 #include "hooklib/serial.h"
 
-#include "idzhook/_com10.h"
 #include "idzhook/jvs.h"
 
 #include "platform/hwmon.h"
@@ -50,8 +51,8 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize Initial D Zero I/O board emulation */
 
-    com10_hook_init();
     idz_jvs_init();
+    sg_reader_hook_init(10);
 
     /* Initialize debug helpers */
 

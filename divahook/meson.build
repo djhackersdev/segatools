@@ -19,7 +19,6 @@ shared_library(
         util_lib,
     ],
     sources : [
-        '_com10.c',
         'dllmain.c',
         'jvs.c',
         'jvs.h',
