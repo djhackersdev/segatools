@@ -13,6 +13,7 @@ shared_library(
         aimeio_dll,
         amex_lib,
         board_lib,
+        divaio_dll,
         jvs_lib,
         platform_lib,
         util_lib,

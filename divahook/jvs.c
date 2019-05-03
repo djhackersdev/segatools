@@ -8,6 +8,8 @@
 
 #include "board/io3.h"
 
+#include "divaio/divaio.h"
+
 #include "jvs/jvs-bus.h"
 
 #include "util/dprintf.h"
@@ -21,8 +23,6 @@ static const struct io3_ops diva_jvs_io3_ops = {
 };
 
 static struct io3 diva_jvs_io3;
-static bool diva_jvs_coin;
-static uint16_t diva_jvs_coins;
 
 void diva_jvs_init(void)
 {
@@ -32,42 +32,44 @@ void diva_jvs_init(void)
 
 static void diva_jvs_read_switches(void *ctx, struct io3_switch_state *out)
 {
+    uint8_t opbtn;
+    uint8_t gamebtn;
+
     assert(out != NULL);
 
-    /* Update gameplay buttons (P2 JVS input is not even polled) */
+    opbtn = 0;
+    gamebtn = 0;
 
-    if (GetAsyncKeyState('S')) {
-        out->p1 |= 1 << 9;
-    }
+    diva_io_jvs_poll(&opbtn, &gamebtn);
 
-    if (GetAsyncKeyState('F')) {
-        out->p1 |= 1 << 8;
-    }
-
-    if (GetAsyncKeyState('J')) {
-        out->p1 |= 1 << 7;
-    }
-
-    if (GetAsyncKeyState('L')) {
+    if (gamebtn & 0x01) {
         out->p1 |= 1 << 6;
     }
 
-    /* Update start button */
+    if (gamebtn & 0x02) {
+        out->p1 |= 1 << 7;
+    }
 
-    if (GetAsyncKeyState(VK_SPACE)) {
+    if (gamebtn & 0x04) {
+        out->p1 |= 1 << 8;
+    }
+
+    if (gamebtn & 0x08) {
+        out->p1 |= 1 << 9;
+    }
+
+    if (gamebtn & 0x10) {
         out->p1 |= 1 << 15;
     }
 
-    /* Update test/service buttons */
-
-    if (GetAsyncKeyState('1')) {
+    if (opbtn & 0x01) {
         out->system = 0x80;
     } else {
         out->system = 0;
     }
 
-    if (GetAsyncKeyState('2')) {
-        out->p1 |= 0x4000;
+    if (opbtn & 0x02) {
+        out->p1 |= 1 << 14;
     }
 }
 
@@ -77,15 +79,5 @@ static uint16_t diva_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
         return 0;
     }
 
-    if (GetAsyncKeyState('3')) {
-        if (!diva_jvs_coin) {
-            dprintf("Diva JVS: Coin drop\n");
-            diva_jvs_coin = true;
-            diva_jvs_coins++;
-        }
-    } else {
-        diva_jvs_coin = false;
-    }
-
-    return diva_jvs_coins;
+    return diva_io_jvs_read_coin_counter();
 }
