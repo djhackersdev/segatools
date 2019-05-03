@@ -16,7 +16,7 @@ struct slider_req_set_led {
     struct slider_hdr hdr;
     struct {
         uint8_t unk; /* 0x28, decimal 40. meaning unknown. */
-        uint8_t rgb[32][3];
+        uint8_t rgb[96];
     } payload;
 };
 
