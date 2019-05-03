@@ -11,7 +11,7 @@
 
 #include "divahook/_com10.h"
 #include "divahook/jvs.h"
-#include "divahook/slider-hook.h"
+#include "divahook/slider.h"
 
 #include "hook/process.h"
 

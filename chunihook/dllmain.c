@@ -10,7 +10,7 @@
 #include "amex/sram.h"
 
 #include "chunihook/jvs.h"
-#include "chunihook/slider-hook.h"
+#include "chunihook/slider.h"
 
 #include "chuniio/chuniio.h"
 

@@ -23,7 +23,7 @@ shared_library(
         'dllmain.c',
         'jvs.c',
         'jvs.h',
-        'slider-hook.c',
-        'slider-hook.h',
+        'slider.c',
+        'slider.h',
     ],
 )

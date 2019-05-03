@@ -8,7 +8,7 @@
 #include "board/slider-cmd.h"
 #include "board/slider-frame.h"
 
-#include "divahook/slider-hook.h"
+#include "divahook/slider.h"
 
 #include "divaio/divaio.h"
 
