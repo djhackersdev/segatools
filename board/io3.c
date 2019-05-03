@@ -481,7 +481,7 @@ static HRESULT io3_cmd_read_analogs(
         struct iobuf *resp_buf)
 {
     struct jvs_req_read_analogs req;
-    uint16_t state;
+    uint16_t analogs[8];
     uint8_t i;
     HRESULT hr;
 
@@ -491,6 +491,12 @@ static HRESULT io3_cmd_read_analogs(
 
     if (FAILED(hr)) {
         return hr;
+    }
+
+    if (req.nanalogs > _countof(analogs)) {
+        dprintf("JVS I/O: Invalid analog count %i\n", req.nanalogs);
+
+        return E_FAIL;
     }
 
     //dprintf("JVS I/O: Read analogs, nanalogs=%i\n", req.nanalogs);
@@ -505,14 +511,14 @@ static HRESULT io3_cmd_read_analogs(
 
     /* Write analogs */
 
-    for (i = 0 ; i < req.nanalogs ; i++) {
-        if (io3->ops->read_analog != NULL) {
-            state = io3->ops->read_analog(io3->ops_ctx, i);
-        } else {
-            state = 0;
-        }
+    memset(analogs, 0, sizeof(analogs));
 
-        hr = iobuf_write_be16(resp_buf, state);
+    if (io3->ops->read_analogs != NULL) {
+        io3->ops->read_analogs(io3->ops_ctx, analogs, req.nanalogs);
+    }
+
+    for (i = 0 ; i < req.nanalogs ; i++) {
+        hr = iobuf_write_be16(resp_buf, analogs[i]);
 
         if (FAILED(hr)) {
             return hr;

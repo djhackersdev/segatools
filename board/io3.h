@@ -17,7 +17,7 @@ struct io3_ops {
     void (*reset)(void *ctx);
     void (*write_gpio)(void *ctx, uint32_t state);
     void (*read_switches)(void *ctx, struct io3_switch_state *out);
-    uint16_t (*read_analog)(void *ctx, uint8_t analog_no);
+    void (*read_analogs)(void *ctx, uint16_t *analogs, uint8_t nanalogs);
     uint16_t (*read_coin_counter)(void *ctx, uint8_t slot_no);
 };
 

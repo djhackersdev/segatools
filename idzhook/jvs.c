@@ -17,13 +17,16 @@
 
 #include "util/dprintf.h"
 
+static void idz_jvs_read_analogs(
+        void *ctx,
+        uint16_t *analogs,
+        uint8_t nanalogs);
 static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out);
-static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no);
 static uint16_t idz_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
 
 static const struct io3_ops idz_jvs_io3_ops = {
     .read_switches      = idz_jvs_read_switches,
-    .read_analog        = idz_jvs_read_analog,
+    .read_analogs       = idz_jvs_read_analogs,
     .read_coin_counter  = idz_jvs_read_coin_counter,
 };
 
@@ -127,23 +130,23 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     }
 }
 
-static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no)
+static void idz_jvs_read_analogs(
+        void *ctx,
+        uint16_t *analogs,
+        uint8_t nanalogs)
 {
     XINPUT_STATE xi;
     int left;
     int right;
 
-    if (analog_no > 2) {
-        return 0;
-    }
+    assert(analogs != NULL);
 
     memset(&xi, 0, sizeof(xi));
     XInputGetState(0, &xi);
 
-    switch (analog_no) {
-    case 0:
-        /* Wheel */
+    /* Wheel */
 
+    if (nanalogs > 0) {
         left = xi.Gamepad.sThumbLX;
 
         if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
@@ -164,18 +167,19 @@ static uint16_t idz_jvs_read_analog(void *ctx, uint8_t analog_no)
             right = 0;
         }
 
-        return 0x8000 + (left + right) / 2;
+        analogs[0] = 0x8000 + (left + right) / 2;
+    }
 
-    case 1:
-        /* Accel */
-        return xi.Gamepad.bRightTrigger << 8;
+    /* Accel */
 
-    case 2:
-        /* Brake */
-        return xi.Gamepad.bLeftTrigger << 8;
+    if (nanalogs > 1) {
+        analogs[1] = xi.Gamepad.bRightTrigger << 8;
+    }
 
-    default:
-        return 0;
+    /* Brake */
+
+    if (nanalogs > 2) {
+        analogs[2] = xi.Gamepad.bLeftTrigger << 8;
     }
 }
 
