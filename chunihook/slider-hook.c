@@ -11,6 +11,8 @@
 
 #include "chunihook/slider-hook.h"
 
+#include "chuniio/chuniio.h"
+
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
@@ -29,15 +31,12 @@ static HRESULT slider_req_auto_scan_start(void);
 static HRESULT slider_req_auto_scan_stop(void);
 static HRESULT slider_req_set_led(const struct slider_req_set_led *req);
 
-static unsigned int __stdcall slider_thread_proc(void *ctx);
+static void slider_res_auto_scan(const uint8_t *state);
 
 static CRITICAL_SECTION slider_lock;
 static struct uart slider_uart;
 static uint8_t slider_written_bytes[520];
 static uint8_t slider_readable_bytes[520];
-
-static HANDLE slider_thread;
-static bool slider_stop;
 
 void slider_hook_init(void)
 {
@@ -173,25 +172,8 @@ static HRESULT slider_req_get_board_info(void)
 
 static HRESULT slider_req_auto_scan_start(void)
 {
-    dprintf("Chunithm slider: Start slider thread\n");
-
-    if (slider_thread != NULL) {
-        dprintf("Thread is already running\n");
-
-        return S_OK;
-    }
-
-    slider_thread = (HANDLE) _beginthreadex(
-            NULL,
-            0,
-            slider_thread_proc,
-            NULL,
-            0,
-            NULL);
-
-    if (slider_thread == NULL) {
-        dprintf("Thread launch failed\n");
-    }
+    dprintf("Chunithm slider: Start slider notifications\n");
+    chuni_io_slider_start(slider_res_auto_scan);
 
     /* This message is not acknowledged */
 
@@ -202,21 +184,16 @@ static HRESULT slider_req_auto_scan_stop(void)
 {
     struct slider_hdr resp;
 
-    dprintf("Chunithm slider: Stop slider thread\n");
+    dprintf("Chunithm slider: Stop slider notifications\n");
 
-    if (slider_thread != NULL) {
-        slider_stop = true;
-        LeaveCriticalSection(&slider_lock);
+    /* IO DLL worker thread might attempt to invoke the callback (which needs
+       to take slider_lock, which we are currently holding) before noticing that
+       it needs to shut down. Unlock here so that we don't deadlock in that
+       situation. */
 
-        WaitForSingleObject(slider_thread, INFINITE);
-        CloseHandle(slider_thread);
-        slider_thread = NULL;
-        slider_stop = false;
-
-        dprintf("Chunithm slider: Thread has terminated\n");
-
-        EnterCriticalSection(&slider_lock);
-    }
+    LeaveCriticalSection(&slider_lock);
+    chuni_io_slider_stop();
+    EnterCriticalSection(&slider_lock);
 
     resp.sync = SLIDER_FRAME_SYNC;
     resp.cmd = SLIDER_CMD_AUTO_SCAN_STOP;
@@ -227,45 +204,23 @@ static HRESULT slider_req_auto_scan_stop(void)
 
 static HRESULT slider_req_set_led(const struct slider_req_set_led *req)
 {
+    chuni_io_slider_set_leds(req->payload.rgb);
+
     /* This message is not acknowledged */
+
     return S_OK;
 }
 
-static unsigned int WINAPI slider_thread_proc(void *ctx)
+static void slider_res_auto_scan(const uint8_t *state)
 {
-    static const int keys[] = {
-        'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
-    };
-
     struct slider_resp_auto_scan resp;
-    uint8_t pressure;
-    bool stop;
-    size_t i;
 
-    for (;;) {
-        resp.hdr.sync = SLIDER_FRAME_SYNC;
-        resp.hdr.cmd = SLIDER_CMD_AUTO_SCAN;
-        resp.hdr.nbytes = sizeof(resp.pressure);
+    resp.hdr.sync = SLIDER_FRAME_SYNC;
+    resp.hdr.cmd = SLIDER_CMD_AUTO_SCAN;
+    resp.hdr.nbytes = sizeof(resp.pressure);
+    memcpy(resp.pressure, state, sizeof(resp.pressure));
 
-        for (i = 0 ; i < 8 ; i++) {
-            pressure = GetAsyncKeyState(keys[i]) ? 20 : 0;
-            memset(&resp.pressure[28 - 4 * i], pressure, 4);
-        }
-
-        EnterCriticalSection(&slider_lock);
-
-        stop = slider_stop;
-
-        if (!stop) {
-            slider_frame_encode(&slider_uart.readable, &resp, sizeof(resp));
-        }
-
-        LeaveCriticalSection(&slider_lock);
-
-        if (stop) {
-            return 0;
-        }
-
-        Sleep(1);
-    }
+    EnterCriticalSection(&slider_lock);
+    slider_frame_encode(&slider_uart.readable, &resp, sizeof(resp));
+    LeaveCriticalSection(&slider_lock);
 }

@@ -37,6 +37,8 @@ subdir('platform')
 subdir('util')
 
 subdir('aimeio')
+subdir('chuniio')
+
 subdir('cardhook')
 subdir('chunihook')
 subdir('divahook')

@@ -11,6 +11,7 @@ shared_library(
     link_with : [
         amex_lib,
         board_lib,
+        chuniio_dll,
         jvs_lib,
         platform_lib,
         util_lib,

@@ -12,6 +12,8 @@
 #include "chunihook/jvs.h"
 #include "chunihook/slider-hook.h"
 
+#include "chuniio/chuniio.h"
+
 #include "hook/process.h"
 
 #include "hooklib/serial.h"
@@ -72,6 +74,10 @@ static DWORD CALLBACK chuni_pre_startup(void)
     gfx_set_windowed();
 
     dprintf("---  End  chuni_pre_startup ---\n");
+
+    /* Initialize IO DLL */
+
+    chuni_io_init();
 
     /* Jump to EXE start address */
 

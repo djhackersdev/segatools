@@ -9,9 +9,16 @@
 
 #include "board/io3.h"
 
+#include "chuniio/chuniio.h"
+
 #include "jvs/jvs-bus.h"
 
 #include "util/dprintf.h"
+
+struct chunithm_jvs_ir_mask {
+    uint16_t p1;
+    uint16_t p2;
+};
 
 static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out);
 static uint16_t chunithm_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
@@ -21,10 +28,16 @@ static const struct io3_ops chunithm_jvs_io3_ops = {
     .read_coin_counter  = chunithm_jvs_read_coin_counter,
 };
 
+static const struct chunithm_jvs_ir_mask chunithm_jvs_ir_masks[] = {
+    { 0x0000, 0x0020 },
+    { 0x0020, 0x0000 },
+    { 0x0000, 0x0010 },
+    { 0x0010, 0x0000 },
+    { 0x0000, 0x0008 },
+    { 0x0008, 0x0000 },
+};
+
 static struct io3 chunithm_jvs_io3;
-static size_t chunithm_jvs_rise_pos;
-static bool chunithm_jvs_coin;
-static uint16_t chunithm_jvs_coins;
 
 void chunithm_jvs_init(void)
 {
@@ -34,44 +47,36 @@ void chunithm_jvs_init(void)
 
 static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)
 {
+    uint8_t opbtn;
+    uint8_t beams;
+    size_t i;
+
     assert(out != NULL);
 
-    /* Update simulated raise/lower state */
+    opbtn = 0;
+    beams = 0;
 
-    if (GetAsyncKeyState(VK_SPACE)) {
-        if (chunithm_jvs_rise_pos < 6) {
-            chunithm_jvs_rise_pos++;
-        }
-    } else {
-        if (chunithm_jvs_rise_pos > 0) {
-            chunithm_jvs_rise_pos--;
-        }
-    }
+    chuni_io_jvs_poll(&opbtn, &beams);
 
-    /* Render the state. Every case falls through, this is intentional. */
+    out->system = 0x00;
+    out->p1 = 0x0000;
+    out->p2 = 0x0000;
 
-    out->p1 = 0;
-    out->p2 = 0;
-
-    switch (chunithm_jvs_rise_pos) {
-    case 0: out->p2 |= 0x0020;
-    case 1: out->p1 |= 0x0020;
-    case 2: out->p2 |= 0x0010;
-    case 3: out->p1 |= 0x0010;
-    case 4: out->p2 |= 0x0008;
-    case 5: out->p1 |= 0x0008;
-    }
-
-    /* Update test/service buttons */
-
-    if (GetAsyncKeyState('1')) {
+    if (opbtn & 0x01) {
         out->system = 0x80;
     } else {
-        out->system = 0;
+        out->system = 0x00;
     }
 
-    if (GetAsyncKeyState('2')) {
+    if (opbtn & 0x02) {
         out->p1 |= 0x4000;
+    }
+
+    for (i = 0 ; i < 6 ; i++) {
+        if (beams & (1 << i)) {
+            out->p1 |= chunithm_jvs_ir_masks[i].p1;
+            out->p2 |= chunithm_jvs_ir_masks[i].p2;
+        }
     }
 }
 
@@ -81,15 +86,5 @@ static uint16_t chunithm_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
         return 0;
     }
 
-    if (GetAsyncKeyState('3')) {
-        if (!chunithm_jvs_coin) {
-            dprintf("Chunithm JVS: Coin drop\n");
-            chunithm_jvs_coin = true;
-            chunithm_jvs_coins++;
-        }
-    } else {
-        chunithm_jvs_coin = false;
-    }
-
-    return chunithm_jvs_coins;
+    return chuni_io_jvs_read_coin_counter();
 }
