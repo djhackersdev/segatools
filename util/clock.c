@@ -72,9 +72,11 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
     next_GetSystemTimeAsFileTime(&in);
     real_jiffies = (((int64_t) in.dwHighDateTime) << 32) | in.dwLowDateTime;
 
-    /* Apply bias: shift [02:00, 07:00) to [19:00, 24:00) */
+    /* Keepout period is JST [02:00, 07:00), which is equivalent to
+       UTC [17:00, 22:00). Bias UTC forward by 2 hours, changing this interval
+       to [19:00, 00:00) to make the math easier. We revert this bias later. */
 
-    real_jiffies_biased = real_jiffies + 17LL * jiffies_per_hour;
+    real_jiffies_biased = real_jiffies + 2LL * jiffies_per_hour;
 
     /* Split date and time */
 
@@ -89,7 +91,8 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
 
     clock_current_day = day;
 
-    /* We want to skip the final five hours, so scale time-of-day by 19/24. */
+    /* We want to skip the final five hours of our UTC+2 biased reference frame,
+       so scale time-of-day by 19/24. */
 
     fake_time = (real_time * 19LL) / 24LL;
 
@@ -97,9 +100,9 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
 
     fake_jiffies_biased = day * jiffies_per_day + fake_time;
 
-    /* Remove bias */
+    /* Revert bias */
 
-    fake_jiffies = fake_jiffies_biased - 17LL * jiffies_per_hour;
+    fake_jiffies = fake_jiffies_biased - 2LL * jiffies_per_hour;
 
     /* Return result */
 
@@ -109,8 +112,20 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
 
 static BOOL WINAPI my_GetLocalTime(SYSTEMTIME *out)
 {
-    /* Use UTC to simplify things */
-    return my_GetSystemTime(out);
+    ULARGE_INTEGER arith;
+    FILETIME linear;
+
+    /* Force JST */
+
+    my_GetSystemTimeAsFileTime(&linear);
+
+    arith.LowPart = linear.dwLowDateTime;
+    arith.HighPart = linear.dwHighDateTime;
+    arith.QuadPart += 9ULL * jiffies_per_hour;
+    linear.dwLowDateTime = arith.LowPart;
+    linear.dwHighDateTime = arith.HighPart;
+
+    return FileTimeToSystemTime(&linear, out);
 }
 
 static BOOL WINAPI my_GetSystemTime(SYSTEMTIME *out)
@@ -146,20 +161,25 @@ static BOOL WINAPI my_GetSystemTime(SYSTEMTIME *out)
 
 static DWORD WINAPI my_GetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo)
 {
-    /* Use UTC to simplify things */
-
     dprintf("%s\n", __func__);
 
-    if (tzinfo != NULL) {
-        memset(tzinfo, 0, sizeof(*tzinfo));
-        SetLastError(ERROR_SUCCESS);
-
-        return TIME_ZONE_ID_UNKNOWN;
-    } else {
+    if (tzinfo == NULL) {
         SetLastError(ERROR_INVALID_PARAMETER);
 
         return TIME_ZONE_ID_INVALID;
     }
+
+    /* Force JST (UTC+9), SEGA games malfunction in any other time zone.
+       Strings and boundary times don't matter, we only set the offset. */
+
+    memset(tzinfo, 0, sizeof(*tzinfo));
+    tzinfo->Bias = -9 * 60;
+
+    SetLastError(ERROR_SUCCESS);
+
+    /* "Unknown" here means that this region does not observe DST */
+
+    return TIME_ZONE_ID_UNKNOWN;
 }
 
 static BOOL WINAPI my_SetLocalTime(SYSTEMTIME *in)
