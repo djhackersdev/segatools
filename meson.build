@@ -39,6 +39,7 @@ subdir('util')
 subdir('aimeio')
 subdir('chuniio')
 subdir('divaio')
+subdir('idzio')
 
 subdir('cardhook')
 subdir('chunihook')

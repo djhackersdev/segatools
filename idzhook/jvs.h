@@ -1,3 +1,5 @@
 #pragma once
 
-void idz_jvs_init(void);
+#include <windows.h>
+
+HRESULT idz_jvs_init(void);

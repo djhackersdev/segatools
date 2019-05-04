@@ -1,0 +1,8 @@
+LIBRARY idzio
+
+EXPORTS
+    idz_io_init
+    idz_io_jvs_read_analogs
+    idz_io_jvs_read_buttons
+    idz_io_jvs_read_coin_counter
+    idz_io_jvs_read_shifter
