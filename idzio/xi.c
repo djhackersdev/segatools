@@ -1,42 +1,48 @@
 #include <windows.h>
 #include <xinput.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "idzio/backend.h"
 #include "idzio/idzio.h"
+#include "idzio/xi.h"
 
-static bool idz_io_coin;
-static uint16_t idz_io_coins;
-static bool idz_io_shifting;
-static uint8_t idz_io_gear;
+#include "util/dprintf.h"
 
-HRESULT idz_io_init(void)
+static void idz_xi_jvs_read_buttons(uint8_t *gamebtn_out);
+static void idz_xi_jvs_read_shifter(uint8_t *gear);
+static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out);
+
+static const struct idz_io_backend idz_xi_backend = {
+    .jvs_read_buttons   = idz_xi_jvs_read_buttons,
+    .jvs_read_shifter   = idz_xi_jvs_read_shifter,
+    .jvs_read_analogs   = idz_xi_jvs_read_analogs,
+};
+
+static bool idz_xi_shifting;
+static uint8_t idz_xi_gear;
+
+HRESULT idz_xi_init(const struct idz_io_backend **backend)
 {
+    assert(backend != NULL);
+
+    dprintf("IDZ XI: Using XInput controller\n");
+    *backend = &idz_xi_backend;
+
     return S_OK;
 }
 
-void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
+static void idz_xi_jvs_read_buttons(uint8_t *gamebtn_out)
 {
-    uint8_t opbtn;
     uint8_t gamebtn;
     XINPUT_STATE xi;
     WORD xb;
 
-    opbtn = 0;
+    assert(gamebtn_out != NULL);
+
     gamebtn = 0;
-
-    /* Update test/service buttons */
-
-    if (GetAsyncKeyState('1')) {
-        opbtn |= IDZ_IO_OPBTN_TEST;
-    }
-
-    if (GetAsyncKeyState('2')) {
-        opbtn |= IDZ_IO_OPBTN_SERVICE;
-    }
-
-    /* Update gameplay buttons */
 
     memset(&xi, 0, sizeof(xi));
     XInputGetState(0, &xi);
@@ -66,47 +72,50 @@ void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
         gamebtn |= IDZ_IO_GAMEBTN_VIEW_CHANGE;
     }
 
-    *opbtn_out = opbtn;
     *gamebtn_out = gamebtn;
 }
 
-void idz_io_jvs_read_shifter(uint8_t *gear)
+static void idz_xi_jvs_read_shifter(uint8_t *gear)
 {
     bool shift_inc;
     bool shift_dec;
     XINPUT_STATE xi;
     WORD xb;
 
+    assert(gear != NULL);
+
     memset(&xi, 0, sizeof(xi));
     XInputGetState(0, &xi);
     xb = xi.Gamepad.wButtons;
 
     if (xb & XINPUT_GAMEPAD_START) {
-        idz_io_gear = 0; /* Reset to Neutral when start is pressed */
+        idz_xi_gear = 0; /* Reset to Neutral when start is pressed */
     }
 
     shift_inc = xb & (XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_RIGHT_SHOULDER);
     shift_dec = xb & (XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_LEFT_SHOULDER);
 
-    if (!idz_io_shifting) {
-        if (shift_inc && idz_io_gear < 6) {
-            idz_io_gear++;
+    if (!idz_xi_shifting) {
+        if (shift_inc && idz_xi_gear < 6) {
+            idz_xi_gear++;
         }
 
-        if (shift_dec && idz_io_gear > 0) {
-            idz_io_gear--;
+        if (shift_dec && idz_xi_gear > 0) {
+            idz_xi_gear--;
         }
     }
 
-    idz_io_shifting = shift_inc || shift_dec;
-    *gear = idz_io_gear;
+    idz_xi_shifting = shift_inc || shift_dec;
+    *gear = idz_xi_gear;
 }
 
-void idz_io_jvs_read_analogs(struct idz_io_analog_state *out)
+static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
 {
     XINPUT_STATE xi;
     int left;
     int right;
+
+    assert(out != NULL);
 
     memset(&xi, 0, sizeof(xi));
     XInputGetState(0, &xi);
@@ -134,18 +143,4 @@ void idz_io_jvs_read_analogs(struct idz_io_analog_state *out)
     out->wheel = (left + right) / 2;
     out->accel = xi.Gamepad.bRightTrigger << 8;
     out->brake = xi.Gamepad.bLeftTrigger << 8;
-}
-
-void idz_io_jvs_read_coin_counter(uint16_t *out)
-{
-    if (GetAsyncKeyState('3')) {
-        if (!idz_io_coin) {
-            idz_io_coin = true;
-            idz_io_coins++;
-        }
-    } else {
-        idz_io_coin = false;
-    }
-
-    *out = idz_io_coins;
 }

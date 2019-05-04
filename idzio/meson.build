@@ -9,7 +9,10 @@ idzio_dll = shared_library(
         xinput_lib,
     ],
     sources : [
-        'idzio.c',
+        'backend.h',
+        'dllmain.c',
         'idzio.h',
+        'xi.c',
+        'xi.h',
     ],
 )
