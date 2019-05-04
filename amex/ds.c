@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "amex/ds.h"
@@ -46,29 +45,29 @@ static HRESULT ds_ioctl_get_geometry(struct irp *irp);
 static HRESULT ds_ioctl_setup(struct irp *irp);
 static HRESULT ds_ioctl_read_sector(struct irp *irp);
 
-static const char ds_serial_file[] = "DEVICE/pcbid.txt";
 static struct ds_eeprom ds_eeprom;
 static HANDLE ds_fd;
 
-HRESULT ds_hook_init(void)
+HRESULT ds_hook_init(const struct ds_config *cfg)
 {
     HRESULT hr;
-    int region;
-    FILE *f;
 
-    region = 0x01; /* Japan; use this default if ds.txt read fails */
-    memset(&ds_eeprom, 0, sizeof(ds_eeprom));
+    assert(cfg != NULL);
 
-    f = fopen(ds_serial_file, "r");
-
-    if (f != NULL) {
-        fscanf(f, "%16s %x", ds_eeprom.serial_no, &region);
-        fclose(f);
-    } else {
-        dprintf("Failed to open %s\n", ds_serial_file);
+    if (!cfg->enable) {
+        return S_FALSE;
     }
 
-    ds_eeprom.region = region;
+    memset(&ds_eeprom, 0, sizeof(ds_eeprom));
+
+    wcstombs_s(
+            NULL,
+            ds_eeprom.serial_no,
+            _countof(ds_eeprom.serial_no),
+            cfg->serial_no,
+            _countof(cfg->serial_no) - 1);
+
+    ds_eeprom.region = cfg->region;
     ds_eeprom.crc32 = crc32(&ds_eeprom.unk_04, 0x1C, 0);
 
     hr = iohook_push_handler(ds_handle_irp);

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
+#include "amex/cfg.h"
 
 #include "chunihook/jvs.h"
 #include "chunihook/slider.h"
@@ -26,6 +27,7 @@ static process_entry_t chuni_startup;
 
 static DWORD CALLBACK chuni_pre_startup(void)
 {
+    struct amex_config amex_cfg;
     HMODULE d3dc;
 
     dprintf("--- Begin chuni_pre_startup ---\n");
@@ -53,12 +55,16 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize AMEX emulation */
 
-    amex_hook_init();
+    amex_config_load(&amex_cfg, L".\\segatools.ini");
+    amex_hook_init(&amex_cfg);
 
     /* Initialize Chunithm board emulation */
 
+    if (amex_cfg.jvs.enable) {
+        chunithm_jvs_init();
+    }
+
     slider_hook_init();
-    chunithm_jvs_init();
 
     /* Initialize debug helpers */
 

@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include "amex/cfg.h"
 #include "amex/ds.h"
 
 #include "hook/process.h"
@@ -14,12 +15,16 @@ static process_entry_t app_startup;
 
 static DWORD CALLBACK app_pre_startup(void)
 {
+    struct ds_config ds_cfg;
+
     dprintf("--- Begin %s ---\n", __func__);
 
-    spike_hook_init("minispike.txt");
+    ds_config_load(&ds_cfg, L".\\segatools.ini");
     clock_hook_init();
-    ds_hook_init();
+    ds_hook_init(&ds_cfg);
     nusec_hook_init();
+
+    spike_hook_init("minispike.txt");
 
     dprintf("---  End  %s ---\n", __func__);
 

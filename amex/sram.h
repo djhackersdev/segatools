@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "amex/cfg.h"
+
 DEFINE_GUID(
         sram_guid,
         0x741B5FCA,
@@ -9,4 +11,4 @@ DEFINE_GUID(
         0x4443,
         0xA7, 0xA0, 0x57, 0xCA, 0x7B, 0x50, 0x6A, 0x49);
 
-HRESULT sram_hook_init(void);
+HRESULT sram_hook_init(const struct sram_config *cfg);

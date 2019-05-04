@@ -54,10 +54,6 @@ static HRESULT gpio_ioctl_get_dipsw(struct irp *irp);
 static HRESULT gpio_ioctl_describe(struct irp *irp);
 static HRESULT gpio_ioctl_set_leds(struct irp *irp);
 
-static HANDLE gpio_fd;
-static uint8_t gpio_dipsw;
-static const char gpio_dipsw_file[] = "DEVICE/dipsw.txt";
-
 static const struct gpio_ports gpio_ports = {
     .ports = {
         {
@@ -75,27 +71,35 @@ static const struct gpio_ports gpio_ports = {
 
 static_assert(sizeof(gpio_ports) == 129, "GPIO port map size");
 
-void gpio_hook_init(void)
+static HANDLE gpio_fd;
+static struct gpio_config gpio_config;
+
+HRESULT gpio_hook_init(const struct gpio_config *cfg)
 {
-    FILE *f;
-    int ival;
+    HRESULT hr;
 
-    f = fopen(gpio_dipsw_file, "r");
+    assert(cfg != NULL);
 
-    if (f != NULL) {
-        ival = 0;
-        fscanf(f, "%02x", &ival);
-        gpio_dipsw = ival;
-        fclose(f);
-
-        dprintf("Set DIPSW to %02x\n", gpio_dipsw);
-    } else {
-        dprintf("Failed to open %s\n", gpio_dipsw_file);
+    if (!cfg->enable) {
+        return S_FALSE;
     }
 
+    memcpy(&gpio_config, cfg, sizeof(*cfg));
+
     gpio_fd = iohook_open_dummy_fd();
-    iohook_push_handler(gpio_handle_irp);
-    setupapi_add_phantom_dev(&gpio_guid, L"$gpio");
+    hr = iohook_push_handler(gpio_handle_irp);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = setupapi_add_phantom_dev(&gpio_guid, L"$gpio");
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
 }
 
 static HRESULT gpio_handle_irp(struct irp *irp)
@@ -161,8 +165,16 @@ static HRESULT gpio_handle_ioctl(struct irp *irp)
 static HRESULT gpio_ioctl_get_dipsw(struct irp *irp)
 {
     uint32_t dipsw;
+    size_t i;
 
-    dipsw = gpio_dipsw;
+    dipsw = 0;
+
+    for (i = 0 ; i < 8 ; i++) {
+        if (gpio_config.dipsw[i]) {
+            dipsw |= 1 << i;
+        }
+    }
+
     //dprintf("GPIO: Get dipsw %08x\n", dipsw);
 
     return iobuf_write_le32(&irp->read, dipsw);
@@ -176,6 +188,14 @@ static HRESULT gpio_ioctl_get_psw(struct irp *irp)
 
     /* Bit 0 == SW1 == Alt. Test */
     /* Bit 1 == SW2 == Alt. Service */
+
+    if (gpio_config.vk_sw1 && (GetAsyncKeyState(gpio_config.vk_sw1) & 0x8000)) {
+        result |= 1 << 0;
+    }
+
+    if (gpio_config.vk_sw2 && (GetAsyncKeyState(gpio_config.vk_sw2) & 0x8000)) {
+        result |= 1 << 1;
+    }
 
     return iobuf_write_le32(&irp->read, result);
 }

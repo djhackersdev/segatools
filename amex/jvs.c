@@ -37,11 +37,30 @@ static HRESULT jvs_ioctl_transact(struct irp *irp);
 static HANDLE jvs_fd;
 static struct jvs_node *jvs_root;
 
-void jvs_hook_init(void)
+HRESULT jvs_hook_init(const struct jvs_config *cfg)
 {
+    HRESULT hr;
+
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
     jvs_fd = iohook_open_dummy_fd();
-    iohook_push_handler(jvs_handle_irp);
-    setupapi_add_phantom_dev(&jvs_guid, L"$jvs");
+    hr = iohook_push_handler(jvs_handle_irp);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = setupapi_add_phantom_dev(&jvs_guid, L"$jvs");
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
 }
 
 void jvs_attach(struct jvs_node *root)

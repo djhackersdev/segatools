@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
+#include "amex/cfg.h"
 
 #include "board/sg-reader.h"
 
@@ -26,6 +27,8 @@ static process_entry_t diva_startup;
 
 static DWORD CALLBACK diva_pre_startup(void)
 {
+    struct amex_config amex_cfg;
+
     dprintf("--- Begin diva_pre_startup ---\n");
 
     /* Hook Win32 APIs */
@@ -40,11 +43,15 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize AMEX emulation */
 
-    amex_hook_init();
+    amex_config_load(&amex_cfg, L".\\segatools.ini");
+    amex_hook_init(&amex_cfg);
 
     /* Initialize Project Diva I/O board emulation */
 
-    diva_jvs_init();
+    if (amex_cfg.jvs.enable) {
+        diva_jvs_init();
+    }
+
     sg_reader_hook_init(10);
     slider_hook_init();
 

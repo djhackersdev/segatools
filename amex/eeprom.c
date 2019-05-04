@@ -10,6 +10,7 @@
 
 #include <assert.h>
 
+#include "amex/cfg.h"
 #include "amex/eeprom.h"
 #include "amex/nvram.h"
 
@@ -29,11 +30,17 @@ static HRESULT eeprom_ioctl_get_geometry(struct irp *irp);
 
 static HANDLE eeprom_file;
 
-HRESULT eeprom_hook_init(void)
+HRESULT eeprom_hook_init(const struct eeprom_config *cfg)
 {
     HRESULT hr;
 
-    hr = nvram_open_file(&eeprom_file, L"DEVICE\\eeprom.bin", 0x2000);
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
+    hr = nvram_open_file(&eeprom_file, cfg->path, 0x2000);
 
     if (FAILED(hr)) {
         return hr;

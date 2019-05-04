@@ -27,11 +27,17 @@ static HRESULT sram_ioctl_get_geometry(struct irp *irp);
 
 static HANDLE sram_file;
 
-HRESULT sram_hook_init(void)
+HRESULT sram_hook_init(const struct sram_config *cfg)
 {
     HRESULT hr;
 
-    hr = nvram_open_file(&sram_file, L"DEVICE\\sram.bin", 0x80000);
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
+    hr = nvram_open_file(&sram_file, cfg->path, 0x80000);
 
     if (FAILED(hr)) {
         return hr;

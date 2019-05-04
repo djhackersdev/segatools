@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
+#include "amex/cfg.h"
 
 #include "board/sg-reader.h"
 
@@ -25,6 +26,8 @@ static process_entry_t idz_startup;
 
 static DWORD CALLBACK idz_pre_startup(void)
 {
+    struct amex_config amex_cfg;
+
     dprintf("--- Begin idz_pre_startup ---\n");
 
     /* Hook Win32 APIs */
@@ -39,12 +42,16 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize AMEX emulation */
 
-    amex_hook_init();
+    amex_config_load(&amex_cfg, L".\\segatools.ini");
+    amex_hook_init(&amex_cfg);
 
     /* Initialize Initial D Zero I/O board emulation */
 
-    idz_jvs_init();
     sg_reader_hook_init(10);
+
+    if (amex_cfg.jvs.enable) {
+        idz_jvs_init();
+    }
 
     /* Initialize debug helpers */
 
