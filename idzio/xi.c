@@ -7,6 +7,7 @@
 
 #include "idzio/backend.h"
 #include "idzio/idzio.h"
+#include "idzio/shifter.h"
 #include "idzio/xi.h"
 
 #include "util/dprintf.h"
@@ -20,9 +21,6 @@ static const struct idz_io_backend idz_xi_backend = {
     .jvs_read_shifter   = idz_xi_jvs_read_shifter,
     .jvs_read_analogs   = idz_xi_jvs_read_analogs,
 };
-
-static bool idz_xi_shifting;
-static uint8_t idz_xi_gear;
 
 HRESULT idz_xi_init(const struct idz_io_backend **backend)
 {
@@ -77,8 +75,8 @@ static void idz_xi_jvs_read_buttons(uint8_t *gamebtn_out)
 
 static void idz_xi_jvs_read_shifter(uint8_t *gear)
 {
-    bool shift_inc;
-    bool shift_dec;
+    bool shift_dn;
+    bool shift_up;
     XINPUT_STATE xi;
     WORD xb;
 
@@ -89,24 +87,16 @@ static void idz_xi_jvs_read_shifter(uint8_t *gear)
     xb = xi.Gamepad.wButtons;
 
     if (xb & XINPUT_GAMEPAD_START) {
-        idz_xi_gear = 0; /* Reset to Neutral when start is pressed */
+        /* Reset to Neutral when start is pressed */
+        idz_shifter_reset();
     }
 
-    shift_inc = xb & (XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_RIGHT_SHOULDER);
-    shift_dec = xb & (XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_LEFT_SHOULDER);
+    shift_dn = xb & (XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_LEFT_SHOULDER);
+    shift_up = xb & (XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
-    if (!idz_xi_shifting) {
-        if (shift_inc && idz_xi_gear < 6) {
-            idz_xi_gear++;
-        }
+    idz_shifter_update(shift_dn, shift_up);
 
-        if (shift_dec && idz_xi_gear > 0) {
-            idz_xi_gear--;
-        }
-    }
-
-    idz_xi_shifting = shift_inc || shift_dec;
-    *gear = idz_xi_gear;
+    *gear = idz_shifter_current_gear();
 }
 
 static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
