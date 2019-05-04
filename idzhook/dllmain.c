@@ -3,11 +3,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "amex/ds.h"
-#include "amex/eeprom.h"
-#include "amex/gpio.h"
-#include "amex/jvs.h"
-#include "amex/sram.h"
+#include "amex/amex.h"
 
 #include "board/sg-reader.h"
 
@@ -43,11 +39,7 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize AMEX emulation */
 
-    ds_hook_init();
-    eeprom_hook_init();
-    gpio_hook_init();
-    jvs_hook_init();
-    sram_hook_init();
+    amex_hook_init();
 
     /* Initialize Initial D Zero I/O board emulation */
 
