@@ -7,6 +7,8 @@ amex_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'amex.c',
+        'amex.h',
         'ds.c',
         'ds.h',
         'eeprom.c',
