@@ -9,6 +9,8 @@ amex_lib = static_library(
     sources : [
         'amex.c',
         'amex.h',
+        'cfg.c',
+        'cfg.h',
         'ds.c',
         'ds.h',
         'eeprom.c',
