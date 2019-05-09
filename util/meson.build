@@ -17,6 +17,8 @@ util_lib = static_library(
         'dprintf.h',
         'dump.c',
         'dump.h',
+        'fdshark.c',
+        'fdshark.h',
         'gfx.c',
         'gfx.h',
         'setupapi.c',
