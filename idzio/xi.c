@@ -62,11 +62,11 @@ static void idz_xi_jvs_read_buttons(uint8_t *gamebtn_out)
         gamebtn |= IDZ_IO_GAMEBTN_RIGHT;
     }
 
-    if (xb & XINPUT_GAMEPAD_START) {
+    if (xb & (XINPUT_GAMEPAD_START | XINPUT_GAMEPAD_A)) {
         gamebtn |= IDZ_IO_GAMEBTN_START;
     }
 
-    if (xb & XINPUT_GAMEPAD_BACK) {
+    if (xb & (XINPUT_GAMEPAD_BACK | XINPUT_GAMEPAD_B)) {
         gamebtn |= IDZ_IO_GAMEBTN_VIEW_CHANGE;
     }
 
