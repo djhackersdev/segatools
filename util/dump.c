@@ -15,7 +15,7 @@ void dump(const void *ptr, size_t nbytes)
     size_t i;
     size_t j;
 
-    assert(ptr != NULL);
+    assert(ptr != NULL || nbytes == 0);
 
     if (nbytes == 0) {
         dprintf("\t--- Empty ---\n");
