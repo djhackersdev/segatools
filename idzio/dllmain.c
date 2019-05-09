@@ -5,9 +5,11 @@
 #include <stdint.h>
 
 #include "idzio/backend.h"
+#include "idzio/di.h"
 #include "idzio/idzio.h"
 #include "idzio/xi.h"
 
+static HMODULE idz_io_hmodule;
 static const struct idz_io_backend *idz_io_backend;
 static bool idz_io_coin;
 static uint16_t idz_io_coins;
@@ -16,7 +18,7 @@ HRESULT idz_io_init(void)
 {
     assert(idz_io_backend == NULL);
 
-    return idz_xi_init(&idz_io_backend);
+    return idz_di_init(idz_io_hmodule, &idz_io_backend);
 }
 
 void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
@@ -74,4 +76,13 @@ void idz_io_jvs_read_coin_counter(uint16_t *out)
     }
 
     *out = idz_io_coins;
+}
+
+BOOL WINAPI DllMain(HMODULE self, DWORD reason, void *ctx)
+{
+    if (reason == DLL_PROCESS_ATTACH) {
+        idz_io_hmodule = self;
+    }
+
+    return TRUE;
 }

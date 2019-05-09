@@ -6,10 +6,17 @@ idzio_dll = shared_library(
     vs_module_defs : 'idzio.def',
     c_pch : '../precompiled.h',
     dependencies : [
+        dinput8_lib,
+        dxguid_lib,
         xinput_lib,
+    ],
+    link_with : [
+        util_lib,
     ],
     sources : [
         'backend.h',
+        'di.c',
+        'di.h',
         'dllmain.c',
         'idzio.h',
         'shifter.c',
