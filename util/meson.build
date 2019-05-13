@@ -25,5 +25,7 @@ util_lib = static_library(
         'setupapi.h',
         'spike.c',
         'spike.h',
+        'str.c',
+        'str.h',
     ],
 )
