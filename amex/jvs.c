@@ -18,6 +18,7 @@
 #include "util/dprintf.h"
 #include "util/dump.h"
 #include "util/setupapi.h"
+#include "util/str.h"
 
 enum {
     JVS_IOCTL_HELLO     = 0x80006004,
@@ -86,7 +87,7 @@ static HRESULT jvs_handle_irp(struct irp *irp)
 
 static HRESULT jvs_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"$jvs") != 0) {
+    if (!wstr_eq(irp->open_filename, L"$jvs")) {
         return iohook_invoke_next(irp);
     }
 

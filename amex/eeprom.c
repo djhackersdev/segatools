@@ -18,6 +18,7 @@
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"
+#include "util/str.h"
 
 static HRESULT eeprom_handle_irp(struct irp *irp);
 static HRESULT eeprom_handle_open(struct irp *irp);
@@ -81,7 +82,7 @@ static HRESULT eeprom_handle_irp(struct irp *irp)
 
 static HRESULT eeprom_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"$eeprom") != 0) {
+    if (!wstr_eq(irp->open_filename, L"$eeprom") != 0) {
         return iohook_invoke_next(irp);
     }
 

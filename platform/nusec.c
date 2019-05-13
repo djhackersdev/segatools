@@ -2,12 +2,13 @@
 #include <assert.h>
 #include <string.h>
 
-#include "util/dprintf.h"
-#include "util/dump.h"
-
 #include "hook/iohook.h"
 
 #include "platform/nusec.h"
+
+#include "util/dprintf.h"
+#include "util/dump.h"
+#include "util/str.h"
 
 enum {
     NUSEC_IOCTL_PING                    = 0x22A114,
@@ -87,7 +88,7 @@ static HRESULT nusec_handle_irp(struct irp *irp)
 
 static HRESULT nusec_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"\\??\\FddDriver") != 0) {
+    if (!wstr_ieq(irp->open_filename, L"\\??\\FddDriver")) {
         return iohook_invoke_next(irp);
     }
 

@@ -16,6 +16,7 @@
 #include "util/crc.h"
 #include "util/dprintf.h"
 #include "util/setupapi.h"
+#include "util/str.h"
 
 #pragma pack(push, 1)
 
@@ -105,7 +106,7 @@ static HRESULT ds_handle_irp(struct irp *irp)
 
 static HRESULT ds_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"$ds") != 0) {
+    if (!wstr_eq(irp->open_filename, L"$ds")) {
         return iohook_invoke_next(irp);
     }
 

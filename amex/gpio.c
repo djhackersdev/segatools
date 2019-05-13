@@ -10,6 +10,7 @@
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"
+#include "util/str.h"
 
 enum {
     GPIO_IOCTL_SET_LEDS     = 0x8000A004,
@@ -120,7 +121,7 @@ static HRESULT gpio_handle_irp(struct irp *irp)
 
 static HRESULT gpio_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"$gpio") != 0) {
+    if (!wstr_eq(irp->open_filename, L"$gpio")) {
         return iohook_invoke_next(irp);
     }
 

@@ -17,6 +17,7 @@
 
 #include "util/dprintf.h"
 #include "util/setupapi.h"
+#include "util/str.h"
 
 static HRESULT sram_handle_irp(struct irp *irp);
 static HRESULT sram_handle_open(struct irp *irp);
@@ -76,7 +77,7 @@ static HRESULT sram_handle_irp(struct irp *irp)
 
 static HRESULT sram_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"$sram") != 0) {
+    if (!wstr_eq(irp->open_filename, L"$sram")) {
         return iohook_invoke_next(irp);
     }
 

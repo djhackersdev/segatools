@@ -9,6 +9,8 @@
 
 #include "platform/hwmon.h"
 
+#include "util/str.h"
+
 enum {
     HWMON_IOCTL_READ_CPU_TEMP = 0x80006000,
 };
@@ -46,7 +48,7 @@ static HRESULT hwmon_handle_irp(struct irp *irp)
 
 static HRESULT hwmon_handle_open(struct irp *irp)
 {
-    if (wcscmp(irp->open_filename, L"\\\\.\\sghwmonitor") != 0) {
+    if (!wstr_ieq(irp->open_filename, L"\\\\.\\sghwmonitor")) {
         return iohook_invoke_next(irp);
     }
 
