@@ -9,6 +9,8 @@ hooklib_lib = static_library(
     sources : [
         'clock.c',
         'clock.h',
+        'dll.c',
+        'dll.h',
         'fdshark.c',
         'fdshark.h',
         'gfx.c',
