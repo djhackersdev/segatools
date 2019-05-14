@@ -7,6 +7,8 @@ platform_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'amvideo.c',
+        'amvideo.h',
         'hwmon.c',
         'hwmon.h',
         'pcbid.c',
