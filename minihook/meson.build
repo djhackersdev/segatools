@@ -9,6 +9,7 @@ shared_library(
     ],
     link_with : [
         amex_lib,
+        hooklib_lib,
         platform_lib,
         util_lib,
     ],

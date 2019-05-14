@@ -5,11 +5,12 @@
 
 #include "hook/process.h"
 
+#include "hooklib/clock.h"
+#include "hooklib/spike.h"
+
 #include "platform/nusec.h"
 
-#include "util/clock.h"
 #include "util/dprintf.h"
-#include "util/spike.h"
 
 static process_entry_t app_startup;
 

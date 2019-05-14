@@ -3,12 +3,11 @@
 #include <assert.h>
 #include <string.h>
 
-#include "util/dprintf.h"
-
 #include "hook/iohook.h"
 
 #include "platform/hwmon.h"
 
+#include "util/dprintf.h"
 #include "util/str.h"
 
 enum {

@@ -16,8 +16,9 @@
 
 #include "hook/iohook.h"
 
+#include "hooklib/setupapi.h"
+
 #include "util/dprintf.h"
-#include "util/setupapi.h"
 #include "util/str.h"
 
 static HRESULT eeprom_handle_irp(struct irp *irp);

@@ -5,9 +5,9 @@
 #include "hook/process.h"
 
 #include "hooklib/serial.h"
+#include "hooklib/spike.h"
 
 #include "util/dprintf.h"
-#include "util/spike.h"
 
 static process_entry_t app_startup;
 

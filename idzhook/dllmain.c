@@ -10,17 +10,17 @@
 
 #include "hook/process.h"
 
+#include "hooklib/clock.h"
+#include "hooklib/gfx.h"
 #include "hooklib/serial.h"
+#include "hooklib/spike.h"
 
 #include "idzhook/jvs.h"
 
 #include "platform/hwmon.h"
 #include "platform/nusec.h"
 
-#include "util/clock.h"
 #include "util/dprintf.h"
-#include "util/gfx.h"
-#include "util/spike.h"
 
 static process_entry_t idz_startup;
 

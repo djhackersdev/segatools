@@ -7,8 +7,9 @@
 
 #include "hook/pe.h"
 
+#include "hooklib/spike.h"
+
 #include "util/dprintf.h"
-#include "util/spike.h"
 
 /* Spike functions. Their "style" is named after the libc function they bear
    the closest resemblance to. */

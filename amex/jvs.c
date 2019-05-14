@@ -13,11 +13,12 @@
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
+#include "hooklib/setupapi.h"
+
 #include "jvs/jvs-bus.h"
 
 #include "util/dprintf.h"
 #include "util/dump.h"
-#include "util/setupapi.h"
 #include "util/str.h"
 
 enum {

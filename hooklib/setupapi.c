@@ -9,8 +9,9 @@
 
 #include "hook/table.h"
 
+#include "hooklib/setupapi.h"
+
 #include "util/dprintf.h"
-#include "util/setupapi.h"
 
 struct setupapi_class {
     const GUID *guid;

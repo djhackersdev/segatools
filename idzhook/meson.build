@@ -14,6 +14,7 @@ shared_library(
         aimeio_dll,
         amex_lib,
         board_lib,
+        hooklib_lib,
         idzio_dll,
         jvs_lib,
         platform_lib,

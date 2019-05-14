@@ -8,9 +8,10 @@
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
+#include "hooklib/fdshark.h"
+
 #include "util/dprintf.h"
 #include "util/dump.h"
-#include "util/fdshark.h"
 
 static const wchar_t *fdshark_path;
 static HANDLE fdshark_target_fd;

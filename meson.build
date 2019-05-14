@@ -32,6 +32,7 @@ capnhook = subproject('capnhook')
 
 subdir('amex')
 subdir('board')
+subdir('hooklib')
 subdir('jvs')
 subdir('platform')
 subdir('util')

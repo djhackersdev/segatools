@@ -13,9 +13,10 @@
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
+#include "hooklib/setupapi.h"
+
 #include "util/crc.h"
 #include "util/dprintf.h"
-#include "util/setupapi.h"
 #include "util/str.h"
 
 #pragma pack(push, 1)

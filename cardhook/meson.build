@@ -11,6 +11,7 @@ shared_library(
     link_with : [
         aimeio_dll,
         board_lib,
+        hooklib_lib,
         util_lib,
     ],
     sources : [

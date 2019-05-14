@@ -7,6 +7,8 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
+#include "hooklib/gfx.h"
+
 #include "util/dprintf.h"
 
 static HRESULT STDMETHODCALLTYPE my_CreateDevice(
