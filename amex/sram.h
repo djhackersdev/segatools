@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "amex/cfg.h"
+#include "amex/config.h"
 
 DEFINE_GUID(
         sram_guid,

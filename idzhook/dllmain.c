@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
-#include "amex/cfg.h"
+#include "amex/config.h"
 
 #include "board/sg-reader.h"
 
@@ -17,11 +17,13 @@
 
 #include "idzhook/jvs.h"
 
+#include "platform/amvideo.h"
 #include "platform/hwmon.h"
 #include "platform/nusec.h"
 
 #include "util/dprintf.h"
 
+static HMODULE idz_hook_mod;
 static process_entry_t idz_startup;
 
 static DWORD CALLBACK idz_pre_startup(void)
@@ -37,6 +39,7 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize platform API emulation */
 
+    amvideo_hook_init(idz_hook_mod);
     hwmon_hook_init();
     nusec_hook_init();
 
@@ -71,6 +74,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)
     if (cause != DLL_PROCESS_ATTACH) {
         return TRUE;
     }
+
+    idz_hook_mod = mod;
 
     hr = process_hijack_startup(idz_pre_startup, &idz_startup);
 

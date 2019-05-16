@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "amex/cfg.h"
+#include "amex/config.h"
 
 #include "jvs/jvs-bus.h"
 

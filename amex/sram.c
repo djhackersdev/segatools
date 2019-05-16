@@ -10,6 +10,7 @@
 
 #include <assert.h>
 
+#include "amex/config.h"
 #include "amex/sram.h"
 #include "amex/nvram.h"
 

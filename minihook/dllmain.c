@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "amex/cfg.h"
+#include "amex/config.h"
 #include "amex/ds.h"
 
 #include "hook/process.h"

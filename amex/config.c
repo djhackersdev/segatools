@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "amex/cfg.h"
+#include "amex/config.h"
 
 void ds_config_load(struct ds_config *cfg, const wchar_t *filename)
 {

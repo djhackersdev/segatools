@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
-#include "amex/cfg.h"
+#include "amex/config.h"
 
 #include "board/sg-reader.h"
 
