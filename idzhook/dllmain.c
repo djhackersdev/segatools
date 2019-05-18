@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
-#include "amex/config.h"
 
 #include "board/sg-reader.h"
 
@@ -15,43 +14,38 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
+#include "idzhook/config.h"
 #include "idzhook/jvs.h"
 
-#include "platform/config.h"
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
 
 static HMODULE idz_hook_mod;
 static process_entry_t idz_startup;
+static struct idz_hook_config idz_hook_cfg;
 
 static DWORD CALLBACK idz_pre_startup(void)
 {
-    struct nu_config nu_cfg;
-    struct amex_config amex_cfg;
-
     dprintf("--- Begin idz_pre_startup ---\n");
+
+    /* Config load */
+
+    idz_hook_config_load(&idz_hook_cfg, L".\\segatools.ini");
 
     /* Hook Win32 APIs */
 
     clock_hook_init();
     serial_hook_init();
 
-    /* Initialize platform API emulation */
+    /* Initialize emulation hooks */
 
-    nu_config_load(&nu_cfg, L".\\segatools.ini");
-    platform_hook_init_nu(&nu_cfg, "SDDF", "AAV2", idz_hook_mod);
-
-    /* Initialize AMEX emulation */
-
-    amex_config_load(&amex_cfg, L".\\segatools.ini");
-    amex_hook_init(&amex_cfg);
-
-    /* Initialize Initial D Zero I/O board emulation */
+    platform_hook_init_nu(&idz_hook_cfg.nu, "SDDF", "AAV2", idz_hook_mod);
+    amex_hook_init(&idz_hook_cfg.amex);
 
     sg_reader_hook_init(10);
 
-    if (amex_cfg.jvs.enable) {
+    if (idz_hook_cfg.amex.jvs.enable) {
         idz_jvs_init();
     }
 
