@@ -5,6 +5,7 @@
 
 #include "hook/iohook.h"
 
+#include "platform/config.h"
 #include "platform/hwmon.h"
 
 #include "util/dprintf.h"
@@ -23,10 +24,17 @@ static HRESULT hwmon_ioctl_read_cpu_temp(struct irp *irp);
 
 static HANDLE hwmon_fd;
 
-void hwmon_hook_init(void)
+HRESULT hwmon_hook_init(const struct hwmon_config *cfg)
 {
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
     hwmon_fd = iohook_open_dummy_fd();
-    iohook_push_handler(hwmon_handle_irp);
+
+    return iohook_push_handler(hwmon_handle_irp);
 }
 
 static HRESULT hwmon_handle_irp(struct irp *irp)

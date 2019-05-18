@@ -13,9 +13,11 @@ platform_lib = static_library(
         'config.h',
         'hwmon.c',
         'hwmon.h',
-        'pcbid.c',
-        'pcbid.h',
         'nusec.c',
         'nusec.h',
+        'pcbid.c',
+        'pcbid.h',
+        'platform.c',
+        'platform.h',
     ],
 )

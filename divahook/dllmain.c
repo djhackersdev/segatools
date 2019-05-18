@@ -18,16 +18,18 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
-#include "platform/hwmon.h"
-#include "platform/nusec.h"
+#include "platform/config.h"
+#include "platform/platform.h"
 
 #include "util/dprintf.h"
 
+static HMODULE diva_hook_mod;
 static process_entry_t diva_startup;
 
 static DWORD CALLBACK diva_pre_startup(void)
 {
     struct amex_config amex_cfg;
+    struct nu_config nu_cfg;
 
     dprintf("--- Begin diva_pre_startup ---\n");
 
@@ -38,8 +40,8 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize platform API emulation */
 
-    hwmon_hook_init();
-    nusec_hook_init();
+    nu_config_load(&nu_cfg, L".\\segatools.ini");
+    platform_hook_init_nu(&nu_cfg, "SBZV", "AAV0", diva_hook_mod);
 
     /* Initialize AMEX emulation */
 
@@ -73,6 +75,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)
     if (cause != DLL_PROCESS_ATTACH) {
         return TRUE;
     }
+
+    diva_hook_mod = mod;
 
     hr = process_hijack_startup(diva_pre_startup, &diva_startup);
 

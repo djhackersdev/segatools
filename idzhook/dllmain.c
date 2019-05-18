@@ -17,9 +17,8 @@
 
 #include "idzhook/jvs.h"
 
-#include "platform/amvideo.h"
-#include "platform/hwmon.h"
-#include "platform/nusec.h"
+#include "platform/config.h"
+#include "platform/platform.h"
 
 #include "util/dprintf.h"
 
@@ -28,6 +27,7 @@ static process_entry_t idz_startup;
 
 static DWORD CALLBACK idz_pre_startup(void)
 {
+    struct nu_config nu_cfg;
     struct amex_config amex_cfg;
 
     dprintf("--- Begin idz_pre_startup ---\n");
@@ -39,9 +39,8 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize platform API emulation */
 
-    amvideo_hook_init(idz_hook_mod);
-    hwmon_hook_init();
-    nusec_hook_init();
+    nu_config_load(&nu_cfg, L".\\segatools.ini");
+    platform_hook_init_nu(&nu_cfg, "SDDF", "AAV2", idz_hook_mod);
 
     /* Initialize AMEX emulation */
 

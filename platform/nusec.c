@@ -1,9 +1,13 @@
 #include <windows.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "hook/iohook.h"
 
+#include "hooklib/reg.h"
+
+#include "platform/config.h"
 #include "platform/nusec.h"
 
 #include "util/dprintf.h"
@@ -53,6 +57,51 @@ static HRESULT nusec_ioctl_put_nearfull(struct irp *irp);
 static HRESULT nusec_ioctl_put_play_limit(struct irp *irp);
 static HRESULT nusec_ioctl_put_trace_log_data(struct irp *irp);
 
+static HRESULT nusec_reg_read_game_id(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_keychip_id(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_model_type(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_platform_id(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_region(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_server_ip_ipv4(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_server_ip_ipv6(void *bytes, uint32_t *nbytes);
+static HRESULT nusec_reg_read_system_flag(void *bytes, uint32_t *nbytes);
+
+static const struct reg_hook_val nusec_reg_vals[] = {
+    {
+        .name   = L"gameId",
+        .read   = nusec_reg_read_game_id,
+        .type   = REG_BINARY,
+    }, {
+        .name   = L"keychipId",
+        .read   = nusec_reg_read_keychip_id,
+        .type   = REG_BINARY,
+    }, {
+        .name   = L"modelType",
+        .read   = nusec_reg_read_model_type,
+        .type   = REG_DWORD,
+    }, {
+        .name   = L"platformId",
+        .read   = nusec_reg_read_platform_id,
+        .type   = REG_BINARY,
+    }, {
+        .name   = L"region",
+        .read   = nusec_reg_read_region,
+        .type   = REG_DWORD,
+    }, {
+        .name   = L"serverIpIpv4",
+        .read   = nusec_reg_read_server_ip_ipv4,
+        .type   = REG_BINARY,
+    }, {
+        .name   = L"serverIpIpv6",
+        .read   = nusec_reg_read_server_ip_ipv6,
+        .type   = REG_BINARY,
+    }, {
+        .name   = L"systemFlag",
+        .read   = nusec_reg_read_system_flag,
+        .type   = REG_DWORD,
+    }
+};
+
 static HANDLE nusec_fd;
 static uint32_t nusec_nearfull;
 static uint32_t nusec_play_count;
@@ -60,14 +109,55 @@ static uint32_t nusec_play_limit;
 static struct nusec_log_record nusec_log[7154];
 static size_t nusec_log_head;
 static size_t nusec_log_tail;
+static struct nusec_config nusec_cfg;
 
-void nusec_hook_init(void)
+HRESULT nusec_hook_init(
+        const struct nusec_config *cfg,
+        const char *game_id,
+        const char *platform_id)
 {
+    HRESULT hr;
+
+    assert(cfg != NULL);
+    assert(game_id != NULL && strlen(game_id) == sizeof(cfg->game_id));
+    assert(platform_id != NULL && strlen(platform_id) == sizeof(cfg->platform_id));
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
+    memcpy(&nusec_cfg, cfg, sizeof(*cfg));
+
+    if (nusec_cfg.game_id[0] == '\0') {
+        memcpy(nusec_cfg.game_id, game_id, sizeof(nusec_cfg.game_id));
+    }
+
+    if (nusec_cfg.platform_id[0] == '\0') {
+        memcpy(nusec_cfg.platform_id, platform_id, sizeof(nusec_cfg.platform_id));
+    }
+
     nusec_nearfull = 0x00010200;
     nusec_play_count = 0;
     nusec_play_limit = 1024;
     nusec_fd = iohook_open_dummy_fd();
-    iohook_push_handler(nusec_handle_irp);
+
+    hr = iohook_push_handler(nusec_handle_irp);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = reg_hook_push_key(
+            HKEY_LOCAL_MACHINE,
+            L"SYSTEM\\SEGA\\SystemProperty\\keychip",
+            nusec_reg_vals,
+            _countof(nusec_reg_vals));
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
 }
 
 static HRESULT nusec_handle_irp(struct irp *irp)
@@ -222,7 +312,7 @@ static HRESULT nusec_ioctl_get_billing_ca_cert(struct irp *irp)
     dprintf("Security: %s\n", __func__);
 
     fd = CreateFileW(
-            L"DEVICE\\ca.crt",
+            nusec_cfg.billing_ca,
             GENERIC_READ,
             FILE_SHARE_READ,
             NULL,
@@ -271,7 +361,7 @@ static HRESULT nusec_ioctl_get_billing_pubkey(struct irp *irp)
     dprintf("Security: %s\n", __func__);
 
     fd = CreateFileW(
-            L"DEVICE\\billing.pub",
+            nusec_cfg.billing_pub,
             GENERIC_READ,
             FILE_SHARE_READ,
             NULL,
@@ -459,4 +549,78 @@ static HRESULT nusec_ioctl_put_trace_log_data(struct irp *irp)
     dprintf("    H: %i T: %i\n", (int) nusec_log_head, (int) nusec_log_tail);
 
     return S_OK;
+}
+
+static HRESULT nusec_reg_read_game_id(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_bin(
+            bytes,
+            nbytes,
+            &nusec_cfg.game_id,
+            sizeof(nusec_cfg.game_id));
+}
+
+static HRESULT nusec_reg_read_keychip_id(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_bin(
+            bytes,
+            nbytes,
+            &nusec_cfg.keychip_id,
+            sizeof(nusec_cfg.keychip_id));
+}
+
+static HRESULT nusec_reg_read_model_type(void *bytes, uint32_t *nbytes)
+{
+    uint32_t u32;
+    char c;
+
+    c = nusec_cfg.platform_id[3];
+
+    if (c >= '0' && c <= '9') {
+        u32 = c - '0';
+    } else {
+        u32 = 0;
+    }
+
+    return reg_hook_read_u32(bytes, nbytes, u32);
+}
+
+static HRESULT nusec_reg_read_platform_id(void *bytes, uint32_t *nbytes)
+{
+    /* Fourth byte is a separate registry val (modelType).
+       We store it in the same config field for ease of configuration. */
+
+    return reg_hook_read_bin(
+            bytes,
+            nbytes,
+            &nusec_cfg.platform_id,
+            3);
+}
+
+static HRESULT nusec_reg_read_region(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_u32(bytes, nbytes, nusec_cfg.region);
+}
+
+static HRESULT nusec_reg_read_server_ip_ipv4(void *bytes, uint32_t *nbytes)
+{
+    uint32_t subnet;
+
+    subnet = _byteswap_ulong(nusec_cfg.subnet);
+
+    return reg_hook_read_bin(bytes, nbytes, &subnet, sizeof(subnet));
+}
+
+static HRESULT nusec_reg_read_server_ip_ipv6(void *bytes, uint32_t *nbytes)
+{
+    uint8_t subnet[16];
+
+    memset(subnet, 0, sizeof(subnet));
+
+    return reg_hook_read_bin(bytes, nbytes, subnet, sizeof(subnet));
+}
+
+static HRESULT nusec_reg_read_system_flag(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_u32(bytes, nbytes, nusec_cfg.system_flag);
 }

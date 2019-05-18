@@ -8,6 +8,8 @@
 #include "hooklib/dll.h"
 #include "hooklib/reg.h"
 
+#include "platform/amvideo.h"
+
 #include "util/dprintf.h"
 
 /* Hook functions */
@@ -96,9 +98,15 @@ static const struct hook_symbol amvideo_syms[] = {
     }
 };
 
-HRESULT amvideo_hook_init(HMODULE redir_mod)
+HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
 {
     HRESULT hr;
+
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
 
     hr = reg_hook_push_key(
             HKEY_LOCAL_MACHINE,

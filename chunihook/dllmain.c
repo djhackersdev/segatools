@@ -18,16 +18,18 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
-#include "platform/hwmon.h"
-#include "platform/nusec.h"
+#include "platform/config.h"
+#include "platform/platform.h"
 
 #include "util/dprintf.h"
 
+static HMODULE chuni_hook_mod;
 static process_entry_t chuni_startup;
 
 static DWORD CALLBACK chuni_pre_startup(void)
 {
     struct amex_config amex_cfg;
+    struct nu_config nu_cfg;
     HMODULE d3dc;
 
     dprintf("--- Begin chuni_pre_startup ---\n");
@@ -50,8 +52,8 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize platform API emulation */
 
-    hwmon_hook_init();
-    nusec_hook_init();
+    nu_config_load(&nu_cfg, L".\\segatools.ini");
+    platform_hook_init_nu(&nu_cfg, "SDBT", "AAV1", chuni_hook_mod);
 
     /* Initialize AMEX emulation */
 
@@ -89,6 +91,8 @@ BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)
     if (cause != DLL_PROCESS_ATTACH) {
         return TRUE;
     }
+
+    chuni_hook_mod = mod;
 
     hr = process_hijack_startup(chuni_pre_startup, &chuni_startup);
 
