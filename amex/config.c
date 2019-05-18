@@ -11,6 +11,7 @@
 void ds_config_load(struct ds_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"ds", L"enable", 1, filename);
     cfg->region = GetPrivateProfileIntW(L"ds", L"region", 1, filename);
@@ -27,6 +28,7 @@ void ds_config_load(struct ds_config *cfg, const wchar_t *filename)
 void eeprom_config_load(struct eeprom_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"eeprom", L"enable", 1, filename);
 
@@ -45,6 +47,7 @@ void gpio_config_load(struct gpio_config *cfg, const wchar_t *filename)
     size_t i;
 
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"gpio", L"enable", 1, filename);
     cfg->vk_sw1 = GetPrivateProfileIntW(L"gpio", L"sw1", VK_F1, filename);
@@ -61,6 +64,7 @@ void gpio_config_load(struct gpio_config *cfg, const wchar_t *filename)
 void jvs_config_load(struct jvs_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"jvs", L"enable", 1, filename);
 }
@@ -68,6 +72,7 @@ void jvs_config_load(struct jvs_config *cfg, const wchar_t *filename)
 void sram_config_load(struct sram_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"sram", L"enable", 1, filename);
 
@@ -83,6 +88,7 @@ void sram_config_load(struct sram_config *cfg, const wchar_t *filename)
 void amex_config_load(struct amex_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     ds_config_load(&cfg->ds, filename);
     eeprom_config_load(&cfg->eeprom, filename);
