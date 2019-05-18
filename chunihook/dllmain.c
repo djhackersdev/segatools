@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
-#include "amex/config.h"
 
+#include "chunihook/config.h"
 #include "chunihook/jvs.h"
 #include "chunihook/slider.h"
 
@@ -18,18 +18,16 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
-#include "platform/config.h"
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
 
 static HMODULE chuni_hook_mod;
 static process_entry_t chuni_startup;
+static struct chuni_hook_config chuni_hook_cfg;
 
 static DWORD CALLBACK chuni_pre_startup(void)
 {
-    struct amex_config amex_cfg;
-    struct nu_config nu_cfg;
     HMODULE d3dc;
 
     dprintf("--- Begin chuni_pre_startup ---\n");
@@ -44,25 +42,22 @@ static DWORD CALLBACK chuni_pre_startup(void)
         dprintf("Failed to load shader compiler!\n");
     }
 
+    /* Config load */
+
+    chuni_hook_config_load(&chuni_hook_cfg, L".\\segatools.ini");
+
     /* Hook Win32 APIs */
 
     clock_hook_init();
     gfx_hook_init();
     serial_hook_init();
 
-    /* Initialize platform API emulation */
+    /* Initialize emulation hooks */
 
-    nu_config_load(&nu_cfg, L".\\segatools.ini");
-    platform_hook_init_nu(&nu_cfg, "SDBT", "AAV1", chuni_hook_mod);
+    platform_hook_init_nu(&chuni_hook_cfg.nu, "SDBT", "AAV1", chuni_hook_mod);
+    amex_hook_init(&chuni_hook_cfg.amex);
 
-    /* Initialize AMEX emulation */
-
-    amex_config_load(&amex_cfg, L".\\segatools.ini");
-    amex_hook_init(&amex_cfg);
-
-    /* Initialize Chunithm board emulation */
-
-    if (amex_cfg.jvs.enable) {
+    if (chuni_hook_cfg.amex.jvs.enable) {
         chunithm_jvs_init();
     }
 

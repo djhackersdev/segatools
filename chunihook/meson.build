@@ -18,6 +18,8 @@ shared_library(
         util_lib,
     ],
     sources : [
+        'config.c',
+        'config.h',
         'dllmain.c',
         'jvs.c',
         'jvs.h',
