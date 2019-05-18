@@ -7,6 +7,7 @@
 #include "platform/hwmon.h"
 #include "platform/nusec.h"
 #include "platform/platform.h"
+#include "platform/vfs.h"
 
 HRESULT platform_hook_init_nu(
         const struct nu_config *cfg,
@@ -34,6 +35,12 @@ HRESULT platform_hook_init_nu(
     }
 
     hr = nusec_hook_init(&cfg->nusec, game_id, platform_id);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = vfs_hook_init(&cfg->vfs);
 
     if (FAILED(hr)) {
         return hr;

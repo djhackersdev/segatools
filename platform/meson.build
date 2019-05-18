@@ -19,5 +19,7 @@ platform_lib = static_library(
         'pcbid.h',
         'platform.c',
         'platform.h',
+        'vfs.c',
+        'vfs.h',
     ],
 )
