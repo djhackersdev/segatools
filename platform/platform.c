@@ -5,6 +5,7 @@
 #include "platform/amvideo.h"
 #include "platform/config.h"
 #include "platform/hwmon.h"
+#include "platform/misc.h"
 #include "platform/nusec.h"
 #include "platform/platform.h"
 #include "platform/vfs.h"
@@ -29,6 +30,12 @@ HRESULT platform_hook_init_nu(
     }
 
     hr = hwmon_hook_init(&cfg->hwmon);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = misc_hook_init(&cfg->misc, platform_id);
 
     if (FAILED(hr)) {
         return hr;
