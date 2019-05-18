@@ -4,10 +4,10 @@
 #include <stdlib.h>
 
 #include "amex/amex.h"
-#include "amex/config.h"
 
 #include "board/sg-reader.h"
 
+#include "divahook/config.h"
 #include "divahook/jvs.h"
 #include "divahook/slider.h"
 
@@ -18,39 +18,33 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
-#include "platform/config.h"
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
 
 static HMODULE diva_hook_mod;
 static process_entry_t diva_startup;
+static struct diva_hook_config diva_hook_cfg;
 
 static DWORD CALLBACK diva_pre_startup(void)
 {
-    struct amex_config amex_cfg;
-    struct nu_config nu_cfg;
-
     dprintf("--- Begin diva_pre_startup ---\n");
+
+    /* Config load */
+
+    diva_hook_config_load(&diva_hook_cfg, L".\\segatools.ini");
 
     /* Hook Win32 APIs */
 
     clock_hook_init();
     serial_hook_init();
 
-    /* Initialize platform API emulation */
+    /* Initialize emulation hooks */
 
-    nu_config_load(&nu_cfg, L".\\segatools.ini");
-    platform_hook_init_nu(&nu_cfg, "SBZV", "AAV0", diva_hook_mod);
+    platform_hook_init_nu(&diva_hook_cfg.nu, "SBZV", "AAV0", diva_hook_mod);
+    amex_hook_init(&diva_hook_cfg.amex);
 
-    /* Initialize AMEX emulation */
-
-    amex_config_load(&amex_cfg, L".\\segatools.ini");
-    amex_hook_init(&amex_cfg);
-
-    /* Initialize Project Diva I/O board emulation */
-
-    if (amex_cfg.jvs.enable) {
+    if (diva_hook_cfg.amex.jvs.enable) {
         diva_jvs_init();
     }
 
