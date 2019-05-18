@@ -9,6 +9,8 @@ platform_lib = static_library(
     sources : [
         'amvideo.c',
         'amvideo.h',
+        'config.c',
+        'config.h',
         'hwmon.c',
         'hwmon.h',
         'pcbid.c',
