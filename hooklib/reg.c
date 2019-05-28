@@ -645,12 +645,6 @@ static LSTATUS reg_hook_query_val_locked(
         if (val->read != NULL) {
             hr = val->read(bytes, nbytes);
             err = reg_hook_propagate_hr(hr);
-
-            if (err == ERROR_SUCCESS && bytes != NULL) {
-                dprintf("Registry: Read virtual key %S value %S\n",
-                        key->name,
-                        val->name);
-            }
         } else {
             dprintf("Registry: %S: Val %S has no read handler\n",
                     key->name,
