@@ -14,6 +14,6 @@ void diva_hook_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    amex_config_load(&cfg->amex, filename);
     nu_config_load(&cfg->nu, filename);
+    amex_config_load(&cfg->amex, filename);
 }
