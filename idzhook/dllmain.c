@@ -43,11 +43,11 @@ static DWORD CALLBACK idz_pre_startup(void)
     platform_hook_init_nu(&idz_hook_cfg.nu, "SDDF", "AAV2", idz_hook_mod);
     amex_hook_init(&idz_hook_cfg.amex);
 
-    sg_reader_hook_init(10);
-
     if (idz_hook_cfg.amex.jvs.enable) {
         idz_jvs_init();
     }
+
+    sg_reader_hook_init(&idz_hook_cfg.aime, 10);
 
     /* Initialize debug helpers */
 

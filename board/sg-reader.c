@@ -6,6 +6,7 @@
 
 #include "aimeio/aimeio.h"
 
+#include "board/config.h"
 #include "board/sg-led.h"
 #include "board/sg-nfc.h"
 #include "board/sg-reader.h"
@@ -43,9 +44,17 @@ static uint8_t sg_reader_readable_bytes[520];
 static struct sg_nfc sg_reader_nfc;
 static struct sg_led sg_reader_led;
 
-HRESULT sg_reader_hook_init(unsigned int port_no)
+HRESULT sg_reader_hook_init(
+        const struct aime_config *cfg,
+        unsigned int port_no)
 {
     HRESULT hr;
+
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
 
     hr = aime_io_init();
 

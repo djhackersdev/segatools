@@ -2,4 +2,8 @@
 
 #include <windows.h>
 
-HRESULT sg_reader_hook_init(unsigned int port_no);
+#include "board/config.h"
+
+HRESULT sg_reader_hook_init(
+        const struct aime_config *cfg,
+        unsigned int port_no);

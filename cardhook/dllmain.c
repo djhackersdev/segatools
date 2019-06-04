@@ -1,5 +1,8 @@
 #include <windows.h>
 
+#include <stdbool.h>
+
+#include "board/config.h"
 #include "board/sg-reader.h"
 
 #include "hook/process.h"
@@ -9,6 +12,8 @@
 
 #include "util/dprintf.h"
 
+// Emulating an AiMe reader is the only thing this hook DLL does
+static const struct aime_config app_aime_config = { .enable = true };
 static process_entry_t app_startup;
 
 static DWORD CALLBACK app_pre_startup(void)
@@ -18,7 +23,7 @@ static DWORD CALLBACK app_pre_startup(void)
     spike_hook_init("cardspike.txt");
 
     serial_hook_init();
-    sg_reader_hook_init(12);
+    sg_reader_hook_init(&app_aime_config, 12);
 
     dprintf("---  End  %s ---\n", __func__);
 

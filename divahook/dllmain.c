@@ -48,7 +48,7 @@ static DWORD CALLBACK diva_pre_startup(void)
         diva_jvs_init();
     }
 
-    sg_reader_hook_init(10);
+    sg_reader_hook_init(&diva_hook_cfg.aime, 10);
     slider_hook_init();
 
     /* Initialize debug helpers */
