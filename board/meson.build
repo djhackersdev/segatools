@@ -7,6 +7,8 @@ board_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'config.c',
+        'config.h',
         'guid.c',
         'guid.h',
         'io3.c',
