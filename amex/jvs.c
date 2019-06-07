@@ -93,7 +93,7 @@ static HRESULT jvs_handle_open(struct irp *irp)
         return iohook_invoke_next(irp);
     }
 
-    dprintf("JVS Controller: Open device\n");
+    dprintf("JVS Port: Open device\n");
     irp->fd = jvs_fd;
 
     return S_OK;
@@ -101,7 +101,7 @@ static HRESULT jvs_handle_open(struct irp *irp)
 
 static HRESULT jvs_handle_close(struct irp *irp)
 {
-    dprintf("JVS Controller: Close device\n");
+    dprintf("JVS Port: Close device\n");
 
     return S_OK;
 }
@@ -119,7 +119,7 @@ static HRESULT jvs_handle_ioctl(struct irp *irp)
         return jvs_ioctl_transact(irp);
 
     default:
-        dprintf("JVS Controller: Unknown ioctl %#x\n", irp->ioctl);
+        dprintf("JVS Port: Unknown ioctl %#x\n", irp->ioctl);
 
         return HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
     }
@@ -131,7 +131,7 @@ static HRESULT jvs_ioctl_hello(struct irp *irp)
 
     // uuh fucked if i know
 
-    dprintf("JVS Controller: Port startup (?)\n");
+    dprintf("JVS Port: Port startup (?)\n");
 
          iobuf_write_8(&irp->read, 0);
     hr = iobuf_write_8(&irp->read, 0);
@@ -148,14 +148,14 @@ static HRESULT jvs_ioctl_sense(struct irp *irp)
         sense = jvs_root->sense(jvs_root);
 
         if (sense) {
-            dprintf("JVS Controller: Sense line 2.5 V (address unassigned)\n");
+            dprintf("JVS Port: Sense line 2.5 V (address unassigned)\n");
             code = 3;
         } else {
-            dprintf("JVS Controller: Sense line 0.0 V (address assigned)\n");
+            dprintf("JVS Port: Sense line 0.0 V (address assigned)\n");
             code = 2;
         }
     } else {
-        dprintf("JVS Controller: Sense line 5.0 V (no downstream PCB)\n");
+        dprintf("JVS Port: Sense line 5.0 V (no downstream PCB)\n");
         code = 1;
     }
 
@@ -165,14 +165,14 @@ static HRESULT jvs_ioctl_sense(struct irp *irp)
 static HRESULT jvs_ioctl_transact(struct irp *irp)
 {
 #if 0
-    dprintf("\nJVS Controller: Outbound frame:\n");
+    dprintf("\nJVS Port: Outbound frame:\n");
     dump_const_iobuf(&irp->write);
 #endif
 
     jvs_bus_transact(jvs_root, irp->write.bytes, irp->write.nbytes, &irp->read);
 
 #if 0
-    dprintf("JVS Controller: Inbound frame:\n");
+    dprintf("JVS Port: Inbound frame:\n");
     dump_iobuf(&irp->read);
     dprintf("\n");
 #endif
