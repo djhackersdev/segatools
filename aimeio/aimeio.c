@@ -3,18 +3,48 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "aimeio/aimeio.h"
 
 #include "util/crc.h"
 #include "util/dprintf.h"
 
-static const char aime_io_path[] = "DEVICE\\aime.txt";
+struct aime_io_config {
+    wchar_t id_path[MAX_PATH];
+    uint8_t vk_scan;
+};
 
+static struct aime_io_config aime_io_cfg;
 static uint8_t aime_io_luid[10];
+
+static void aime_io_config_read(
+        struct aime_io_config *cfg,
+        const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    GetPrivateProfileStringW(
+            L"aime",
+            L"cardPath",
+            L"DEVICE\\aime.txt",
+            cfg->id_path,
+            _countof(cfg->id_path),
+            filename);
+
+    cfg->vk_scan = GetPrivateProfileIntW(
+            L"aime",
+            L"scan",
+            VK_RETURN,
+            filename);
+
+}
 
 HRESULT aime_io_init(void)
 {
+    aime_io_config_read(&aime_io_cfg, L"segatools.ini");
+
     return S_OK;
 }
 
@@ -37,14 +67,14 @@ HRESULT aime_io_mifare_poll(uint8_t unit_no, uint32_t *uid)
     hr = S_FALSE;
     f = NULL;
 
-    if (!(GetAsyncKeyState(VK_RETURN) & 0x8000)) {
+    if (!(GetAsyncKeyState(aime_io_cfg.vk_scan) & 0x8000)) {
         goto end;
     }
 
-    f = fopen(aime_io_path, "r");
+    f = _wfopen(aime_io_cfg.id_path, L"r");
 
     if (f == NULL) {
-        dprintf("Aime DLL: Failed to open %s\n", aime_io_path);
+        dprintf("Aime DLL: Failed to open %S\n", aime_io_cfg.id_path);
 
         goto end;
     }
