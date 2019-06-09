@@ -5,6 +5,8 @@
 
 #include "amex/config.h"
 
+#include "board/config.h"
+
 #include "chunihook/config.h"
 
 #include "platform/config.h"
@@ -20,4 +22,5 @@ void chuni_hook_config_load(
 
     nu_config_load(&cfg->nu, filename);
     amex_config_load(&cfg->amex, filename);
+    aime_config_load(&cfg->aime, filename);
 }
