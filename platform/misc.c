@@ -32,6 +32,10 @@ static const struct reg_hook_val misc_master_keys[] = {
         /* Black-hole val, list it here so we don't get a warning msg */
         .name   = L"NextProcess",
         .type   = REG_SZ,
+    }, {
+        /* ditto */
+        .name   = L"SystemError",
+        .type   = REG_SZ,
     }
 };
 
