@@ -73,7 +73,8 @@ static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     }
 
     for (i = 0 ; i < 6 ; i++) {
-        if (beams & (1 << i)) {
+        /* Beam "press" is active-low hence the ~ */
+        if (~beams & (1 << i)) {
             out->p1 |= chunithm_jvs_ir_masks[i].p1;
             out->p2 |= chunithm_jvs_ir_masks[i].p2;
         }
