@@ -21,10 +21,25 @@ HRESULT nvram_open_file(HANDLE *out, const wchar_t *path, size_t size)
 
     *out = NULL;
 
+    /* This is somewhat sloppy: allow multiple processes to open the backing
+       store simultaneously. Multiple processes don't actually need to open
+       the backing store simultaneously, but it allows use to reuse the same
+       chunihook.dll for both chuniApp.exe and aimeReaderHost.exe, since a
+       backing store fd gets opened during process init and subsequentely
+       re-used for all device open operations on that NVRAM.
+
+       We could defer the file open until it is actually needed instead, but
+       this requires some messy locking; naive solutions would be racy or would
+       effectively block all but one thread at a time in the process from
+       performing any I/O.
+
+       Hopefully some day Chunithm will move to the new amdaemon-based system
+       architecture. */
+
     file = CreateFileW(
             path,
             GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
             NULL,
             OPEN_ALWAYS,
             FILE_ATTRIBUTE_NORMAL,
