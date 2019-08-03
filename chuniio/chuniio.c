@@ -23,8 +23,12 @@ HRESULT chuni_io_init(void)
     return S_OK;
 }
 
-uint16_t chuni_io_jvs_read_coin_counter(void)
+void chuni_io_jvs_read_coin_counter(uint16_t *out)
 {
+    if (out == NULL) {
+        return;
+    }
+
     if (GetAsyncKeyState('3')) {
         if (!chuni_io_coin) {
             chuni_io_coin = true;
@@ -34,7 +38,7 @@ uint16_t chuni_io_jvs_read_coin_counter(void)
         chuni_io_coin = false;
     }
 
-    return chuni_io_coins;
+    *out = chuni_io_coins;
 }
 
 void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)

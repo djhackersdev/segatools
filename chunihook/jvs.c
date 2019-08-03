@@ -21,7 +21,10 @@ struct chunithm_jvs_ir_mask {
 };
 
 static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out);
-static uint16_t chunithm_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
+static void chunithm_jvs_read_coin_counter(
+        void *ctx,
+        uint8_t slot_no,
+        uint16_t *out);
 
 static const struct io3_ops chunithm_jvs_io3_ops = {
     .read_switches      = chunithm_jvs_read_switches,
@@ -81,11 +84,16 @@ static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     }
 }
 
-static uint16_t chunithm_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
+static void chunithm_jvs_read_coin_counter(
+        void *ctx,
+        uint8_t slot_no,
+        uint16_t *out)
 {
+    assert(out != NULL);
+
     if (slot_no > 0) {
-        return 0;
+        return;
     }
 
-    return chuni_io_jvs_read_coin_counter();
+    chuni_io_jvs_read_coin_counter(out);
 }

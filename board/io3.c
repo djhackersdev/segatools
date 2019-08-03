@@ -459,10 +459,10 @@ static HRESULT io3_cmd_read_coin(
     /* Write slot detail */
 
     for (i = 0 ; i < req.nslots ; i++) {
+        ncoins = 0;
+
         if (io3->ops->read_coin_counter != NULL) {
-            ncoins = io3->ops->read_coin_counter(io3->ops_ctx, i);
-        } else {
-            ncoins = 0;
+            io3->ops->read_coin_counter(io3->ops_ctx, i, &ncoins);
         }
 
         hr = iobuf_write_be16(resp_buf, ncoins);

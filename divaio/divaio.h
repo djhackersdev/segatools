@@ -30,7 +30,7 @@ void diva_io_jvs_poll(uint8_t *opbtn, uint8_t *gamebtn);
    for every coin detected by the coin acceptor mechanism. This count does not
    need to persist beyond the lifetime of the process. */
 
-uint16_t diva_io_jvs_read_coin_counter(void);
+void diva_io_jvs_read_coin_counter(uint16_t *out);
 
 /* Set the state of the coin blocker. Parameter is true if the blocker is
    disengaged (i.e. coins can be inserted) and false if the blocker is engaged

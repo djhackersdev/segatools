@@ -136,7 +136,7 @@ void idz_io_jvs_read_analogs(struct idz_io_analog_state *out)
     out->brake = xi.Gamepad.bLeftTrigger << 8;
 }
 
-uint16_t idz_io_jvs_read_coin_counter(void)
+void idz_io_jvs_read_coin_counter(uint16_t *out)
 {
     if (GetAsyncKeyState('3')) {
         if (!idz_io_coin) {
@@ -147,5 +147,5 @@ uint16_t idz_io_jvs_read_coin_counter(void)
         idz_io_coin = false;
     }
 
-    return idz_io_coins;
+    *out = idz_io_coins;
 }

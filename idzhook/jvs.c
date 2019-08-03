@@ -20,7 +20,10 @@ static void idz_jvs_read_analogs(
         uint16_t *analogs,
         uint8_t nanalogs);
 static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out);
-static uint16_t idz_jvs_read_coin_counter(void *ctx, uint8_t slot_no);
+static void idz_jvs_read_coin_counter(
+        void *ctx,
+        uint8_t slot_no,
+        uint16_t *out);
 
 static const struct io3_ops idz_jvs_io3_ops = {
     .read_switches      = idz_jvs_read_switches,
@@ -150,11 +153,14 @@ static void idz_jvs_read_analogs(
     }
 }
 
-static uint16_t idz_jvs_read_coin_counter(void *ctx, uint8_t slot_no)
+static void idz_jvs_read_coin_counter(
+        void *ctx,
+        uint8_t slot_no,
+        uint16_t *out)
 {
     if (slot_no > 0) {
-        return 0;
+        return;
     }
 
-    return idz_io_jvs_read_coin_counter();
+    idz_io_jvs_read_coin_counter(out);
 }

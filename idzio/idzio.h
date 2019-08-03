@@ -32,6 +32,6 @@ void idz_io_jvs_read_buttons(uint8_t *opbtn, uint8_t *gamebtn);
 
 void idz_io_jvs_read_shifter(uint8_t *gear);
 
-uint16_t idz_io_jvs_read_coin_counter(void);
+void idz_io_jvs_read_coin_counter(uint16_t *total);
 
 // TODO force feedback once that gets reverse engineered

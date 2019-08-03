@@ -47,8 +47,12 @@ void diva_io_jvs_poll(uint8_t *opbtn_out, uint8_t *gamebtn_out)
     *gamebtn_out = gamebtn;
 }
 
-uint16_t diva_io_jvs_read_coin_counter(void)
+void diva_io_jvs_read_coin_counter(uint16_t *out)
 {
+    if (out == NULL) {
+        return;
+    }
+
     if (GetAsyncKeyState('3')) {
         if (!diva_io_coin) {
             diva_io_coin = true;
@@ -58,7 +62,7 @@ uint16_t diva_io_jvs_read_coin_counter(void)
         diva_io_coin = false;
     }
 
-    return diva_io_coins;
+    *out = diva_io_coins;
 }
 
 void diva_io_jvs_set_coin_blocker(bool open)
