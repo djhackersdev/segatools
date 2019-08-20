@@ -5,9 +5,6 @@
 
 #include "amex/amex.h"
 
-#include "board/config.h"
-#include "board/sg-reader.h"
-
 #include "chunihook/config.h"
 #include "chunihook/jvs.h"
 #include "chunihook/slider.h"
@@ -59,7 +56,6 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     platform_hook_init_nu(&chuni_hook_cfg.nu, "SDBT", "AAV1", chuni_hook_mod);
     amex_hook_init(&chuni_hook_cfg.amex);
-    sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
 
     if (chuni_hook_cfg.amex.jvs.enable) {
         chunithm_jvs_init();

@@ -9,7 +9,6 @@
 struct chuni_hook_config {
     struct nu_config nu;
     struct amex_config amex;
-    struct aime_config aime;
 };
 
 void chuni_hook_config_load(
