@@ -30,6 +30,11 @@ struct nusec_config {
     wchar_t billing_pub[MAX_PATH];
 };
 
+struct pcbid_config {
+    bool enable;
+    wchar_t serial_no[17];
+};
+
 struct vfs_config {
     bool enable;
     wchar_t amfs[MAX_PATH];
@@ -49,4 +54,5 @@ void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename);
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename);
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename);
 void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename);
+void pcbid_config_load(struct pcbid_config *cfg, const wchar_t *filename);
 void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename);

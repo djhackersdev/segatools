@@ -135,6 +135,22 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
             filename);
 }
 
+void pcbid_config_load(struct pcbid_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"pcbid", L"enable", 1, filename);
+
+    GetPrivateProfileStringW(
+            L"pcbid",
+            L"serialNo",
+            L"ACAE01A99999999",
+            cfg->serial_no,
+            _countof(cfg->serial_no),
+            filename);
+}
+
 void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
