@@ -42,6 +42,7 @@ subdir('chuniio')
 subdir('divaio')
 subdir('idzio')
 
+subdir('cardhook')
 subdir('chunihook')
 subdir('divahook')
 subdir('idzhook')
