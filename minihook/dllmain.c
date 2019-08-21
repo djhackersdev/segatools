@@ -25,7 +25,9 @@ static DWORD CALLBACK app_pre_startup(void)
     nusec_config_load(&nusec_cfg, L".\\segatools.ini");
     ds_config_load(&ds_cfg, L".\\segatools.ini");
 
-    clock_hook_init();
+    // TODO make use of clock read hook configurable
+    clock_read_hook_init();
+    clock_write_hook_init();
     nusec_hook_init(&nusec_cfg, "SSSS", "AAV0");
     ds_hook_init(&ds_cfg);
 

@@ -36,7 +36,7 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Hook Win32 APIs */
 
-    clock_hook_init();
+    clock_write_hook_init();
     serial_hook_init();
 
     /* Initialize emulation hooks */
