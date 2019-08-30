@@ -22,6 +22,7 @@ static int amDllVideoGetVBiosVersion(void *ctx, char *dest, size_t nchars);
 static HRESULT amvideo_reg_read_name(void *bytes, uint32_t *nbytes);
 static HRESULT amvideo_reg_read_port_X(void *bytes, uint32_t *nbytes);
 static HRESULT amvideo_reg_read_resolution_1(void *bytes, uint32_t *nbytes);
+static HRESULT amvideo_reg_read_setting(void *bytes, uint32_t *nbytes);
 static HRESULT amvideo_reg_read_use_segatiming(void *bytes, uint32_t *nbytes);
 
 static const wchar_t amvideo_dll_name[] = L"$amvideo";
@@ -36,6 +37,14 @@ static const struct reg_hook_val amvideo_reg_vals[] = {
 
 static const struct reg_hook_val amvideo_reg_mode_vals[] = {
     {
+        .name       = L"monitor_setting_1",
+        .read       = amvideo_reg_read_setting,
+        .type       = REG_SZ,
+    }, {
+        .name       = L"monitor_setting_2",
+        .read       = amvideo_reg_read_setting,
+        .type       = REG_SZ,
+    }, {
         .name       = L"port_1",
         .read       = amvideo_reg_read_port_X,
         .type       = REG_DWORD
@@ -183,6 +192,11 @@ static HRESULT amvideo_reg_read_port_X(void *bytes, uint32_t *nbytes)
 static HRESULT amvideo_reg_read_resolution_1(void *bytes, uint32_t *nbytes)
 {
     return reg_hook_read_wstr(bytes, nbytes, L"1920x1080");
+}
+
+static HRESULT amvideo_reg_read_setting(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_wstr(bytes, nbytes, L"0");
 }
 
 static HRESULT amvideo_reg_read_use_segatiming(void *bytes, uint32_t *nbytes)
