@@ -13,6 +13,8 @@ board_lib = static_library(
         'guid.h',
         'io3.c',
         'io3.h',
+        'io4.c',
+        'io4.h',
         'sg-cmd.c',
         'sg-cmd.h',
         'sg-frame.c',
