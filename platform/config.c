@@ -9,7 +9,20 @@
 
 #include "platform/config.h"
 
-void nu_config_load(struct nu_config *cfg,const wchar_t *filename)
+void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    amvideo_config_load(&cfg->amvideo, filename);
+    hwmon_config_load(&cfg->hwmon, filename);
+    misc_config_load(&cfg->misc, filename);
+    pcbid_config_load(&cfg->pcbid, filename);
+    nusec_config_load(&cfg->nusec, filename);
+    vfs_config_load(&cfg->vfs, filename);
+}
+
+void nu_config_load(struct nu_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
     assert(filename != NULL);

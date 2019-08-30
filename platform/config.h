@@ -49,7 +49,18 @@ struct nu_config {
     struct vfs_config vfs;
 };
 
-void nu_config_load(struct nu_config *cfg,const wchar_t *filename);
+struct alls_config {
+    struct amvideo_config amvideo;
+    struct hwmon_config hwmon;
+    struct misc_config misc;
+    struct pcbid_config pcbid;
+    struct nusec_config nusec;
+    struct vfs_config vfs;
+};
+
+void alls_config_load(struct alls_config *cfg, const wchar_t *filename);
+void nu_config_load(struct nu_config *cfg, const wchar_t *filename);
+
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename);
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename);
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename);
