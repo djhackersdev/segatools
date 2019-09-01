@@ -1,4 +1,6 @@
 #include <windows.h>
+
+#include <devioctl.h>
 #include <hidclass.h>
 
 #include <assert.h>
