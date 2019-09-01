@@ -16,8 +16,6 @@ static const struct io4_ops mu3_io4_ops = {
     .poll = mu3_io4_poll,
 };
 
-static int mu3_lever_pos;
-
 HRESULT mu3_io4_hook_init(void)
 {
     HRESULT hr;
