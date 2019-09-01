@@ -7,6 +7,8 @@
 #include "amex/jvs.h"
 #include "amex/sram.h"
 
+#include <assert.h>
+
 HRESULT amex_hook_init(const struct amex_config *cfg)
 {
     HRESULT hr;

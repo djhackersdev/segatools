@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
