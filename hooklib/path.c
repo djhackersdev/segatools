@@ -45,6 +45,22 @@ static HANDLE WINAPI hook_CreateFileW(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
+static HANDLE WINAPI hook_FindFirstFileExA(
+        const char *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags);
+
+static HANDLE WINAPI hook_FindFirstFileExW(
+        const wchar_t *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags);
+
 static DWORD WINAPI hook_GetFileAttributesA(const char *lpFileName);
 
 static DWORD WINAPI hook_GetFileAttributesW(const wchar_t *lpFileName);
@@ -87,6 +103,22 @@ static HANDLE WINAPI (*next_CreateFileW)(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
+static HANDLE WINAPI (*next_FindFirstFileExA)(
+        const char *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags);
+
+static HANDLE WINAPI (*next_FindFirstFileExW)(
+        const wchar_t *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags);
+
 static DWORD WINAPI (*next_GetFileAttributesA)(const char *lpFileName);
 
 static DWORD WINAPI (*next_GetFileAttributesW)(const wchar_t *lpFileName);
@@ -120,6 +152,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "CreateFileW",
         .patch  = hook_CreateFileW,
         .link   = (void **) &next_CreateFileW,
+    }, {
+        .name   = "FindFirstFileExA",
+        .patch  = hook_FindFirstFileExA,
+        .link   = (void **) &next_FindFirstFileExA,
+    }, {
+        .name   = "FindFirstFileExW",
+        .patch  = hook_FindFirstFileExW,
+        .link   = (void **) &next_FindFirstFileExW,
     }, {
         .name   = "GetFileAttributesA",
         .patch  = hook_GetFileAttributesA,
@@ -434,6 +474,68 @@ static HANDLE WINAPI hook_CreateFileW(
             dwCreationDisposition,
             dwFlagsAndAttributes,
             hTemplateFile);
+
+    free(trans);
+
+    return result;
+}
+
+static HANDLE WINAPI hook_FindFirstFileExA(
+        const char *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags)
+{
+    char *trans;
+    HANDLE result;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, lpFileName);
+
+    if (!ok) {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    result = next_FindFirstFileExA(
+            trans ? trans : lpFileName,
+            fInfoLevelId,
+            lpFindFileData,
+            fSearchOp,
+            lpSearchFilter,
+            dwAdditionalFlags);
+
+    free(trans);
+
+    return result;
+}
+
+static HANDLE WINAPI hook_FindFirstFileExW(
+        const wchar_t *lpFileName,
+        FINDEX_INFO_LEVELS fInfoLevelId,
+        void *lpFindFileData,
+        FINDEX_SEARCH_OPS fSearchOp,
+        void *lpSearchFilter,
+        DWORD dwAdditionalFlags)
+{
+    wchar_t *trans;
+    HANDLE result;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpFileName);
+
+    if (!ok) {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    result = next_FindFirstFileExW(
+            trans ? trans : lpFileName,
+            fInfoLevelId,
+            lpFindFileData,
+            fSearchOp,
+            lpSearchFilter,
+            dwAdditionalFlags);
 
     free(trans);
 
