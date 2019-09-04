@@ -4,6 +4,7 @@
 
 #include "platform/amvideo.h"
 #include "platform/config.h"
+#include "platform/dns.h"
 #include "platform/hwmon.h"
 #include "platform/misc.h"
 #include "platform/nusec.h"
@@ -25,6 +26,12 @@ HRESULT platform_hook_init_alls(
     assert(redir_mod != NULL);
 
     hr = amvideo_hook_init(&cfg->amvideo, redir_mod);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = dns_platform_hook_init(&cfg->dns);
 
     if (FAILED(hr)) {
         return hr;
@@ -73,6 +80,12 @@ HRESULT platform_hook_init_nu(
     assert(redir_mod != NULL);
 
     hr = amvideo_hook_init(&cfg->amvideo, redir_mod);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = dns_platform_hook_init(&cfg->dns);
 
     if (FAILED(hr)) {
         return hr;
