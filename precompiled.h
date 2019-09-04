@@ -10,6 +10,7 @@
 #include <winternl.h>
 #include <setupapi.h>
 #include <unknwn.h>
+#include <windns.h>
 #include <dinput.h>
 #include <xinput.h>
 #include <d3d9.h>
