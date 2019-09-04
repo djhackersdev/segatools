@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "platform/config.h"
 
@@ -16,6 +17,7 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     amvideo_config_load(&cfg->amvideo, filename);
+    dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
     pcbid_config_load(&cfg->pcbid, filename);
@@ -29,6 +31,7 @@ void nu_config_load(struct nu_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     amvideo_config_load(&cfg->amvideo, filename);
+    dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
     nusec_config_load(&cfg->nusec, filename);
@@ -41,6 +44,48 @@ void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"amvideo", L"enable", 1, filename);
+}
+
+void dns_config_load(struct dns_config *cfg, const wchar_t *filename)
+{
+    wchar_t default_[128];
+
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"dns", L"enable", 1, filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
+            L"default",
+            L"localhost",
+            default_,
+            _countof(default_),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
+            L"startup",
+            default_,
+            cfg->startup,
+            _countof(cfg->startup),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
+            L"billing",
+            default_,
+            cfg->billing,
+            _countof(cfg->billing),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
+            L"aimedb",
+            default_,
+            cfg->aimedb,
+            _countof(cfg->aimedb),
+            filename);
 }
 
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename)

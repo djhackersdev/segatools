@@ -11,6 +11,8 @@ platform_lib = static_library(
         'amvideo.h',
         'config.c',
         'config.h',
+        'dns.c',
+        'dns.h',
         'hwmon.c',
         'hwmon.h',
         'misc.c',

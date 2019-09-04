@@ -10,6 +10,13 @@ struct amvideo_config {
     bool enable;
 };
 
+struct dns_config {
+    bool enable;
+    wchar_t startup[128];
+    wchar_t billing[128];
+    wchar_t aimedb[128];
+};
+
 struct hwmon_config {
     bool enable;
 };
@@ -43,6 +50,7 @@ struct vfs_config {
 
 struct nu_config {
     struct amvideo_config amvideo;
+    struct dns_config dns;
     struct hwmon_config hwmon;
     struct misc_config misc;
     struct nusec_config nusec;
@@ -51,6 +59,7 @@ struct nu_config {
 
 struct alls_config {
     struct amvideo_config amvideo;
+    struct dns_config dns;
     struct hwmon_config hwmon;
     struct misc_config misc;
     struct pcbid_config pcbid;
@@ -62,6 +71,7 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename);
 void nu_config_load(struct nu_config *cfg, const wchar_t *filename);
 
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename);
+void dns_config_load(struct dns_config *cfg, const wchar_t *filename);
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename);
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename);
 void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename);
