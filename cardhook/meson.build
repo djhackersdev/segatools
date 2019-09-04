@@ -12,6 +12,7 @@ shared_library(
         aimeio_dll,
         board_lib,
         hooklib_lib,
+        platform_lib,
         util_lib,
     ],
     sources : [

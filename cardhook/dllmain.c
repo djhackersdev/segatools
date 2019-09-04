@@ -10,20 +10,27 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
+#include "platform/config.h"
+#include "platform/dns.h"
+
 #include "util/dprintf.h"
 
-// Emulating an AiMe reader is the only thing this hook DLL does
-static const struct aime_config app_aime_config = { .enable = true };
+static struct aime_config app_aime_config;
+static struct dns_config app_dns_config;
 static process_entry_t app_startup;
 
 static DWORD CALLBACK app_pre_startup(void)
 {
     dprintf("--- Begin %s ---\n", __func__);
 
-    spike_hook_init("cardspike.txt");
+    aime_config_load(&app_aime_config, L"segatools.ini");
+    dns_config_load(&app_dns_config, L"segatools.ini");
 
     serial_hook_init();
     sg_reader_hook_init(&app_aime_config, 12);
+    dns_platform_hook_init(&app_dns_config);
+
+    spike_hook_init("cardspike.txt");
 
     dprintf("---  End  %s ---\n", __func__);
 
