@@ -11,6 +11,7 @@
 #include <setupapi.h>
 #include <unknwn.h>
 #include <windns.h>
+#include <ws2tcpip.h>
 #include <dinput.h>
 #include <xinput.h>
 #include <d3d9.h>

@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <windns.h>
+#include <ws2tcpip.h>
 
 #include <assert.h>
 #include <stdbool.h>
@@ -59,6 +60,12 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
         void *pQueryResults,
         void *pCancelHandle);
 
+static int WSAAPI hook_getaddrinfo(
+        const char *pNodeName,
+        const char *pServiceName,
+        const ADDRINFOA *pHints,
+        ADDRINFOA **ppResult);
+
 /* Link pointers */
 
 static DNS_STATUS WINAPI (*next_DnsQuery_A)(
@@ -82,7 +89,13 @@ static DNS_STATUS WINAPI (*next_DnsQueryEx)(
         void *pQueryResults,
         void *pCancelHandle);
 
-static const struct hook_symbol dns_hook_syms[] = {
+static int WSAAPI (*next_getaddrinfo)(
+        const char *pNodeName,
+        const char *pServiceName,
+        const ADDRINFOA *pHints,
+        ADDRINFOA **ppResult);
+
+static const struct hook_symbol dns_hook_syms_dnsapi[] = {
     {
         .name       = "DnsQuery_A",
         .patch      = hook_DnsQuery_A,
@@ -95,6 +108,15 @@ static const struct hook_symbol dns_hook_syms[] = {
         .name       = "DnsQueryEx",
         .patch      = hook_DnsQueryEx,
         .link       = (void **) &next_DnsQueryEx,
+    }
+};
+
+static const struct hook_symbol dns_hook_syms_ws2[] = {
+    {
+        .name       = "getaddrinfo",
+        .ordinal    = 176,
+        .patch      = hook_getaddrinfo,
+        .link       = (void **) &next_getaddrinfo,
     }
 };
 
@@ -115,8 +137,14 @@ static void dns_hook_init(void)
     hook_table_apply(
             NULL,
             "dnsapi.dll",
-            dns_hook_syms,
-            _countof(dns_hook_syms));
+            dns_hook_syms_dnsapi,
+            _countof(dns_hook_syms_dnsapi));
+
+    hook_table_apply(
+            NULL,
+            "ws2_32.dll",
+            dns_hook_syms_ws2,
+            _countof(dns_hook_syms_ws2));
 }
 
 HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
@@ -339,4 +367,71 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
     pRequest->QueryName = orig;
 
     return code;
+}
+
+static int WSAAPI hook_getaddrinfo(
+        const char *pNodeName,
+        const char *pServiceName,
+        const ADDRINFOA *pHints,
+        ADDRINFOA **ppResult)
+{
+    const struct dns_hook_entry *pos;
+    char *str;
+    size_t str_c;
+    wchar_t *wstr;
+    size_t wstr_c;
+    int result;
+    size_t i;
+
+    str = NULL;
+    wstr = NULL;
+
+    if (pNodeName == NULL) {
+        result = WSA_INVALID_PARAMETER;
+
+        goto end;
+    }
+
+    mbstowcs_s(&wstr_c, NULL, 0, pNodeName, 0);
+    wstr = malloc(wstr_c * sizeof(wchar_t));
+
+    if (wstr == NULL) {
+        result = WSA_NOT_ENOUGH_MEMORY;
+
+        goto end;
+    }
+
+    mbstowcs_s(NULL, wstr, wstr_c, pNodeName, wstr_c - 1);
+    EnterCriticalSection(&dns_hook_lock);
+
+    for (i = 0 ; i < dns_hook_nentries ; i++) {
+        pos = &dns_hook_entries[i];
+
+        if (_wcsicmp(wstr, pos->from) == 0) {
+            wcstombs_s(&str_c, NULL, 0, pos->to, 0);
+            str = malloc(str_c * sizeof(char));
+
+            if (str == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                result = WSA_NOT_ENOUGH_MEMORY;
+
+                goto end;
+            }
+
+            wcstombs_s(NULL, str, str_c, pos->to, str_c - 1);
+            pNodeName = str;
+
+            break;
+        }
+    }
+
+    LeaveCriticalSection(&dns_hook_lock);
+
+    result = next_getaddrinfo(pNodeName, pServiceName, pHints, ppResult);
+
+end:
+    free(wstr);
+    free(str);
+
+    return result;
 }
