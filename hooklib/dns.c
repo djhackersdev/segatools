@@ -36,6 +36,8 @@ struct dns_hook_entry {
     wchar_t *to;
 };
 
+/* Hook funcs */
+
 static DNS_STATUS WINAPI hook_DnsQuery_A(
         const char *pszName,
         WORD wType,
@@ -56,6 +58,8 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
         POLYFILL_DNS_QUERY_REQUEST *pRequest,
         void *pQueryResults,
         void *pCancelHandle);
+
+/* Link pointers */
 
 static DNS_STATUS WINAPI (*next_DnsQuery_A)(
         const char *pszName,
