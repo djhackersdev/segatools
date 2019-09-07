@@ -216,6 +216,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
     }
 
     mbstowcs_s(NULL, wstr, wstr_c, pszName, wstr_c - 1);
+    EnterCriticalSection(&dns_hook_lock);
 
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
@@ -225,6 +226,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
             str = malloc(str_c * sizeof(char));
 
             if (str == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
                 hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
 
                 goto end;
@@ -236,6 +238,8 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
             break;
         }
     }
+
+    LeaveCriticalSection(&dns_hook_lock);
 
     code = next_DnsQuery_A(
             pszName,
@@ -269,6 +273,8 @@ static DNS_STATUS WINAPI hook_DnsQuery_W(
         return ERROR_INVALID_PARAMETER;
     }
 
+    EnterCriticalSection(&dns_hook_lock);
+
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
@@ -278,6 +284,8 @@ static DNS_STATUS WINAPI hook_DnsQuery_W(
             break;
         }
     }
+
+    LeaveCriticalSection(&dns_hook_lock);
 
     return next_DnsQuery_W(
             pszName,
@@ -304,6 +312,7 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
     }
 
     orig = pRequest->QueryName;
+    EnterCriticalSection(&dns_hook_lock);
 
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
@@ -314,6 +323,8 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
             break;
         }
     }
+
+    LeaveCriticalSection(&dns_hook_lock);
 
     code = next_DnsQueryEx(pRequest, pQueryResults, pCancelHandle);
 
