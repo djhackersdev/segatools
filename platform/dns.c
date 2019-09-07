@@ -17,6 +17,18 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return S_FALSE;
     }
 
+    hr = dns_hook_push(L"tenporouter.loc", cfg->router);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = dns_hook_push(L"bbrouter.loc", cfg->router);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     hr = dns_hook_push(L"naominet.jp", cfg->startup);
 
     if (FAILED(hr)) {

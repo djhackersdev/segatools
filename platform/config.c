@@ -65,6 +65,14 @@ void dns_config_load(struct dns_config *cfg, const wchar_t *filename)
 
     GetPrivateProfileStringW(
             L"dns",
+            L"router",
+            default_,
+            cfg->router,
+            _countof(cfg->router),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
             L"startup",
             default_,
             cfg->startup,
