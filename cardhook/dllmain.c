@@ -23,8 +23,8 @@ static DWORD CALLBACK app_pre_startup(void)
 {
     dprintf("--- Begin %s ---\n", __func__);
 
-    aime_config_load(&app_aime_config, L"segatools.ini");
-    dns_config_load(&app_dns_config, L"segatools.ini");
+    aime_config_load(&app_aime_config, L".\\segatools.ini");
+    dns_config_load(&app_dns_config, L".\\segatools.ini");
 
     serial_hook_init();
     sg_reader_hook_init(&app_aime_config, 12);
