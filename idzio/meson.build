@@ -14,6 +14,8 @@ idzio_dll = shared_library(
         'idzio.h',
         'shifter.c',
         'shifter.h',
+        'wnd.c',
+        'wnd.h',
         'xi.c',
         'xi.h',
     ],
