@@ -8,6 +8,7 @@
 #include "idzio/backend.h"
 #include "idzio/config.h"
 #include "idzio/di.h"
+#include "idzio/di-dev.h"
 #include "idzio/idzio.h"
 #include "idzio/shifter.h"
 #include "idzio/wnd.h"
@@ -20,19 +21,17 @@ struct idz_di_axis {
     size_t off;
 };
 
-union idz_di_state {
-    DIJOYSTATE st;
-    uint8_t bytes[sizeof(DIJOYSTATE)];
-};
-
 static HRESULT idz_di_config_apply(const struct idz_di_config *cfg);
 static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name);
 static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx);
-static void idz_di_try_fx(void);
-static HRESULT idz_di_poll(union idz_di_state *state);
+static BOOL idz_di_enum_callback_shifter(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx);
 static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out);
 static uint8_t idz_di_decode_pov(DWORD pov);
 static void idz_di_jvs_read_shifter(uint8_t *gear);
+static void idz_di_jvs_read_shifter_pos(uint8_t *gear);
+static void idz_di_jvs_read_shifter_virt(uint8_t *gear);
 static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out);
 
 static const struct idz_di_axis idz_di_axes[] = {
@@ -56,6 +55,7 @@ static const struct idz_io_backend idz_di_backend = {
 static HWND idz_di_wnd;
 static IDirectInput8W *idz_di_api;
 static IDirectInputDevice8W *idz_di_dev;
+static IDirectInputDevice8W *idz_di_shifter;
 static IDirectInputEffect *idz_di_fx;
 static size_t idz_di_off_brake;
 static size_t idz_di_off_accel;
@@ -63,6 +63,7 @@ static uint8_t idz_di_shift_dn;
 static uint8_t idz_di_shift_up;
 static uint8_t idz_di_view_chg;
 static uint8_t idz_di_start;
+static uint8_t idz_di_gear[6];
 
 HRESULT idz_di_init(
         const struct idz_di_config *cfg,
@@ -109,7 +110,7 @@ HRESULT idz_di_init(
 
     if (dinput8 == NULL) {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        dprintf("Wheel: LoadLibrary failed: %08x\n", (int) hr);
+        dprintf("DirectInput: LoadLibrary failed: %08x\n", (int) hr);
 
         return hr;
     }
@@ -117,7 +118,7 @@ HRESULT idz_di_init(
     api_entry = (void *) GetProcAddress(dinput8, "DirectInput8Create");
 
     if (api_entry == NULL) {
-        dprintf("Wheel: GetProcAddress failed\n");
+        dprintf("DirectInput: GetProcAddress failed\n");
 
         return E_FAIL;
     }
@@ -130,7 +131,7 @@ HRESULT idz_di_init(
             NULL);
 
     if (FAILED(hr)) {
-        dprintf("Wheel: API create failed: %08x\n", (int) hr);
+        dprintf("DirectInput: API create failed: %08x\n", (int) hr);
 
         return hr;
     }
@@ -143,7 +144,7 @@ HRESULT idz_di_init(
             DIEDFL_ATTACHEDONLY);
 
     if (FAILED(hr)) {
-        dprintf("Wheel: EnumDevices failed: %08x\n", (int) hr);
+        dprintf("DirectInput: EnumDevices failed: %08x\n", (int) hr);
 
         return hr;
     }
@@ -154,35 +155,43 @@ HRESULT idz_di_init(
         return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
 
-    hr = IDirectInputDevice8_SetCooperativeLevel(
-            idz_di_dev,
-            idz_di_wnd,
-            DISCL_BACKGROUND | DISCL_EXCLUSIVE);
+    hr = idz_di_dev_start(idz_di_dev, idz_di_wnd);
 
     if (FAILED(hr)) {
-        dprintf("Wheel: SetCooperativeLevel failed: %08x\n", (int) hr);
-
         return hr;
     }
 
-    hr = IDirectInputDevice8_SetDataFormat(idz_di_dev, &c_dfDIJoystick);
+    idz_di_dev_start_fx(idz_di_dev, &idz_di_fx);
 
-    if (FAILED(hr)) {
-        dprintf("Wheel: SetDataFormat failed: %08x\n", (int) hr);
+    if (cfg->shifter_name[0] != L'\0') {
+        hr = IDirectInput8_EnumDevices(
+                idz_di_api,
+                DI8DEVCLASS_GAMECTRL,
+                idz_di_enum_callback_shifter,
+                (void *) cfg,
+                DIEDFL_ATTACHEDONLY);
 
-        return hr;
+        if (FAILED(hr)) {
+            dprintf("DirectInput: EnumDevices failed: %08x\n", (int) hr);
+
+            return hr;
+        }
+
+        if (idz_di_dev == NULL) {
+            dprintf("Shifter: Controller not found\n");
+
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        }
+
+        hr = idz_di_dev_start(idz_di_shifter, idz_di_wnd);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
     }
 
-    hr = IDirectInputDevice8_Acquire(idz_di_dev);
+    dprintf("DirectInput: Controller initialized\n");
 
-    if (FAILED(hr)) {
-        dprintf("Wheel: Acquire failed: %08x\n", (int) hr);
-
-        return hr;
-    }
-
-    dprintf("Wheel: DirectInput initialized\n");
-    idz_di_try_fx();
     *backend = &idz_di_backend;
 
     return S_OK;
@@ -192,6 +201,7 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
 {
     const struct idz_di_axis *brake_axis;
     const struct idz_di_axis *accel_axis;
+    int i;
 
     brake_axis = idz_di_get_axis(cfg->brake_axis);
     accel_axis = idz_di_get_axis(cfg->accel_axis);
@@ -232,6 +242,16 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
         return E_INVALIDARG;
     }
 
+    for (i = 0 ; i < 6 ; i++) {
+        if (cfg->gear[i] > 32) {
+            dprintf("Shifter: Invalid gear %i button: %i\n",
+                    i + 1,
+                    cfg->gear[i]);
+
+            return E_INVALIDARG;
+        }
+    }
+
     /* Print some debug output to make sure config works... */
 
     dprintf("Wheel: --- Begin configuration ---\n");
@@ -245,12 +265,30 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     dprintf("Wheel: Shift Up button . . : %i\n", cfg->shift_up);
     dprintf("Wheel: ---  End  configuration ---\n");
 
+    if (cfg->shifter_name[0] != L'\0') {
+        dprintf("Shifter: --- Begin configuration ---\n");
+        dprintf("Shifter: Device name . . . : Contains \"%S\"\n",
+                cfg->shifter_name);
+        dprintf("Shifter: Gear buttons  . . : %i %i %i %i %i %i\n",
+                cfg->gear[0],
+                cfg->gear[1],
+                cfg->gear[2],
+                cfg->gear[3],
+                cfg->gear[4],
+                cfg->gear[5]);
+        dprintf("Shifter: ---  End  configuration ---\n");
+    }
+
     idz_di_off_brake = accel_axis->off;
     idz_di_off_accel = brake_axis->off;
     idz_di_start = cfg->start;
     idz_di_view_chg = cfg->view_chg;
     idz_di_shift_dn = cfg->shift_dn;
     idz_di_shift_up = cfg->shift_up;
+
+    for (i = 0 ; i < 6 ; i++) {
+        idz_di_gear[i] = cfg->gear[i];
+    }
 
     return S_OK;
 }
@@ -274,6 +312,7 @@ static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name)
 static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx)
 {
     const struct idz_di_config *cfg;
+    HRESULT hr;
 
     cfg = ctx;
 
@@ -283,119 +322,45 @@ static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx)
 
     dprintf("Wheel: Using DirectInput device \"%S\"\n", dev->tszProductName);
 
-    IDirectInput8_CreateDevice(
+    hr = IDirectInput8_CreateDevice(
             idz_di_api,
             &dev->guidInstance,
             &idz_di_dev,
             NULL);
 
+    if (FAILED(hr)) {
+        dprintf("Wheel: CreateDevice failed: %08x\n", (int) hr);
+    }
+
     return DIENUM_STOP;
 }
 
-static void idz_di_try_fx(void)
+static BOOL idz_di_enum_callback_shifter(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx)
 {
-    /* Set up force-feedback on devices that support it. This is just a stub
-       for the time being, since we don't yet know how the serial port force
-       feedback protocol works.
-
-       I'm currently developing with an Xbox One Thrustmaster TMX wheel, if
-       we don't perform at least some perfunctory FFB initialization of this
-       nature (or indeed if no DirectInput application is running) then the
-       wheel exhibits considerable resistance, similar to that of a stationary
-       car. Changing cf.lMagnitude to a nonzero value does cause the wheel to
-       continuously turn in the given direction with the given force as one
-       would expect (max magnitude per DirectInput docs is +/- 10000).
-
-       Failure here is non-fatal, we log any errors and move on.
-
-       https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416353(v=vs.85)
-    */
-
-    DWORD axis;
-    LONG direction;
-    DIEFFECT fx;
-    DICONSTANTFORCE cf;
+    const struct idz_di_config *cfg;
     HRESULT hr;
 
-    dprintf("Wheel: Attempting to start force feedback (may take a sec)\n");
+    cfg = ctx;
 
-    axis = DIJOFS_X;
-    direction = 0;
+    if (wcsstr(dev->tszProductName, cfg->shifter_name) == NULL) {
+        return DIENUM_CONTINUE;
+    }
 
-    memset(&cf, 0, sizeof(cf));
-    cf.lMagnitude = 0;
+    dprintf("Shifter: Using DirectInput device \"%S\"\n", dev->tszProductName);
 
-    memset(&fx, 0, sizeof(fx));
-    fx.dwSize = sizeof(fx);
-    fx.dwFlags = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
-    fx.dwDuration = INFINITE;
-    fx.dwGain = DI_FFNOMINALMAX;
-    fx.dwTriggerButton = DIEB_NOTRIGGER;
-    fx.dwTriggerRepeatInterval = INFINITE;
-    fx.cAxes = 1;
-    fx.rgdwAxes = &axis;
-    fx.rglDirection = &direction;
-    fx.cbTypeSpecificParams = sizeof(cf);
-    fx.lpvTypeSpecificParams = &cf;
-
-    hr = IDirectInputDevice8_CreateEffect(
-            idz_di_dev,
-            &GUID_ConstantForce,
-            &fx,
-            &idz_di_fx,
+    hr = IDirectInput8_CreateDevice(
+            idz_di_api,
+            &dev->guidInstance,
+            &idz_di_shifter,
             NULL);
 
     if (FAILED(hr)) {
-        dprintf("Wheel: DirectInput force feedback unavailable: %08x\n",
-                (int) hr);
-
-        return;
+        dprintf("Shifter: CreateDevice failed: %08x\n", (int) hr);
     }
 
-    hr = IDirectInputEffect_Start(idz_di_fx, INFINITE, 0);
-
-    if (FAILED(hr)) {
-        dprintf("Wheel: DirectInput force feedback start failed: %08x\n",
-                (int) hr);
-
-        return;
-    }
-
-    dprintf("Wheel: Force feedback initialized and set to zero\n");
-}
-
-static HRESULT idz_di_poll(union idz_di_state *out)
-{
-    HRESULT hr;
-    MSG msg;
-
-    memset(out, 0, sizeof(*out));
-
-    if (idz_di_dev == NULL) {
-        return E_UNEXPECTED;
-    }
-
-    /* Pump our dummy window's message queue just in case DirectInput or an
-       IHV DirectInput driver somehow relies on it */
-
-    while (PeekMessageW(&msg, idz_di_wnd, 0, 0, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    hr = IDirectInputDevice8_GetDeviceState(
-            idz_di_dev,
-            sizeof(out->st),
-            &out->st);
-
-    if (FAILED(hr)) {
-        dprintf("Wheel: I/O error: %08x\n", (int) hr);
-    }
-
-    /* JVS lacks a protocol for reporting hardware errors from poll command
-       responses, so this ends up returning zeroed input state instead. */
-
-    return hr;
+    return DIENUM_STOP;
 }
 
 static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out)
@@ -406,7 +371,7 @@ static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out)
 
     assert(gamebtn_out != NULL);
 
-    hr = idz_di_poll(&state);
+    hr = idz_di_dev_poll(idz_di_dev, idz_di_wnd, &state);
 
     if (FAILED(hr)) {
         return;
@@ -442,6 +407,47 @@ static uint8_t idz_di_decode_pov(DWORD pov)
 
 static void idz_di_jvs_read_shifter(uint8_t *gear)
 {
+    assert(gear != NULL);
+
+    if (idz_di_shifter != NULL) {
+        idz_di_jvs_read_shifter_pos(gear);
+    } else {
+        idz_di_jvs_read_shifter_virt(gear);
+    }
+}
+
+static void idz_di_jvs_read_shifter_pos(uint8_t *out)
+{
+    union idz_di_state state;
+    uint8_t btn_no;
+    uint8_t gear;
+    uint8_t i;
+    HRESULT hr;
+
+    assert(out != NULL);
+    assert(idz_di_shifter != NULL);
+
+    hr = idz_di_dev_poll(idz_di_shifter, idz_di_wnd, &state);
+
+    if (FAILED(hr)) {
+        return;
+    }
+
+    gear = 0;
+
+    for (i = 0 ; i < 6 ; i++) {
+        btn_no = idz_di_gear[i];
+
+        if (btn_no && state.st.rgbButtons[btn_no - 1]) {
+            gear = i + 1;
+        }
+    }
+
+    *out = gear;
+}
+
+static void idz_di_jvs_read_shifter_virt(uint8_t *gear)
+{
     union idz_di_state state;
     bool shift_dn;
     bool shift_up;
@@ -449,7 +455,7 @@ static void idz_di_jvs_read_shifter(uint8_t *gear)
 
     assert(gear != NULL);
 
-    hr = idz_di_poll(&state);
+    hr = idz_di_dev_poll(idz_di_dev, idz_di_wnd, &state);
 
     if (FAILED(hr)) {
         return;
@@ -481,7 +487,7 @@ static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
 
     assert(out != NULL);
 
-    hr = idz_di_poll(&state);
+    hr = idz_di_dev_poll(idz_di_dev, idz_di_wnd, &state);
 
     if (FAILED(hr)) {
         return;

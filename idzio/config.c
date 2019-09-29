@@ -2,12 +2,17 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 #include "idzio/config.h"
 
 void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
 {
+    wchar_t key[8];
+    int i;
+
     assert(cfg != NULL);
     assert(filename != NULL);
 
@@ -17,6 +22,14 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
             L"",
             cfg->device_name,
             _countof(cfg->device_name),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dinput",
+            L"shifterName",
+            L"",
+            cfg->shifter_name,
+            _countof(cfg->shifter_name),
             filename);
 
     GetPrivateProfileStringW(
@@ -39,6 +52,11 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
     cfg->view_chg = GetPrivateProfileIntW(L"dinput", L"viewChg", 0, filename);
     cfg->shift_dn = GetPrivateProfileIntW(L"dinput", L"shiftDn", 0, filename);
     cfg->shift_up = GetPrivateProfileIntW(L"dinput", L"shiftUp", 0, filename);
+
+    for (i = 0 ; i < 6 ; i++) {
+        swprintf_s(key, _countof(key), L"gear%i", i + 1);
+        cfg->gear[i] = GetPrivateProfileIntW(L"dinput", key, i + 1, filename);
+    }
 }
 
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)

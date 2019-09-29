@@ -10,12 +10,14 @@ struct idz_shifter_config {
 
 struct idz_di_config {
     wchar_t device_name[64];
+    wchar_t shifter_name[64];
     wchar_t brake_axis[16];
     wchar_t accel_axis[16];
     uint8_t start;
     uint8_t view_chg;
     uint8_t shift_dn;
     uint8_t shift_up;
+    uint8_t gear[6];
 };
 
 struct idz_io_config {
