@@ -26,7 +26,7 @@ HRESULT idz_xi_init(const struct idz_io_backend **backend)
 {
     assert(backend != NULL);
 
-    dprintf("IDZ XI: Using XInput controller\n");
+    dprintf("XInput: Using XInput controller\n");
     *backend = &idz_xi_backend;
 
     return S_OK;
