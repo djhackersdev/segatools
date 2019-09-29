@@ -5,20 +5,39 @@
 #include <stdint.h>
 
 #include "idzio/backend.h"
+#include "idzio/config.h"
 #include "idzio/di.h"
 #include "idzio/idzio.h"
 #include "idzio/xi.h"
 
+#include "util/dprintf.h"
+#include "util/str.h"
+
 static HMODULE idz_io_hmodule;
+static struct idz_io_config idz_io_cfg;
 static const struct idz_io_backend *idz_io_backend;
 static bool idz_io_coin;
 static uint16_t idz_io_coins;
 
 HRESULT idz_io_init(void)
 {
+    HRESULT hr;
+
     assert(idz_io_backend == NULL);
 
-    return idz_di_init(idz_io_hmodule, &idz_io_backend);
+    idz_io_config_load(&idz_io_cfg, L".\\segatools.ini");
+
+    if (wstr_ieq(idz_io_cfg.mode, L"dinput")) {
+        hr = idz_di_init(&idz_io_cfg.di, idz_io_hmodule, &idz_io_backend);
+    } else if (wstr_ieq(idz_io_cfg.mode, L"xinput")) {
+        hr = idz_xi_init(&idz_io_backend);
+    } else {
+        hr = E_INVALIDARG;
+        dprintf("IDZ IO: Invalid IO mode \"%S\", use dinput or xinput\n",
+                idz_io_cfg.mode);
+    }
+
+    return hr;
 }
 
 void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
@@ -31,11 +50,13 @@ void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
 
     opbtn = 0;
 
-    if (GetAsyncKeyState('1')) {
+    if (    idz_io_cfg.vk_test &&
+            (GetAsyncKeyState(idz_io_cfg.vk_test) & 0x8000)) {
         opbtn |= IDZ_IO_OPBTN_TEST;
     }
 
-    if (GetAsyncKeyState('2')) {
+    if (    idz_io_cfg.vk_service &&
+            (GetAsyncKeyState(idz_io_cfg.vk_service) & 0x8000)) {
         opbtn |= IDZ_IO_OPBTN_SERVICE;
     }
 
@@ -66,7 +87,8 @@ void idz_io_jvs_read_coin_counter(uint16_t *out)
 
     /* Coin counter is not backend-specific */
 
-    if (GetAsyncKeyState('3')) {
+    if (    idz_io_cfg.vk_coin &&
+            (GetAsyncKeyState(idz_io_cfg.vk_coin) & 0x8000)) {
         if (!idz_io_coin) {
             idz_io_coin = true;
             idz_io_coins++;

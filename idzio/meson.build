@@ -15,6 +15,8 @@ idzio_dll = shared_library(
     ],
     sources : [
         'backend.h',
+        'config.c',
+        'config.h',
         'di.c',
         'di.h',
         'dllmain.c',

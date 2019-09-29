@@ -6,19 +6,46 @@
 #include <wchar.h>
 
 #include "idzio/backend.h"
+#include "idzio/config.h"
+#include "idzio/di.h"
 #include "idzio/idzio.h"
 #include "idzio/shifter.h"
 #include "idzio/wnd.h"
 
 #include "util/dprintf.h"
+#include "util/str.h"
 
+struct idz_di_axis {
+    wchar_t name[4];
+    size_t off;
+};
+
+union idz_di_state {
+    DIJOYSTATE st;
+    uint8_t bytes[sizeof(DIJOYSTATE)];
+};
+
+static HRESULT idz_di_config_apply(const struct idz_di_config *cfg);
+static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name);
 static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx);
 static void idz_di_try_fx(void);
-static HRESULT idz_di_poll(DIJOYSTATE *out);
+static HRESULT idz_di_poll(union idz_di_state *state);
 static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out);
 static uint8_t idz_di_decode_pov(DWORD pov);
 static void idz_di_jvs_read_shifter(uint8_t *gear);
 static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out);
+
+static const struct idz_di_axis idz_di_axes[] = {
+    /* Just map DIJOYSTATE for now, we can map DIJOYSTATE2 later if needed */
+    { .name = L"X",     .off = DIJOFS_X },
+    { .name = L"Y",     .off = DIJOFS_Y },
+    { .name = L"Z",     .off = DIJOFS_Z },
+    { .name = L"RX",    .off = DIJOFS_RX },
+    { .name = L"RY",    .off = DIJOFS_RY },
+    { .name = L"RZ",    .off = DIJOFS_RZ },
+    { .name = L"U",     .off = DIJOFS_SLIDER(0) },
+    { .name = L"V",     .off = DIJOFS_SLIDER(1) },
+};
 
 static const struct idz_io_backend idz_di_backend = {
     .jvs_read_buttons   = idz_di_jvs_read_buttons,
@@ -30,8 +57,17 @@ static HWND idz_di_wnd;
 static IDirectInput8W *idz_di_api;
 static IDirectInputDevice8W *idz_di_dev;
 static IDirectInputEffect *idz_di_fx;
+static size_t idz_di_off_brake;
+static size_t idz_di_off_accel;
+static uint8_t idz_di_shift_dn;
+static uint8_t idz_di_shift_up;
+static uint8_t idz_di_view_chg;
+static uint8_t idz_di_start;
 
-HRESULT idz_di_init(HINSTANCE inst, const struct idz_io_backend **backend)
+HRESULT idz_di_init(
+        const struct idz_di_config *cfg,
+        HINSTANCE inst,
+        const struct idz_io_backend **backend)
 {
     HRESULT hr;
     HMODULE dinput8;
@@ -39,9 +75,16 @@ HRESULT idz_di_init(HINSTANCE inst, const struct idz_io_backend **backend)
     wchar_t dll_path[MAX_PATH];
     UINT path_pos;
 
+    assert(cfg != NULL);
     assert(backend != NULL);
 
     *backend = NULL;
+
+    hr = idz_di_config_apply(cfg);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     hr = idz_io_wnd_create(inst, &idz_di_wnd);
 
@@ -96,13 +139,19 @@ HRESULT idz_di_init(HINSTANCE inst, const struct idz_io_backend **backend)
             idz_di_api,
             DI8DEVCLASS_GAMECTRL,
             idz_di_enum_callback,
-            NULL,
+            (void *) cfg,
             DIEDFL_ATTACHEDONLY);
 
-    if (FAILED(hr) || idz_di_dev == NULL) {
-        dprintf("Wheel: Could not find a controller: %08x\n", (int) hr);
+    if (FAILED(hr)) {
+        dprintf("Wheel: EnumDevices failed: %08x\n", (int) hr);
 
         return hr;
+    }
+
+    if (idz_di_dev == NULL) {
+        dprintf("Wheel: Controller not found\n");
+
+        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
 
     hr = IDirectInputDevice8_SetCooperativeLevel(
@@ -139,8 +188,101 @@ HRESULT idz_di_init(HINSTANCE inst, const struct idz_io_backend **backend)
     return S_OK;
 }
 
+static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
+{
+    const struct idz_di_axis *brake_axis;
+    const struct idz_di_axis *accel_axis;
+
+    brake_axis = idz_di_get_axis(cfg->brake_axis);
+    accel_axis = idz_di_get_axis(cfg->accel_axis);
+
+    if (brake_axis == NULL) {
+        dprintf("Wheel: Invalid brake axis: %S\n", cfg->brake_axis);
+
+        return E_INVALIDARG;
+    }
+
+    if (accel_axis == NULL) {
+        dprintf("Wheel: Invalid accel axis: %S\n", cfg->accel_axis);
+
+        return E_INVALIDARG;
+    }
+
+    if (cfg->start > 32) {
+        dprintf("Wheel: Invalid start button: %i\n", cfg->start);
+
+        return E_INVALIDARG;
+    }
+
+    if (cfg->view_chg > 32) {
+        dprintf("Wheel: Invalid view change button: %i\n", cfg->view_chg);
+
+        return E_INVALIDARG;
+    }
+
+    if (cfg->shift_dn > 32) {
+        dprintf("Wheel: Invalid shift down button: %i\n", cfg->shift_dn);
+
+        return E_INVALIDARG;
+    }
+
+    if (cfg->shift_up > 32) {
+        dprintf("Wheel: Invalid shift up button: %i\n", cfg->shift_up);
+
+        return E_INVALIDARG;
+    }
+
+    /* Print some debug output to make sure config works... */
+
+    dprintf("Wheel: --- Begin configuration ---\n");
+    dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
+            cfg->device_name);
+    dprintf("Wheel: Brake axis  . . . . : %S\n", accel_axis->name);
+    dprintf("Wheel: Accelerator axis  . : %S\n", brake_axis->name);
+    dprintf("Wheel: Start button  . . . : %i\n", cfg->start);
+    dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
+    dprintf("Wheel: Shift Down button . : %i\n", cfg->shift_dn);
+    dprintf("Wheel: Shift Up button . . : %i\n", cfg->shift_up);
+    dprintf("Wheel: ---  End  configuration ---\n");
+
+    idz_di_off_brake = accel_axis->off;
+    idz_di_off_accel = brake_axis->off;
+    idz_di_start = cfg->start;
+    idz_di_view_chg = cfg->view_chg;
+    idz_di_shift_dn = cfg->shift_dn;
+    idz_di_shift_up = cfg->shift_up;
+
+    return S_OK;
+}
+
+static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name)
+{
+    const struct idz_di_axis *axis;
+    size_t i;
+
+    for (i = 0 ; i < _countof(idz_di_axes) ; i++) {
+        axis = &idz_di_axes[i];
+
+        if (wstr_ieq(name, axis->name)) {
+            return axis;
+        }
+    }
+
+    return NULL;
+}
+
 static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx)
 {
+    const struct idz_di_config *cfg;
+
+    cfg = ctx;
+
+    if (wcsstr(dev->tszProductName, cfg->device_name) == NULL) {
+        return DIENUM_CONTINUE;
+    }
+
+    dprintf("Wheel: Using DirectInput device \"%S\"\n", dev->tszProductName);
+
     IDirectInput8_CreateDevice(
             idz_di_api,
             &dev->guidInstance,
@@ -222,7 +364,7 @@ static void idz_di_try_fx(void)
     dprintf("Wheel: Force feedback initialized and set to zero\n");
 }
 
-static HRESULT idz_di_poll(DIJOYSTATE *out)
+static HRESULT idz_di_poll(union idz_di_state *out)
 {
     HRESULT hr;
     MSG msg;
@@ -241,7 +383,10 @@ static HRESULT idz_di_poll(DIJOYSTATE *out)
         DispatchMessage(&msg);
     }
 
-    hr = IDirectInputDevice8_GetDeviceState(idz_di_dev, sizeof(*out), out);
+    hr = IDirectInputDevice8_GetDeviceState(
+            idz_di_dev,
+            sizeof(out->st),
+            &out->st);
 
     if (FAILED(hr)) {
         dprintf("Wheel: I/O error: %08x\n", (int) hr);
@@ -255,8 +400,8 @@ static HRESULT idz_di_poll(DIJOYSTATE *out)
 
 static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out)
 {
+    union idz_di_state state;
     uint8_t gamebtn;
-    DIJOYSTATE state;
     HRESULT hr;
 
     assert(gamebtn_out != NULL);
@@ -267,13 +412,13 @@ static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out)
         return;
     }
 
-    gamebtn = idz_di_decode_pov(state.rgdwPOV[0]);
+    gamebtn = idz_di_decode_pov(state.st.rgdwPOV[0]);
 
-    if (state.rgbButtons[2]) {
+    if (idz_di_start && state.st.rgbButtons[idz_di_start - 1]) {
         gamebtn |= IDZ_IO_GAMEBTN_START;
     }
 
-    if (state.rgbButtons[9]) {
+    if (idz_di_view_chg && state.st.rgbButtons[idz_di_view_chg - 1]) {
         gamebtn |= IDZ_IO_GAMEBTN_VIEW_CHANGE;
     }
 
@@ -297,7 +442,9 @@ static uint8_t idz_di_decode_pov(DWORD pov)
 
 static void idz_di_jvs_read_shifter(uint8_t *gear)
 {
-    DIJOYSTATE state;
+    union idz_di_state state;
+    bool shift_dn;
+    bool shift_up;
     HRESULT hr;
 
     assert(gear != NULL);
@@ -308,18 +455,28 @@ static void idz_di_jvs_read_shifter(uint8_t *gear)
         return;
     }
 
-    if (state.rgbButtons[2]) {
-        idz_shifter_reset();
+    if (idz_di_shift_dn) {
+        shift_dn = state.st.rgbButtons[idz_di_shift_dn - 1];
+    } else {
+        shift_dn = false;
     }
 
-    idz_shifter_update(state.rgbButtons[0], state.rgbButtons[1]);
+    if (idz_di_shift_up) {
+        shift_up = state.st.rgbButtons[idz_di_shift_up - 1];
+    } else {
+        shift_up = false;
+    }
+
+    idz_shifter_update(shift_dn, shift_up);
 
     *gear = idz_shifter_current_gear();
 }
 
 static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
 {
-    DIJOYSTATE state;
+    union idz_di_state state;
+    const LONG *brake;
+    const LONG *accel;
     HRESULT hr;
 
     assert(out != NULL);
@@ -330,7 +487,10 @@ static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
         return;
     }
 
-    out->wheel = state.lX - 32768;
-    out->accel = 65535 - state.lRz;
-    out->brake = 65535 - state.lY;
+    brake = (LONG *) &state.bytes[idz_di_off_brake];
+    accel = (LONG *) &state.bytes[idz_di_off_accel];
+
+    out->wheel = state.st.lX - 32768;
+    out->brake = 65535 - *brake;
+    out->accel = 65535 - *accel;
 }
