@@ -205,18 +205,17 @@ static HRESULT gpio_ioctl_get_psw(struct irp *irp)
 
 static HRESULT gpio_ioctl_describe(struct irp *irp)
 {
+    HRESULT hr;
+
     dprintf("GPIO: Describe GPIO ports\n");
 
-    if (irp->read.nbytes < sizeof(gpio_ports)) {
-        dprintf("GPIO: Descriptor read buffer too small\n");
+    hr = iobuf_write(&irp->read, &gpio_ports, sizeof(gpio_ports));
 
-        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+    if (FAILED(hr)) {
+        dprintf("GPIO: Describe GPIO ports failed: %08x\n", (int) hr);
     }
 
-    memcpy(irp->read.bytes, &gpio_ports, sizeof(gpio_ports));
-    irp->read.pos = sizeof(gpio_ports);
-
-    return S_OK;
+    return hr;
 }
 
 static HRESULT gpio_ioctl_set_leds(struct irp *irp)

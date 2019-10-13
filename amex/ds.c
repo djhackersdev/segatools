@@ -149,26 +149,25 @@ static HRESULT ds_handle_ioctl(struct irp *irp)
 
 static HRESULT ds_ioctl_get_geometry(struct irp *irp)
 {
-    DISK_GEOMETRY *out;
-
-    if (irp->read.nbytes < sizeof(*out)) {
-        dprintf("DS: Invalid ioctl response buffer size\n");
-
-        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-    }
+    DISK_GEOMETRY out;
+    HRESULT hr;
 
     dprintf("DS: Get geometry\n");
 
-    out = (DISK_GEOMETRY *) irp->read.bytes;
-    out->Cylinders.QuadPart = 1;
-    out->MediaType = 0;
-    out->TracksPerCylinder = 1;
-    out->SectorsPerTrack = 2;
-    out->BytesPerSector = 32;
+    memset(&out, 0, sizeof(out));
+    out.Cylinders.QuadPart = 1;
+    out.MediaType = 0;
+    out.TracksPerCylinder = 1;
+    out.SectorsPerTrack = 2;
+    out.BytesPerSector = 32;
 
-    irp->read.pos = sizeof(*out);
+    hr = iobuf_write(&irp->read, &out, sizeof(out));
 
-    return S_OK;
+    if (FAILED(hr)) {
+        dprintf("DS: Get geometry failed: %08x\n", (int) hr);
+    }
+
+    return hr;
 }
 
 static HRESULT ds_ioctl_setup(struct irp *irp)

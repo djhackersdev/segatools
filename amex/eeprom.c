@@ -118,28 +118,27 @@ static HRESULT eeprom_handle_ioctl(struct irp *irp)
 
 static HRESULT eeprom_ioctl_get_geometry(struct irp *irp)
 {
-    DISK_GEOMETRY *out;
-
-    if (irp->read.nbytes < sizeof(*out)) {
-        dprintf("EEPROM: Invalid ioctl response buffer size\n");
-
-        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-    }
+    DISK_GEOMETRY out;
+    HRESULT hr;
 
     dprintf("EEPROM: Get geometry\n");
 
     /* Not the real values, just bullshitting something for now */
 
-    out = (DISK_GEOMETRY *) irp->read.bytes;
-    out->Cylinders.QuadPart = 0x800;
-    out->MediaType = 0;
-    out->TracksPerCylinder = 1;
-    out->SectorsPerTrack = 2;
-    out->BytesPerSector = 4;
+    memset(&out, 0, sizeof(out));
+    out.Cylinders.QuadPart = 0x800;
+    out.MediaType = 0;
+    out.TracksPerCylinder = 1;
+    out.SectorsPerTrack = 2;
+    out.BytesPerSector = 4;
 
-    irp->read.pos = sizeof(*out);
+    hr = iobuf_write(&irp->read, &out, sizeof(out));
 
-    return S_OK;
+    if (FAILED(hr)) {
+        dprintf("EEPROM: Get geometry failed: %08x\n", (int) hr);
+    }
+
+    return hr;
 }
 
 static HRESULT eeprom_handle_read(struct irp *irp)

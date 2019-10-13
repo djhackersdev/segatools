@@ -114,24 +114,23 @@ static HRESULT sram_handle_ioctl(struct irp *irp)
 
 static HRESULT sram_ioctl_get_geometry(struct irp *irp)
 {
-    DISK_GEOMETRY *out;
-
-    if (irp->read.nbytes < sizeof(*out)) {
-        dprintf("SRAM: Invalid ioctl response buffer size\n");
-
-        return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-    }
+    DISK_GEOMETRY out;
+    HRESULT hr;
 
     dprintf("SRAM: Get geometry\n");
 
-    out = (DISK_GEOMETRY *) irp->read.bytes;
-    out->Cylinders.QuadPart = 0x20000;
-    out->MediaType = 0;
-    out->TracksPerCylinder = 1;
-    out->SectorsPerTrack = 1;
-    out->BytesPerSector = 4;
+    memset(&out, 0, sizeof(out));
+    out.Cylinders.QuadPart = 0x20000;
+    out.MediaType = 0;
+    out.TracksPerCylinder = 1;
+    out.SectorsPerTrack = 1;
+    out.BytesPerSector = 4;
 
-    irp->read.pos = sizeof(*out);
+    hr = iobuf_write(&irp->read, &out, sizeof(out));
 
-    return S_OK;
+    if (FAILED(hr)) {
+        dprintf("SRAM: Get geometry failed: %08x\n", (int) hr);
+    }
+
+    return hr;
 }
