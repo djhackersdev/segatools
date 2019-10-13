@@ -55,7 +55,7 @@ static HRESULT vfd_handle_irp(struct irp *irp)
     }
 
     dprintf("VFD TX:\n");
-    dump(vfd_uart.written.bytes, vfd_uart.written.pos);
+    dump_iobuf(&vfd_uart.written);
     vfd_uart.written.pos = 0;
 
     return hr;
