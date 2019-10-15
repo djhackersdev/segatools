@@ -7,8 +7,6 @@ hooklib_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
-        'clock.c',
-        'clock.h',
         'dll.c',
         'dll.h',
         'dns.c',

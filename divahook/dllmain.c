@@ -13,7 +13,6 @@
 
 #include "hook/process.h"
 
-#include "hooklib/clock.h"
 #include "hooklib/gfx.h"
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
@@ -36,7 +35,6 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Hook Win32 APIs */
 
-    clock_write_hook_init();
     serial_hook_init();
 
     /* Initialize emulation hooks */

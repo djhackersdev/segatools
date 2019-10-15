@@ -17,6 +17,7 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     amvideo_config_load(&cfg->amvideo, filename);
+    clock_config_load(&cfg->clock, filename);
     dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
@@ -31,6 +32,7 @@ void nu_config_load(struct nu_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     amvideo_config_load(&cfg->amvideo, filename);
+    clock_config_load(&cfg->clock, filename);
     dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
@@ -44,6 +46,20 @@ void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"amvideo", L"enable", 1, filename);
+}
+
+void clock_config_load(struct clock_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->timezone = GetPrivateProfileIntW(L"clock", L"timezone", 1, filename);
+    cfg->timewarp = GetPrivateProfileIntW(L"clock", L"timewarp", 0, filename);
+    cfg->writeable = GetPrivateProfileIntW(
+            L"clock",
+            L"writeable",
+            0,
+            filename);
 }
 
 void dns_config_load(struct dns_config *cfg, const wchar_t *filename)

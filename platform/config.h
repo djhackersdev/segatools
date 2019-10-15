@@ -10,6 +10,12 @@ struct amvideo_config {
     bool enable;
 };
 
+struct clock_config {
+    bool timezone;
+    bool timewarp;
+    bool writeable;
+};
+
 struct dns_config {
     bool enable;
     wchar_t router[128];
@@ -51,6 +57,7 @@ struct vfs_config {
 
 struct nu_config {
     struct amvideo_config amvideo;
+    struct clock_config clock;
     struct dns_config dns;
     struct hwmon_config hwmon;
     struct misc_config misc;
@@ -60,6 +67,7 @@ struct nu_config {
 
 struct alls_config {
     struct amvideo_config amvideo;
+    struct clock_config clock;
     struct dns_config dns;
     struct hwmon_config hwmon;
     struct misc_config misc;
@@ -72,6 +80,7 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename);
 void nu_config_load(struct nu_config *cfg, const wchar_t *filename);
 
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename);
+void clock_config_load(struct clock_config *cfg, const wchar_t *filename);
 void dns_config_load(struct dns_config *cfg, const wchar_t *filename);
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename);
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename);

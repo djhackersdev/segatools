@@ -1,8 +1,12 @@
 #include <windows.h>
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "hook/table.h"
+
+#include "platform/clock.h"
+#include "platform/config.h"
 
 #include "util/dprintf.h"
 
@@ -16,13 +20,18 @@ static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo);
 
 static BOOL (WINAPI * next_GetSystemTimeAsFileTime)(FILETIME *out);
 static int64_t clock_current_day;
+static bool clock_time_warp;
 
-static const struct hook_symbol clock_read_hook_syms[] = {
+static const struct hook_symbol clock_base_hook_syms[] = {
     {
         .name   = "GetSystemTimeAsFileTime",
         .patch  = my_GetSystemTimeAsFileTime,
         .link   = (void **) &next_GetSystemTimeAsFileTime,
-    }, {
+    }
+};
+
+static const struct hook_symbol clock_read_hook_syms[] = {
+    {
         .name   = "GetLocalTime",
         .patch  = my_GetLocalTime,
     }, {
@@ -64,6 +73,12 @@ static void WINAPI my_GetSystemTimeAsFileTime(FILETIME *out)
     int64_t fake_time;
     int64_t fake_jiffies_biased;
     int64_t fake_jiffies;
+
+    if (!clock_time_warp) {
+        next_GetSystemTimeAsFileTime(out);
+
+        return;
+    }
 
     if (out == NULL) {
         SetLastError(ERROR_INVALID_PARAMETER);
@@ -207,20 +222,39 @@ static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *in)
     return TRUE;
 }
 
-void clock_read_hook_init(void)
+HRESULT clock_hook_init(const struct clock_config *cfg)
 {
-    hook_table_apply(
-            NULL,
-            "kernel32.dll",
-            clock_read_hook_syms,
-            _countof(clock_read_hook_syms));
-}
+    assert(cfg != NULL);
 
-void clock_write_hook_init(void)
-{
-    hook_table_apply(
-            NULL,
-            "kernel32.dll",
-            clock_write_hook_syms,
-            _countof(clock_write_hook_syms));
+    clock_time_warp = cfg->timewarp;
+
+    if (cfg->timezone || cfg->timewarp || !cfg->writeable) {
+        /* All the clock hooks require the core GSTAFT hook to be installed */
+        /* Note the ! up there btw. */
+
+        hook_table_apply(
+                NULL,
+                "kernel32.dll",
+                clock_base_hook_syms,
+                _countof(clock_base_hook_syms));
+    }
+
+    if (cfg->timezone) {
+        hook_table_apply(
+                NULL,
+                "kernel32.dll",
+                clock_read_hook_syms,
+                _countof(clock_read_hook_syms));
+    }
+
+    if (!cfg->writeable) {
+        /* Install hook if this config parameter is FALSE! */
+        hook_table_apply(
+                NULL,
+                "kernel32.dll",
+                clock_write_hook_syms,
+                _countof(clock_write_hook_syms));
+    }
+
+    return S_OK;
 }
