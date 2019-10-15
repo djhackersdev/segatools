@@ -23,8 +23,10 @@ struct idz_di_axis {
 
 static HRESULT idz_di_config_apply(const struct idz_di_config *cfg);
 static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name);
-static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx);
-static BOOL idz_di_enum_callback_shifter(
+static BOOL CALLBACK idz_di_enum_callback(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx);
+static BOOL CALLBACK idz_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
 static void idz_di_jvs_read_buttons(uint8_t *gamebtn_out);
@@ -309,7 +311,9 @@ static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name)
     return NULL;
 }
 
-static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx)
+static BOOL CALLBACK idz_di_enum_callback(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx)
 {
     const struct idz_di_config *cfg;
     HRESULT hr;
@@ -335,7 +339,7 @@ static BOOL idz_di_enum_callback(const DIDEVICEINSTANCEW *dev, void *ctx)
     return DIENUM_STOP;
 }
 
-static BOOL idz_di_enum_callback_shifter(
+static BOOL CALLBACK idz_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx)
 {
