@@ -11,7 +11,6 @@ add_project_arguments(
 # Use get_argument_syntax() instead once Meson 0.49.0 releases
 if meson.get_compiler('c').get_id() != 'msvc'
     add_project_arguments(
-        '-Wall',
         '-ffunction-sections',
         '-fdata-sections',
         language: 'c',
