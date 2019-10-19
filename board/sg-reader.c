@@ -20,17 +20,18 @@
 
 static HRESULT sg_reader_handle_irp(struct irp *irp);
 static HRESULT sg_reader_handle_irp_locked(struct irp *irp);
-static HRESULT sg_reader_mifare_poll(void *ctx, uint32_t *uid);
-static HRESULT sg_reader_mifare_read_luid(
+static HRESULT sg_reader_nfc_poll(void *ctx);
+static HRESULT sg_reader_nfc_get_aime_id(
         void *ctx,
-        uint32_t uid,
         uint8_t *luid,
         size_t luid_size);
+static HRESULT sg_reader_nfc_get_felica_id(void *ctx, uint64_t *IDm);
 static void sg_reader_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b);
 
 static const struct sg_nfc_ops sg_reader_nfc_ops = {
-    .mifare_poll        = sg_reader_mifare_poll,
-    .mifare_read_luid   = sg_reader_mifare_read_luid,
+    .poll           = sg_reader_nfc_poll,
+    .get_aime_id    = sg_reader_nfc_get_aime_id,
+    .get_felica_id  = sg_reader_nfc_get_felica_id,
 };
 
 static const struct sg_led_ops sg_reader_led_ops = {
@@ -134,18 +135,22 @@ static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
     return hr;
 }
 
-static HRESULT sg_reader_mifare_poll(void *ctx, uint32_t *uid)
+static HRESULT sg_reader_nfc_poll(void *ctx)
 {
-    return aime_io_mifare_poll(0, uid);
+    return aime_io_nfc_poll(0);
 }
 
-static HRESULT sg_reader_mifare_read_luid(
+static HRESULT sg_reader_nfc_get_aime_id(
         void *ctx,
-        uint32_t uid,
         uint8_t *luid,
         size_t luid_size)
 {
-    return aime_io_mifare_read_luid(0, uid, luid, luid_size);
+    return aime_io_nfc_get_aime_id(0, luid, luid_size);
+}
+
+static HRESULT sg_reader_nfc_get_felica_id(void *ctx, uint64_t *IDm)
+{
+    return aime_io_nfc_get_felica_id(0, IDm);
 }
 
 static void sg_reader_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b)

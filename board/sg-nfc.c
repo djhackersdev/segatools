@@ -4,13 +4,18 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "board/sg-cmd.h"
 #include "board/sg-nfc.h"
 #include "board/sg-nfc-cmd.h"
 
+#include "iccard/aime.h"
+#include "iccard/felica.h"
+
 #include "util/dprintf.h"
+#include "util/dump.h"
 
 static HRESULT sg_nfc_dispatch(
         void *ctx,
@@ -18,49 +23,47 @@ static HRESULT sg_nfc_dispatch(
         void *v_resp);
 
 static HRESULT sg_nfc_cmd_reset(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_resp_header *resp);
 
 static HRESULT sg_nfc_cmd_get_fw_version(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_nfc_resp_get_fw_version *resp);
 
 static HRESULT sg_nfc_cmd_get_hw_version(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_nfc_resp_get_hw_version *resp);
 
-static HRESULT sg_nfc_cmd_mifare_poll(
-        const struct sg_nfc *nfc,
+static HRESULT sg_nfc_cmd_poll(
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_mifare_poll *resp);
+        struct sg_nfc_resp_poll *resp);
+
+static HRESULT sg_nfc_poll_aime(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_mifare *mifare);
+
+static HRESULT sg_nfc_poll_felica(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_felica *felica);
 
 static HRESULT sg_nfc_cmd_mifare_read_block(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_nfc_req_mifare_read_block *req,
         struct sg_nfc_resp_mifare_read_block *resp);
 
-static HRESULT sg_nfc_mifare_read_block_1(
-        const struct sg_nfc *nfc,
-        uint32_t uid,
-        uint8_t *block);
-
-static HRESULT sg_nfc_mifare_read_block_2(
-        const struct sg_nfc *nfc,
-        uint32_t uid,
-        uint8_t *block);
+static HRESULT sg_nfc_cmd_felica_encap(
+        struct sg_nfc *nfc,
+        const struct sg_nfc_req_felica_encap *req,
+        struct sg_nfc_resp_felica_encap *resp);
 
 static HRESULT sg_nfc_cmd_dummy(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_resp_header *resp);
-
-static const uint8_t sg_nfc_block_1[] = {
-    'S',  'B',  'D',  'T',  0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x4E, 0xC6, 0x22,
-};
 
 void sg_nfc_init(
         struct sg_nfc *nfc,
@@ -120,7 +123,7 @@ static HRESULT sg_nfc_dispatch(
         const void *v_req,
         void *v_resp)
 {
-    const struct sg_nfc *nfc;
+    struct sg_nfc *nfc;
     const union sg_nfc_req_any *req;
     union sg_nfc_resp_any *resp;
 
@@ -149,11 +152,11 @@ static HRESULT sg_nfc_dispatch(
                 &req->simple,
                 &resp->get_hw_version);
 
-    case SG_NFC_CMD_MIFARE_POLL:
-        return sg_nfc_cmd_mifare_poll(
+    case SG_NFC_CMD_POLL:
+        return sg_nfc_cmd_poll(
                 nfc,
                 &req->simple,
-                &resp->mifare_poll);
+                &resp->poll);
 
     case SG_NFC_CMD_MIFARE_READ_BLOCK:
         return sg_nfc_cmd_mifare_read_block(
@@ -161,12 +164,18 @@ static HRESULT sg_nfc_dispatch(
                 &req->mifare_read_block,
                 &resp->mifare_read_block);
 
-    case SG_NFC_CMD_40_POLL:
-    case SG_NFC_CMD_41_POLL:
-    case SG_NFC_CMD_MIFARE_SET_KEY:
+    case SG_NFC_CMD_FELICA_ENCAP:
+        return sg_nfc_cmd_felica_encap(
+                nfc,
+                &req->felica_encap,
+                &resp->felica_encap);
+
+    case SG_NFC_CMD_MIFARE_AUTHENTICATE:
     case SG_NFC_CMD_MIFARE_SELECT_TAG:
-    case SG_NFC_CMD_MIFARE_50:
-    case SG_NFC_CMD_MIFARE_55:
+    case SG_NFC_CMD_MIFARE_SET_KEY_AIME:
+    case SG_NFC_CMD_MIFARE_SET_KEY_BANA:
+    case SG_NFC_CMD_RADIO_ON:
+    case SG_NFC_CMD_RADIO_OFF:
         return sg_nfc_cmd_dummy(nfc, &req->simple, &resp->simple);
 
     default:
@@ -177,7 +186,7 @@ static HRESULT sg_nfc_dispatch(
 }
 
 static HRESULT sg_nfc_cmd_reset(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_resp_header *resp)
 {
@@ -189,7 +198,7 @@ static HRESULT sg_nfc_cmd_reset(
 }
 
 static HRESULT sg_nfc_cmd_get_fw_version(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_nfc_resp_get_fw_version *resp)
 {
@@ -201,7 +210,7 @@ static HRESULT sg_nfc_cmd_get_fw_version(
 }
 
 static HRESULT sg_nfc_cmd_get_hw_version(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_nfc_resp_get_hw_version *resp)
 {
@@ -212,54 +221,124 @@ static HRESULT sg_nfc_cmd_get_hw_version(
     return S_OK;
 }
 
-static HRESULT sg_nfc_cmd_mifare_poll(
-        const struct sg_nfc *nfc,
+static HRESULT sg_nfc_cmd_poll(
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_mifare_poll *resp)
+        struct sg_nfc_resp_poll *resp)
 {
-    uint32_t uid;
+    struct sg_nfc_poll_mifare mifare;
+    struct sg_nfc_poll_felica felica;
     HRESULT hr;
 
-    uid = 0;
-    hr = nfc->ops->mifare_poll(nfc->ops_ctx, &uid);
+    hr = nfc->ops->poll(nfc->ops_ctx);
 
-    if (hr == S_OK) {
-        if (uid == 0 || uid == -1) {
-            sg_nfc_dprintf(nfc, "nfc->ops->mifare_poll returned bad uid\n");
-
-            return E_UNEXPECTED;
-        }
-
-        sg_nfc_dprintf(nfc, "Mifare card is present\n");
-
-        sg_resp_init(&resp->resp, req, sizeof(resp->payload.some));
-        resp->payload.some[0] = 0x01;       /* Chunk size? */
-        resp->payload.some[1] = 0x10;       /* Unknown */
-        resp->payload.some[2] = 0x04;       /* Chunk size? */
-        resp->payload.some[3] = uid >> 24;  /* UID byte 0 */
-        resp->payload.some[4] = uid >> 16;  /* UID byte 1 */
-        resp->payload.some[5] = uid >>  8;  /* UID byte 2 */
-        resp->payload.some[6] = uid      ;  /* UID byte 3 */
-
-        return S_OK;
-    } else if (hr == S_FALSE) {
-        sg_resp_init(&resp->resp, req, sizeof(resp->payload.none));
-        resp->payload.none = 0x00;
-
-        return S_OK;
-    } else if (FAILED(hr)) {
-        sg_nfc_dprintf(nfc, "nfc->ops->mifare_poll error: %x\n", (int) hr);
-
+    if (FAILED(hr)) {
         return hr;
-    } else {
-        sg_nfc_dprintf(nfc, "nfc->ops->mifare_poll bad return: %x\n", (int) hr);
-
-        return E_UNEXPECTED;
     }
+
+    hr = sg_nfc_poll_felica(nfc, &felica);
+
+    if (SUCCEEDED(hr) && hr != S_FALSE) {
+        sg_resp_init(&resp->resp, req, 1 + sizeof(felica));
+        memcpy(resp->payload, &felica, sizeof(felica));
+        resp->count = 1;
+
+        return S_OK;
+    }
+
+    hr = sg_nfc_poll_aime(nfc, &mifare);
+
+    if (SUCCEEDED(hr) && hr != S_FALSE) {
+        sg_resp_init(&resp->resp, req, 1 + sizeof(mifare));
+        memcpy(resp->payload, &mifare, sizeof(mifare));
+        resp->count = 1;
+
+        return S_OK;
+    }
+
+    sg_resp_init(&resp->resp, req, 1);
+    resp->count = 0;
+
+    return S_OK;
+}
+
+static HRESULT sg_nfc_poll_aime(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_mifare *mifare)
+{
+    uint8_t luid[10];
+    HRESULT hr;
+
+    /* Call backend */
+
+    if (nfc->ops->get_aime_id != NULL) {
+        hr = nfc->ops->get_aime_id(nfc->ops_ctx, luid, sizeof(luid));
+    } else {
+        hr = S_FALSE;
+    }
+
+    if (FAILED(hr) || hr == S_FALSE) {
+        return hr;
+    }
+
+    sg_nfc_dprintf(nfc, "AiMe card is present\n");
+
+    /* Construct response (use an arbitrary UID) */
+
+    mifare->type = 0x10;
+    mifare->id_len = sizeof(mifare->uid);
+    mifare->uid = _byteswap_ulong(0x01020304);
+
+    /* Initialize MIFARE IC emulator */
+
+    hr = aime_card_populate(&nfc->mifare, luid, sizeof(luid));
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
+}
+
+static HRESULT sg_nfc_poll_felica(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_felica *felica)
+{
+    uint64_t IDm;
+    HRESULT hr;
+
+    /* Call backend */
+
+    if (nfc->ops->get_felica_id != NULL) {
+        hr = nfc->ops->get_felica_id(nfc->ops_ctx, &IDm);
+    } else {
+        hr = S_FALSE;
+    }
+
+    if (FAILED(hr) || hr == S_FALSE) {
+        return hr;
+    }
+
+    sg_nfc_dprintf(nfc, "FeliCa card is present\n");
+
+    /* Construct poll response */
+
+    felica->type = 0x20;
+    felica->id_len = sizeof(felica->IDm) + sizeof(felica->PMm);
+    felica->IDm = _byteswap_uint64(IDm);
+    felica->PMm = _byteswap_uint64(felica_get_generic_PMm());
+
+    /* Initialize FeliCa IC emulator */
+
+    nfc->felica.IDm = IDm;
+    nfc->felica.PMm = felica_get_generic_PMm();
+    nfc->felica.system_code = 0x0000;
+
+    return S_OK;
 }
 
 static HRESULT sg_nfc_cmd_mifare_read_block(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_nfc_req_mifare_read_block *req,
         struct sg_nfc_resp_mifare_read_block *resp)
 {
@@ -271,71 +350,81 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
         return E_FAIL;
     }
 
-    uid =   (req->payload.uid[0] << 24) |
-            (req->payload.uid[1] << 16) |
-            (req->payload.uid[2] <<  8) |
-            (req->payload.uid[3]      ) ;
+    uid = _byteswap_ulong(req->payload.uid);
 
     sg_nfc_dprintf(nfc, "Read uid %08x block %i\n", uid, req->payload.block_no);
 
+    if (req->payload.block_no > 3) {
+        sg_nfc_dprintf(nfc, "MIFARE block number out of range\n");
+
+        return E_FAIL;
+    }
+
     sg_resp_init(&resp->resp, &req->req, sizeof(resp->block));
 
-    switch (req->payload.block_no) {
-    case 1:
-        return sg_nfc_mifare_read_block_1(nfc, uid, resp->block);
-
-    case 2:
-        return sg_nfc_mifare_read_block_2(nfc, uid, resp->block);
-
-    case 0:
-    case 3:
-        sg_nfc_dprintf(
-                nfc,
-                "Block %i access not implemented\n",
-                req->payload.block_no);
-
-        return E_NOTIMPL;
-
-    default:
-        sg_nfc_dprintf(
-                nfc,
-                "Read from invalid mifare block nr %i\n",
-                req->payload.block_no);
-
-        return E_INVALIDARG;
-    }
-}
-
-static HRESULT sg_nfc_mifare_read_block_1(
-        const struct sg_nfc *nfc,
-        uint32_t uid,
-        uint8_t *block)
-{
-    memcpy(block, sg_nfc_block_1, sizeof(sg_nfc_block_1));
+    memcpy( resp->block,
+            nfc->mifare.sectors[0].blocks[req->payload.block_no].bytes,
+            sizeof(resp->block));
 
     return S_OK;
 }
 
-static HRESULT sg_nfc_mifare_read_block_2(
-        const struct sg_nfc *nfc,
-        uint32_t uid,
-        uint8_t *block)
+static HRESULT sg_nfc_cmd_felica_encap(
+        struct sg_nfc *nfc,
+        const struct sg_nfc_req_felica_encap *req,
+        struct sg_nfc_resp_felica_encap *resp)
 {
+    struct const_iobuf f_req;
+    struct iobuf f_res;
     HRESULT hr;
 
-    hr = nfc->ops->mifare_read_luid(nfc->ops_ctx, uid, &block[6], 10);
+    /* First byte of encapsulated request and response is a length byte
+       (inclusive of itself). The FeliCa emulator expects its caller to handle
+       that length byte on its behalf (we adopt the convention that the length
+       byte is part of the FeliCa protocol's framing layer). */
+
+    if (req->req.payload_len != 8 + req->payload[0]) {
+        sg_nfc_dprintf(
+                nfc,
+                "FeliCa encap payload length mismatch: sg %i != felica %i + 8",
+                req->req.payload_len,
+                req->payload[0]);
+
+        return E_FAIL;
+    }
+
+    f_req.bytes = req->payload;
+    f_req.nbytes = req->payload[0];
+    f_req.pos = 1;
+
+    f_res.bytes = resp->payload;
+    f_res.nbytes = sizeof(resp->payload);
+    f_res.pos = 1;
+
+#if 0
+    dprintf("FELICA OUTBOUND:\n");
+    dump_const_iobuf(&f_req);
+#endif
+
+    hr = felica_transact(&nfc->felica, &f_req, &f_res);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    memset(block, 0, 6);
+    sg_resp_init(&resp->resp, &req->req, f_res.pos);
+    resp->payload[0] = f_res.pos;
+
+#if 0
+    dprintf("FELICA INBOUND:\n");
+    dump_iobuf(&f_res);
+#endif
 
     return S_OK;
 }
 
 static HRESULT sg_nfc_cmd_dummy(
-        const struct sg_nfc *nfc,
+        struct sg_nfc *nfc,
         const struct sg_req_header *req,
         struct sg_resp_header *resp)
 {

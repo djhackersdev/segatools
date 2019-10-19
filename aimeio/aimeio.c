@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,13 +12,35 @@
 #include "util/crc.h"
 #include "util/dprintf.h"
 
+enum {
+    AIME_IO_TOUCH_MSEC = 1000,
+};
+
 struct aime_io_config {
-    wchar_t id_path[MAX_PATH];
+    wchar_t aime_path[MAX_PATH];
+    wchar_t felica_path[MAX_PATH];
     uint8_t vk_scan;
 };
 
 static struct aime_io_config aime_io_cfg;
-static uint8_t aime_io_luid[10];
+static uint8_t aime_io_aime_id[10];
+static uint8_t aime_io_felica_id[8];
+static uint32_t aime_io_touch_t;
+static bool aime_io_aime_id_present;
+static bool aime_io_felica_id_present;
+static bool aime_io_latch;
+
+static void aime_io_config_read(
+        struct aime_io_config *cfg,
+        const wchar_t *filename);
+
+static HRESULT aime_io_read_id_file(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes);
+
+static HRESULT aime_io_nfc_poll_rise(void);
+static void aime_io_nfc_poll_fall(void);
 
 static void aime_io_config_read(
         struct aime_io_config *cfg,
@@ -28,10 +51,18 @@ static void aime_io_config_read(
 
     GetPrivateProfileStringW(
             L"aime",
-            L"cardPath",
+            L"aimePath",
             L"DEVICE\\aime.txt",
-            cfg->id_path,
-            _countof(cfg->id_path),
+            cfg->aime_path,
+            _countof(cfg->aime_path),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"aime",
+            L"felicaPath",
+            L"DEVICE\\felica.txt",
+            cfg->felica_path,
+            _countof(cfg->felica_path),
             filename);
 
     cfg->vk_scan = GetPrivateProfileIntW(
@@ -39,7 +70,51 @@ static void aime_io_config_read(
             L"scan",
             VK_RETURN,
             filename);
+}
 
+static HRESULT aime_io_read_id_file(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes)
+{
+    HRESULT hr;
+    FILE *f;
+    size_t i;
+    int byte;
+    int r;
+
+    f = _wfopen(path, L"r");
+
+    if (f == NULL) {
+        return S_FALSE;
+    }
+
+    memset(bytes, 0, nbytes);
+
+    for (i = 0 ; i < nbytes ; i++) {
+        r = fscanf(f, "%02x ", &byte);
+
+        if (r != 1) {
+            hr = E_FAIL;
+            dprintf("AimeIO DLL: %S: fscanf[%i] failed: %i\n",
+                    path,
+                    (int) i,
+                    r);
+
+            goto end;
+        }
+
+        bytes[i] = byte;
+    }
+
+    hr = S_OK;
+
+end:
+    if (f != NULL) {
+        fclose(f);
+    }
+
+    return hr;
 }
 
 HRESULT aime_io_init(void)
@@ -53,72 +128,119 @@ void aime_io_fini(void)
 {
 }
 
-HRESULT aime_io_mifare_poll(uint8_t unit_no, uint32_t *uid)
+HRESULT aime_io_nfc_poll(uint8_t unit_no)
 {
+    uint32_t dt;
+    uint32_t t;
+    bool level;
     HRESULT hr;
-    FILE *f;
-    size_t i;
-    int byte;
-    int r;
 
     if (unit_no != 0) {
         return S_FALSE;
     }
 
-    hr = S_FALSE;
-    f = NULL;
+    t = GetTickCount();
+    level = GetAsyncKeyState(aime_io_cfg.vk_scan) & 0x8000;
 
-    if (!(GetAsyncKeyState(aime_io_cfg.vk_scan) & 0x8000)) {
-        goto end;
+    /* 1. Linger a card for AIME_IO_TOUCH_MSEC after vk_scan has been released.
+       2. Detect rising and falling edges and call the relevant worker fns. */
+
+    if (level) {
+        aime_io_touch_t = t;
     }
 
-    f = _wfopen(aime_io_cfg.id_path, L"r");
+    if (aime_io_latch) {
+        dt = aime_io_touch_t - t;
 
-    if (f == NULL) {
-        dprintf("Aime DLL: Failed to open %S\n", aime_io_cfg.id_path);
-
-        goto end;
-    }
-
-    for (i = 0 ; i < sizeof(aime_io_luid) ; i++) {
-        r = fscanf(f, "%02x ", &byte);
-
-        if (r != 1) {
-            dprintf("Aime DLL: fscanf[%i] failed: %i\n", (int) i, r);
-
-            goto end;
+        if (dt < AIME_IO_TOUCH_MSEC) {
+            hr = S_OK;
+        } else {
+            aime_io_nfc_poll_fall();
+            aime_io_latch = false;
+            hr = S_FALSE;
         }
-
-        aime_io_luid[i] = byte;
-    }
-
-    /* NOTE: We are just arbitrarily using the CRC32 of the LUID here, real
-       cards do not work like this! However, neither the application code nor
-       the network protocol care what the UID is, it just has to be a stable
-       unique identifier for over-the-air NFC communications. */
-
-    *uid = crc32(aime_io_luid, sizeof(aime_io_luid), 0);
-
-    hr = S_OK;
-
-end:
-    if (f != NULL) {
-        fclose(f);
+    } else {
+        if (level) {
+            hr = aime_io_nfc_poll_rise();
+            aime_io_latch = true;
+        } else {
+            hr = S_FALSE;
+        }
     }
 
     return hr;
 }
 
-HRESULT aime_io_mifare_read_luid(
+static HRESULT aime_io_nfc_poll_rise(void)
+{
+    HRESULT hr;
+
+    hr = aime_io_read_id_file(
+            aime_io_cfg.aime_path,
+            aime_io_aime_id,
+            sizeof(aime_io_aime_id));
+
+    if (SUCCEEDED(hr) && hr != S_FALSE) {
+        aime_io_aime_id_present = true;
+
+        return hr;
+    }
+
+    hr = aime_io_read_id_file(
+            aime_io_cfg.felica_path,
+            aime_io_felica_id,
+            sizeof(aime_io_felica_id));
+
+    if (SUCCEEDED(hr) && hr != S_FALSE) {
+        aime_io_felica_id_present = true;
+
+        return hr;
+    }
+
+    return S_FALSE;
+}
+
+static void aime_io_nfc_poll_fall(void)
+{
+    aime_io_aime_id_present = false;
+    aime_io_felica_id_present = false;
+}
+
+HRESULT aime_io_nfc_get_aime_id(
         uint8_t unit_no,
-        uint32_t uid,
         uint8_t *luid,
         size_t luid_size)
 {
     assert(luid != NULL);
-    assert(luid_size == sizeof(aime_io_luid));
+    assert(luid_size == sizeof(aime_io_aime_id));
 
-    memcpy(luid, aime_io_luid, luid_size);
+    if (unit_no != 0 || !aime_io_aime_id_present) {
+        return S_FALSE;
+    }
+
+    memcpy(luid, aime_io_aime_id, luid_size);
+
+    return S_OK;
+}
+
+HRESULT aime_io_nfc_get_felica_id(uint8_t unit_no, uint64_t *IDm)
+{
+    uint64_t val;
+    size_t i;
+
+    assert(IDm != NULL);
+
+    if (unit_no != 0 || !aime_io_felica_id_present) {
+        return S_FALSE;
+    }
+
+    val = 0;
+
+    for (i = 0 ; i < 8 ; i++) {
+        val = (val << 8) | aime_io_felica_id[i];
+    }
+
+    *IDm = val;
 
     return S_OK;
 }

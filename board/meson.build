@@ -6,6 +6,9 @@ board_lib = static_library(
     dependencies : [
         capnhook.get_variable('hook_dep'),
     ],
+    link_with : [
+        iccard_lib,
+    ],
     sources : [
         'config.c',
         'config.h',

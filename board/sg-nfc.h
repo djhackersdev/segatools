@@ -7,19 +7,23 @@
 
 #include "hook/iobuf.h"
 
+#include "iccard/felica.h"
+#include "iccard/mifare.h"
+
 struct sg_nfc_ops {
-    HRESULT (*mifare_poll)(void *ctx, uint32_t *uid);
-    HRESULT (*mifare_read_luid)(
-            void *ctx,
-            uint32_t uid,
-            uint8_t *luid,
-            size_t nbytes);
+    HRESULT (*poll)(void *ctx);
+    HRESULT (*get_aime_id)(void *ctx, uint8_t *luid, size_t nbytes);
+    HRESULT (*get_felica_id)(void *ctx, uint64_t *IDm);
+
+    // TODO Banapass, AmuseIC
 };
 
 struct sg_nfc {
     const struct sg_nfc_ops *ops;
     void *ops_ctx;
     uint8_t addr;
+    struct felica felica;
+    struct mifare mifare;
 };
 
 void sg_nfc_init(
