@@ -1,12 +1,14 @@
 #include <windows.h>
 #include <d3d9.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
+#include "hooklib/config.h"
 #include "hooklib/gfx.h"
 
 #include "util/dprintf.h"
@@ -19,12 +21,10 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
         DWORD flags,
         D3DPRESENT_PARAMETERS *pp,
         IDirect3DDevice9 **pdev);
-
 static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver);
-
 static IDirect3D9 * (WINAPI *next_Direct3DCreate9)(UINT sdk_ver);
 
-static bool gfx_windowed;
+static struct gfx_config gfx_config;
 
 static const struct hook_symbol gfx_hooks[] = {
     {
@@ -34,14 +34,16 @@ static const struct hook_symbol gfx_hooks[] = {
     },
 };
 
-void gfx_hook_init(void)
+void gfx_hook_init(const struct gfx_config *cfg)
 {
-    hook_table_apply(NULL, "d3d9.dll", gfx_hooks, _countof(gfx_hooks));
-}
+    assert(cfg != NULL);
 
-void gfx_set_windowed(void)
-{
-    gfx_windowed = true;
+    if (!cfg->enable) {
+        return;
+    }
+
+    memcpy(&gfx_config, cfg, sizeof(*cfg));
+    hook_table_apply(NULL, "d3d9.dll", gfx_hooks, _countof(gfx_hooks));
 }
 
 static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
@@ -99,7 +101,7 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
     proxy = com_proxy_downcast(self);
     real = proxy->real;
 
-    if (gfx_windowed) {
+    if (gfx_config.windowed) {
         pp->Windowed = TRUE;
         pp->FullScreen_RefreshRateInHz = 0;
     }

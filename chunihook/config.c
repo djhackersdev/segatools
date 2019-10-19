@@ -7,6 +7,8 @@
 
 #include "chunihook/config.h"
 
+#include "hooklib/config.h"
+
 #include "platform/config.h"
 
 void chuni_hook_config_load(
@@ -20,4 +22,5 @@ void chuni_hook_config_load(
 
     nu_config_load(&cfg->nu, filename);
     amex_config_load(&cfg->amex, filename);
+    gfx_config_load(&cfg->gfx, filename);
 }

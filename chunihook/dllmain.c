@@ -47,7 +47,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Hook Win32 APIs */
 
-    gfx_hook_init();
+    gfx_hook_init(&chuni_hook_cfg.gfx);
     serial_hook_init();
 
     /* Initialize emulation hooks */
@@ -64,7 +64,6 @@ static DWORD CALLBACK chuni_pre_startup(void)
     /* Initialize debug helpers */
 
     spike_hook_init(L".\\segatools.ini");
-    gfx_set_windowed();
 
     dprintf("---  End  chuni_pre_startup ---\n");
 
