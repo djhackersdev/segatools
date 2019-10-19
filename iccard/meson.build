@@ -9,5 +9,6 @@ iccard_lib = static_library(
     sources : [
         'felica.c',
         'felica.h',
+        'mifare.h',
     ],
 )
