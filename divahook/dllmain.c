@@ -51,7 +51,7 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init("divaspike.txt");
+    spike_hook_init(L".\\segatools.ini");
 
     dprintf("---  End  diva_pre_startup ---\n");
 

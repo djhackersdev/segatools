@@ -63,7 +63,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init("chunispike.txt");
+    spike_hook_init(L".\\segatools.ini");
     gfx_set_windowed();
 
     dprintf("---  End  chuni_pre_startup ---\n");

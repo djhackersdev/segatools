@@ -41,7 +41,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init("mu3spike.txt");
+    spike_hook_init(L".\\segatools.ini");
 
     dprintf("---  End  mu3_pre_startup ---\n");
 

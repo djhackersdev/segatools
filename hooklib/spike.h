@@ -1,3 +1,5 @@
 #pragma once
 
-void spike_hook_init(const char *path);
+#include <stddef.h>
+
+void spike_hook_init(const wchar_t *ini_file);

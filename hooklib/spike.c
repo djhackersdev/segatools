@@ -4,12 +4,15 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <wchar.h>
 
 #include "hook/pe.h"
 
 #include "hooklib/spike.h"
 
 #include "util/dprintf.h"
+
+static void spike_hook_read_config(const wchar_t *spike_file);
 
 /* Spike functions. Their "style" is named after the libc function they bear
    the closest resemblance to. */
@@ -133,7 +136,44 @@ static void spike_insert_log_levels(ptrdiff_t rva, size_t count)
 
 /* Config reader */
 
-void spike_hook_init(const char *path)
+void spike_hook_init(const wchar_t *ini_file)
+{
+    wchar_t module[MAX_PATH];
+    wchar_t path[MAX_PATH];
+    const wchar_t *basename;
+    const wchar_t *slash;
+
+    assert(ini_file != NULL);
+
+    /* Get the filename (strip path) of the host EXE */
+
+    GetModuleFileNameW(NULL, module, _countof(module));
+    slash = wcsrchr(module, L'\\');
+
+    if (slash != NULL) {
+        basename = slash + 1;
+    } else {
+        basename = module;
+    }
+
+    /* Check our INI file to see if any spikes are configured for this EXE.
+       Normally we separate out config reading into a separate module... */
+
+    GetPrivateProfileStringW(
+            L"spike",
+            basename,
+            L"",
+            path,
+            _countof(path),
+            ini_file);
+
+    if (path[0] != L'\0') {
+        dprintf("Spiking %S using config from %S\n", basename, path);
+        spike_hook_read_config(path);
+    }
+}
+
+static void spike_hook_read_config(const wchar_t *spike_file)
 {
     int match;
     int count;
@@ -142,13 +182,13 @@ void spike_hook_init(const char *path)
     char *ret;
     FILE *f;
 
-    f = fopen(path, "r");
+    f = _wfopen(spike_file, L"r");
 
     if (f == NULL) {
+        dprintf("Error opening spike file %S\n", spike_file);
+
         return;
     }
-
-    dprintf("Found spike config, inserting spikes\n");
 
     for (;;) {
         ret = fgets(line, sizeof(line), f);

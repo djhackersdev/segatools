@@ -25,12 +25,11 @@ static DWORD CALLBACK app_pre_startup(void)
 
     aime_config_load(&app_aime_config, L".\\segatools.ini");
     dns_config_load(&app_dns_config, L".\\segatools.ini");
+    spike_hook_init(L".\\segatools.ini");
 
     serial_hook_init();
     sg_reader_hook_init(&app_aime_config, 12);
     dns_platform_hook_init(&app_dns_config);
-
-    spike_hook_init("cardspike.txt");
 
     dprintf("---  End  %s ---\n", __func__);
 

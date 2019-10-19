@@ -26,12 +26,11 @@ static DWORD CALLBACK app_pre_startup(void)
     clock_config_load(&clock_cfg, L".\\segatools.ini");
     ds_config_load(&ds_cfg, L".\\segatools.ini");
     nusec_config_load(&nusec_cfg, L".\\segatools.ini");
+    spike_hook_init(L".\\segatools.ini");
 
     clock_hook_init(&clock_cfg);
     nusec_hook_init(&nusec_cfg, "SSSS", "AAV0");
     ds_hook_init(&ds_cfg);
-
-    spike_hook_init("minispike.txt");
 
     dprintf("---  End  %s ---\n", __func__);
 
