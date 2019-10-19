@@ -33,6 +33,7 @@ inc = include_directories('.')
 capnhook = subproject('capnhook')
 
 subdir('amex')
+subdir('iccard')
 subdir('board')
 subdir('hooklib')
 subdir('jvs')
