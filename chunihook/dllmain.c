@@ -59,7 +59,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
         chunithm_jvs_init();
     }
 
-    slider_hook_init();
+    slider_hook_init(&chuni_hook_cfg.slider);
 
     /* Initialize debug helpers */
 

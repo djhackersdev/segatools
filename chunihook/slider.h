@@ -1,3 +1,7 @@
 #pragma once
 
-void slider_hook_init(void);
+#include <windows.h>
+
+#include "chunihook/config.h"
+
+HRESULT slider_hook_init(const struct slider_config *cfg);
