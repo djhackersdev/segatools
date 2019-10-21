@@ -28,6 +28,7 @@ static HRESULT sram_handle_ioctl(struct irp *irp);
 
 static HRESULT sram_ioctl_get_geometry(struct irp *irp);
 
+static struct sram_config sram_config;
 static HANDLE sram_file;
 
 HRESULT sram_hook_init(const struct sram_config *cfg)
@@ -40,11 +41,7 @@ HRESULT sram_hook_init(const struct sram_config *cfg)
         return S_FALSE;
     }
 
-    hr = nvram_open_file(&sram_file, cfg->path, 0x80000);
-
-    if (FAILED(hr)) {
-        return hr;
-    }
+    memcpy(&sram_config, cfg, sizeof(*cfg));
 
     hr = iohook_push_handler(sram_handle_irp);
 
@@ -79,11 +76,25 @@ static HRESULT sram_handle_irp(struct irp *irp)
 
 static HRESULT sram_handle_open(struct irp *irp)
 {
+    HRESULT hr;
+
     if (!wstr_eq(irp->open_filename, L"$sram")) {
         return iohook_invoke_next(irp);
     }
 
+    if (sram_file != NULL) {
+        dprintf("SRAM: Already open\n");
+
+        return HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION);
+    }
+
     dprintf("SRAM: Open device\n");
+    hr = nvram_open_file(&sram_file, sram_config.path, 0x80000);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     irp->fd = sram_file;
 
     return S_OK;
@@ -92,8 +103,9 @@ static HRESULT sram_handle_open(struct irp *irp)
 static HRESULT sram_handle_close(struct irp *irp)
 {
     dprintf("SRAM: Close device\n");
+    sram_file = NULL;
 
-    return S_OK;
+    return iohook_invoke_next(irp);
 }
 
 static HRESULT sram_handle_ioctl(struct irp *irp)

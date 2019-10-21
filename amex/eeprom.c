@@ -30,6 +30,7 @@ static HRESULT eeprom_handle_write(struct irp *irp);
 
 static HRESULT eeprom_ioctl_get_geometry(struct irp *irp);
 
+static struct eeprom_config eeprom_config;
 static HANDLE eeprom_file;
 
 HRESULT eeprom_hook_init(const struct eeprom_config *cfg)
@@ -42,11 +43,7 @@ HRESULT eeprom_hook_init(const struct eeprom_config *cfg)
         return S_FALSE;
     }
 
-    hr = nvram_open_file(&eeprom_file, cfg->path, 0x2000);
-
-    if (FAILED(hr)) {
-        return hr;
-    }
+    memcpy(&eeprom_config, cfg, sizeof(*cfg));
 
     hr = iohook_push_handler(eeprom_handle_irp);
 
@@ -83,11 +80,25 @@ static HRESULT eeprom_handle_irp(struct irp *irp)
 
 static HRESULT eeprom_handle_open(struct irp *irp)
 {
+    HRESULT hr;
+
     if (!wstr_eq(irp->open_filename, L"$eeprom") != 0) {
         return iohook_invoke_next(irp);
     }
 
+    if (eeprom_file != NULL) {
+        dprintf("EEPROM: Already open\n");
+
+        return HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION);
+    }
+
     dprintf("EEPROM: Open device\n");
+    hr = nvram_open_file(&eeprom_file, eeprom_config.path, 0x2000);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     irp->fd = eeprom_file;
 
     return S_OK;
@@ -96,8 +107,9 @@ static HRESULT eeprom_handle_open(struct irp *irp)
 static HRESULT eeprom_handle_close(struct irp *irp)
 {
     dprintf("EEPROM: Close device\n");
+    eeprom_file = NULL;
 
-    return S_OK;
+    return iohook_invoke_next(irp);
 }
 
 static HRESULT eeprom_handle_ioctl(struct irp *irp)
