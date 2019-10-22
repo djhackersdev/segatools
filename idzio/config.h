@@ -25,6 +25,7 @@ struct idz_io_config {
     uint8_t vk_service;
     uint8_t vk_coin;
     wchar_t mode[8];
+    int restrict_;
     struct idz_shifter_config shifter;
     struct idz_di_config di;
 };

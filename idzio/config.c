@@ -57,6 +57,7 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
         swprintf_s(key, _countof(key), L"gear%i", i + 1);
         cfg->gear[i] = GetPrivateProfileIntW(L"dinput", key, i + 1, filename);
     }
+
 }
 
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
@@ -67,6 +68,7 @@ void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
     cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", '1', filename);
     cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", '2', filename);
     cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", '3', filename);
+    cfg->restrict_ = GetPrivateProfileIntW(L"io3", L"restrict", 196, filename);
 
     GetPrivateProfileStringW(
             L"io3",
@@ -93,4 +95,3 @@ void idz_shifter_config_load(
             0,
             filename);
 }
-
