@@ -25,6 +25,6 @@ void sg_led_init(
 
 void sg_led_transact(
         struct sg_led *led,
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const void *req_bytes,
         size_t req_nbytes);

@@ -20,27 +20,27 @@
 static HRESULT sg_nfc_dispatch(
         void *ctx,
         const void *v_req,
-        void *v_resp);
+        void *v_res);
 
 static HRESULT sg_nfc_cmd_reset(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_resp_header *resp);
+        struct sg_res_header *res);
 
 static HRESULT sg_nfc_cmd_get_fw_version(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_get_fw_version *resp);
+        struct sg_nfc_res_get_fw_version *res);
 
 static HRESULT sg_nfc_cmd_get_hw_version(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_get_hw_version *resp);
+        struct sg_nfc_res_get_hw_version *res);
 
 static HRESULT sg_nfc_cmd_poll(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_poll *resp);
+        struct sg_nfc_res_poll *res);
 
 static HRESULT sg_nfc_poll_aime(
         struct sg_nfc *nfc,
@@ -53,17 +53,17 @@ static HRESULT sg_nfc_poll_felica(
 static HRESULT sg_nfc_cmd_mifare_read_block(
         struct sg_nfc *nfc,
         const struct sg_nfc_req_mifare_read_block *req,
-        struct sg_nfc_resp_mifare_read_block *resp);
+        struct sg_nfc_res_mifare_read_block *res);
 
 static HRESULT sg_nfc_cmd_felica_encap(
         struct sg_nfc *nfc,
         const struct sg_nfc_req_felica_encap *req,
-        struct sg_nfc_resp_felica_encap *resp);
+        struct sg_nfc_res_felica_encap *res);
 
 static HRESULT sg_nfc_cmd_dummy(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_resp_header *resp);
+        struct sg_res_header *res);
 
 void sg_nfc_init(
         struct sg_nfc *nfc,
@@ -107,29 +107,29 @@ static void sg_nfc_dprintf(
 
 void sg_nfc_transact(
         struct sg_nfc *nfc,
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const void *req_bytes,
         size_t req_nbytes)
 {
     assert(nfc != NULL);
-    assert(resp_frame != NULL);
+    assert(res_frame != NULL);
     assert(req_bytes != NULL);
 
-    sg_req_transact(resp_frame, req_bytes, req_nbytes, sg_nfc_dispatch, nfc);
+    sg_req_transact(res_frame, req_bytes, req_nbytes, sg_nfc_dispatch, nfc);
 }
 
 static HRESULT sg_nfc_dispatch(
         void *ctx,
         const void *v_req,
-        void *v_resp)
+        void *v_res)
 {
     struct sg_nfc *nfc;
     const union sg_nfc_req_any *req;
-    union sg_nfc_resp_any *resp;
+    union sg_nfc_res_any *res;
 
     nfc = ctx;
     req = v_req;
-    resp = v_resp;
+    res = v_res;
 
     if (req->simple.hdr.addr != nfc->addr) {
         /* Not addressed to us, don't send a response */
@@ -138,37 +138,37 @@ static HRESULT sg_nfc_dispatch(
 
     switch (req->simple.hdr.cmd) {
     case SG_NFC_CMD_RESET:
-        return sg_nfc_cmd_reset(nfc, &req->simple, &resp->simple);
+        return sg_nfc_cmd_reset(nfc, &req->simple, &res->simple);
 
     case SG_NFC_CMD_GET_FW_VERSION:
         return sg_nfc_cmd_get_fw_version(
                 nfc,
                 &req->simple,
-                &resp->get_fw_version);
+                &res->get_fw_version);
 
     case SG_NFC_CMD_GET_HW_VERSION:
         return sg_nfc_cmd_get_hw_version(
                 nfc,
                 &req->simple,
-                &resp->get_hw_version);
+                &res->get_hw_version);
 
     case SG_NFC_CMD_POLL:
         return sg_nfc_cmd_poll(
                 nfc,
                 &req->simple,
-                &resp->poll);
+                &res->poll);
 
     case SG_NFC_CMD_MIFARE_READ_BLOCK:
         return sg_nfc_cmd_mifare_read_block(
                 nfc,
                 &req->mifare_read_block,
-                &resp->mifare_read_block);
+                &res->mifare_read_block);
 
     case SG_NFC_CMD_FELICA_ENCAP:
         return sg_nfc_cmd_felica_encap(
                 nfc,
                 &req->felica_encap,
-                &resp->felica_encap);
+                &res->felica_encap);
 
     case SG_NFC_CMD_MIFARE_AUTHENTICATE:
     case SG_NFC_CMD_MIFARE_SELECT_TAG:
@@ -176,7 +176,7 @@ static HRESULT sg_nfc_dispatch(
     case SG_NFC_CMD_MIFARE_SET_KEY_BANA:
     case SG_NFC_CMD_RADIO_ON:
     case SG_NFC_CMD_RADIO_OFF:
-        return sg_nfc_cmd_dummy(nfc, &req->simple, &resp->simple);
+        return sg_nfc_cmd_dummy(nfc, &req->simple, &res->simple);
 
     default:
         sg_nfc_dprintf(nfc, "Unimpl command %02x\n", req->simple.hdr.cmd);
@@ -188,11 +188,11 @@ static HRESULT sg_nfc_dispatch(
 static HRESULT sg_nfc_cmd_reset(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_resp_header *resp)
+        struct sg_res_header *res)
 {
     sg_nfc_dprintf(nfc, "Reset\n");
-    sg_resp_init(resp, req, 0);
-    resp->status = 3;
+    sg_res_init(res, req, 0);
+    res->status = 3;
 
     return S_OK;
 }
@@ -200,11 +200,11 @@ static HRESULT sg_nfc_cmd_reset(
 static HRESULT sg_nfc_cmd_get_fw_version(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_get_fw_version *resp)
+        struct sg_nfc_res_get_fw_version *res)
 {
     /* Dest version is not NUL terminated, this is intentional */
-    sg_resp_init(&resp->resp, req, sizeof(resp->version));
-    memcpy(resp->version, "TN32MSEC003S F/W Ver1.2E", sizeof(resp->version));
+    sg_res_init(&res->res, req, sizeof(res->version));
+    memcpy(res->version, "TN32MSEC003S F/W Ver1.2E", sizeof(res->version));
 
     return S_OK;
 }
@@ -212,11 +212,11 @@ static HRESULT sg_nfc_cmd_get_fw_version(
 static HRESULT sg_nfc_cmd_get_hw_version(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_get_hw_version *resp)
+        struct sg_nfc_res_get_hw_version *res)
 {
     /* Dest version is not NUL terminated, this is intentional */
-    sg_resp_init(&resp->resp, req, sizeof(resp->version));
-    memcpy(resp->version, "TN32MSEC003S H/W Ver3.0J", sizeof(resp->version));
+    sg_res_init(&res->res, req, sizeof(res->version));
+    memcpy(res->version, "TN32MSEC003S H/W Ver3.0J", sizeof(res->version));
 
     return S_OK;
 }
@@ -224,7 +224,7 @@ static HRESULT sg_nfc_cmd_get_hw_version(
 static HRESULT sg_nfc_cmd_poll(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_nfc_resp_poll *resp)
+        struct sg_nfc_res_poll *res)
 {
     struct sg_nfc_poll_mifare mifare;
     struct sg_nfc_poll_felica felica;
@@ -239,9 +239,9 @@ static HRESULT sg_nfc_cmd_poll(
     hr = sg_nfc_poll_felica(nfc, &felica);
 
     if (SUCCEEDED(hr) && hr != S_FALSE) {
-        sg_resp_init(&resp->resp, req, 1 + sizeof(felica));
-        memcpy(resp->payload, &felica, sizeof(felica));
-        resp->count = 1;
+        sg_res_init(&res->res, req, 1 + sizeof(felica));
+        memcpy(res->payload, &felica, sizeof(felica));
+        res->count = 1;
 
         return S_OK;
     }
@@ -249,15 +249,15 @@ static HRESULT sg_nfc_cmd_poll(
     hr = sg_nfc_poll_aime(nfc, &mifare);
 
     if (SUCCEEDED(hr) && hr != S_FALSE) {
-        sg_resp_init(&resp->resp, req, 1 + sizeof(mifare));
-        memcpy(resp->payload, &mifare, sizeof(mifare));
-        resp->count = 1;
+        sg_res_init(&res->res, req, 1 + sizeof(mifare));
+        memcpy(res->payload, &mifare, sizeof(mifare));
+        res->count = 1;
 
         return S_OK;
     }
 
-    sg_resp_init(&resp->resp, req, 1);
-    resp->count = 0;
+    sg_res_init(&res->res, req, 1);
+    res->count = 0;
 
     return S_OK;
 }
@@ -340,7 +340,7 @@ static HRESULT sg_nfc_poll_felica(
 static HRESULT sg_nfc_cmd_mifare_read_block(
         struct sg_nfc *nfc,
         const struct sg_nfc_req_mifare_read_block *req,
-        struct sg_nfc_resp_mifare_read_block *resp)
+        struct sg_nfc_res_mifare_read_block *res)
 {
     uint32_t uid;
 
@@ -360,11 +360,11 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
         return E_FAIL;
     }
 
-    sg_resp_init(&resp->resp, &req->req, sizeof(resp->block));
+    sg_res_init(&res->res, &req->req, sizeof(res->block));
 
-    memcpy( resp->block,
+    memcpy( res->block,
             nfc->mifare.sectors[0].blocks[req->payload.block_no].bytes,
-            sizeof(resp->block));
+            sizeof(res->block));
 
     return S_OK;
 }
@@ -372,7 +372,7 @@ static HRESULT sg_nfc_cmd_mifare_read_block(
 static HRESULT sg_nfc_cmd_felica_encap(
         struct sg_nfc *nfc,
         const struct sg_nfc_req_felica_encap *req,
-        struct sg_nfc_resp_felica_encap *resp)
+        struct sg_nfc_res_felica_encap *res)
 {
     struct const_iobuf f_req;
     struct iobuf f_res;
@@ -397,8 +397,8 @@ static HRESULT sg_nfc_cmd_felica_encap(
     f_req.nbytes = req->payload[0];
     f_req.pos = 1;
 
-    f_res.bytes = resp->payload;
-    f_res.nbytes = sizeof(resp->payload);
+    f_res.bytes = res->payload;
+    f_res.nbytes = sizeof(res->payload);
     f_res.pos = 1;
 
 #if 0
@@ -412,8 +412,8 @@ static HRESULT sg_nfc_cmd_felica_encap(
         return hr;
     }
 
-    sg_resp_init(&resp->resp, &req->req, f_res.pos);
-    resp->payload[0] = f_res.pos;
+    sg_res_init(&res->res, &req->req, f_res.pos);
+    res->payload[0] = f_res.pos;
 
 #if 0
     dprintf("FELICA INBOUND:\n");
@@ -426,9 +426,9 @@ static HRESULT sg_nfc_cmd_felica_encap(
 static HRESULT sg_nfc_cmd_dummy(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
-        struct sg_resp_header *resp)
+        struct sg_res_header *res)
 {
-    sg_resp_init(resp, req, 0);
+    sg_res_init(res, req, 0);
 
     return S_OK;
 }

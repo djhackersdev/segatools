@@ -11,17 +11,17 @@
 static HRESULT sg_led_dispatch(
         void *ctx,
         const void *v_req,
-        void *v_resp);
+        void *v_res);
 
 static HRESULT sg_led_cmd_reset(
         const struct sg_led *led,
         const struct sg_req_header *req,
-        struct sg_led_resp_reset *resp);
+        struct sg_led_res_reset *res);
 
 static HRESULT sg_led_cmd_get_info(
         const struct sg_led *led,
         const struct sg_req_header *req,
-        struct sg_led_resp_get_info *resp);
+        struct sg_led_res_get_info *res);
 
 static HRESULT sg_led_cmd_set_color(
         const struct sg_led *led,
@@ -47,15 +47,15 @@ void sg_led_init(
 
 void sg_led_transact(
         struct sg_led *led,
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const void *req_bytes,
         size_t req_nbytes)
 {
     assert(led != NULL);
-    assert(resp_frame != NULL);
+    assert(res_frame != NULL);
     assert(req_bytes != NULL);
 
-    sg_req_transact(resp_frame, req_bytes, req_nbytes, sg_led_dispatch, led);
+    sg_req_transact(res_frame, req_bytes, req_nbytes, sg_led_dispatch, led);
 }
 
 #ifdef NDEBUG
@@ -87,15 +87,15 @@ static void sg_led_dprintf(
 static HRESULT sg_led_dispatch(
         void *ctx,
         const void *v_req,
-        void *v_resp)
+        void *v_res)
 {
     const struct sg_led *led;
     const union sg_led_req_any *req;
-    union sg_led_resp_any *resp;
+    union sg_led_res_any *res;
 
     led = ctx;
     req = v_req;
-    resp = v_resp;
+    res = v_res;
 
     if (req->simple.hdr.addr != led->addr) {
         /* Not addressed to us, don't send a response */
@@ -104,10 +104,10 @@ static HRESULT sg_led_dispatch(
 
     switch (req->simple.hdr.cmd) {
     case SG_RGB_CMD_RESET:
-        return sg_led_cmd_reset(led, &req->simple, &resp->reset);
+        return sg_led_cmd_reset(led, &req->simple, &res->reset);
 
     case SG_RGB_CMD_GET_INFO:
-        return sg_led_cmd_get_info(led, &req->simple, &resp->get_info);
+        return sg_led_cmd_get_info(led, &req->simple, &res->get_info);
 
     case SG_RGB_CMD_SET_COLOR:
         return sg_led_cmd_set_color(led, &req->set_color);
@@ -122,13 +122,13 @@ static HRESULT sg_led_dispatch(
 static HRESULT sg_led_cmd_reset(
         const struct sg_led *led,
         const struct sg_req_header *req,
-        struct sg_led_resp_reset *resp)
+        struct sg_led_res_reset *res)
 {
     HRESULT hr;
 
     sg_led_dprintf(led, "Reset\n");
-    sg_resp_init(&resp->resp, req, sizeof(resp->payload));
-    resp->payload = 0;
+    sg_res_init(&res->res, req, sizeof(res->payload));
+    res->payload = 0;
 
     if (led->ops->reset != NULL) {
         hr = led->ops->reset(led->ops_ctx);
@@ -147,11 +147,11 @@ static HRESULT sg_led_cmd_reset(
 static HRESULT sg_led_cmd_get_info(
         const struct sg_led *led,
         const struct sg_req_header *req,
-        struct sg_led_resp_get_info *resp)
+        struct sg_led_res_get_info *res)
 {
     sg_led_dprintf(led, "Get info\n");
-    sg_resp_init(&resp->resp, req, sizeof(resp->payload));
-    memcpy(resp->payload, sg_led_info, sizeof(sg_led_info));
+    sg_res_init(&res->res, req, sizeof(res->payload));
+    memcpy(res->payload, sg_led_info, sizeof(sg_led_info));
 
     return S_OK;
 }

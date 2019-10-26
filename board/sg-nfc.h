@@ -34,6 +34,6 @@ void sg_nfc_init(
 
 void sg_nfc_transact(
         struct sg_nfc *nfc,
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const void *req_bytes,
         size_t req_nbytes);

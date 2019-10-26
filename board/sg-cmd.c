@@ -12,15 +12,15 @@ union sg_req_any {
     uint8_t bytes[256];
 };
 
-union sg_resp_any {
-    struct sg_resp_header resp;
+union sg_res_any {
+    struct sg_res_header res;
     uint8_t bytes[256];
 };
 
 static HRESULT sg_req_validate(const void *ptr, size_t nbytes);
 
-static void sg_resp_error(
-        struct sg_resp_header *resp,
+static void sg_res_error(
+        struct sg_res_header *res,
         const struct sg_req_header *req);
 
 static HRESULT sg_req_validate(const void *ptr, size_t nbytes)
@@ -60,7 +60,7 @@ static HRESULT sg_req_validate(const void *ptr, size_t nbytes)
 }
 
 void sg_req_transact(
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const uint8_t *req_bytes,
         size_t req_nbytes,
         sg_dispatch_fn_t dispatch,
@@ -68,10 +68,10 @@ void sg_req_transact(
 {
     struct iobuf req_span;
     union sg_req_any req;
-    union sg_resp_any resp;
+    union sg_res_any res;
     HRESULT hr;
 
-    assert(resp_frame != NULL);
+    assert(res_frame != NULL);
     assert(req_bytes != NULL);
     assert(dispatch != NULL);
 
@@ -91,44 +91,44 @@ void sg_req_transact(
         return;
     }
 
-    hr = dispatch(ctx, &req, &resp);
+    hr = dispatch(ctx, &req, &res);
 
     if (hr != S_FALSE) {
         if (FAILED(hr)) {
-            sg_resp_error(&resp.resp, &req.req);
+            sg_res_error(&res.res, &req.req);
         }
 
-        sg_frame_encode(resp_frame, resp.bytes, resp.resp.hdr.frame_len);
+        sg_frame_encode(res_frame, res.bytes, res.res.hdr.frame_len);
     }
 }
 
-void sg_resp_init(
-        struct sg_resp_header *resp,
+void sg_res_init(
+        struct sg_res_header *res,
         const struct sg_req_header *req,
         size_t payload_len)
 {
-    assert(resp != NULL);
+    assert(res != NULL);
     assert(req != NULL);
 
-    resp->hdr.frame_len = sizeof(*resp) + payload_len;
-    resp->hdr.addr = req->hdr.addr;
-    resp->hdr.seq_no = req->hdr.seq_no;
-    resp->hdr.cmd = req->hdr.cmd;
-    resp->status = 0;
-    resp->payload_len = payload_len;
+    res->hdr.frame_len = sizeof(*res) + payload_len;
+    res->hdr.addr = req->hdr.addr;
+    res->hdr.seq_no = req->hdr.seq_no;
+    res->hdr.cmd = req->hdr.cmd;
+    res->status = 0;
+    res->payload_len = payload_len;
 }
 
-static void sg_resp_error(
-        struct sg_resp_header *resp,
+static void sg_res_error(
+        struct sg_res_header *res,
         const struct sg_req_header *req)
 {
-    assert(resp != NULL);
+    assert(res != NULL);
     assert(req != NULL);
 
-    resp->hdr.frame_len = sizeof(*resp);
-    resp->hdr.addr = req->hdr.addr;
-    resp->hdr.seq_no = req->hdr.seq_no;
-    resp->hdr.cmd = req->hdr.cmd;
-    resp->status = 1;
-    resp->payload_len = 0;
+    res->hdr.frame_len = sizeof(*res);
+    res->hdr.addr = req->hdr.addr;
+    res->hdr.seq_no = req->hdr.seq_no;
+    res->hdr.cmd = req->hdr.cmd;
+    res->status = 1;
+    res->payload_len = 0;
 }

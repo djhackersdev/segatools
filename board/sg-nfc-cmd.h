@@ -19,13 +19,13 @@ enum {
     SG_NFC_CMD_FELICA_ENCAP         = 0x71,
 };
 
-struct sg_nfc_resp_get_fw_version {
-    struct sg_resp_header resp;
+struct sg_nfc_res_get_fw_version {
+    struct sg_res_header res;
     char version[23];
 };
 
-struct sg_nfc_resp_get_hw_version {
-    struct sg_resp_header resp;
+struct sg_nfc_res_get_hw_version {
+    struct sg_res_header res;
     char version[23];
 };
 
@@ -57,14 +57,14 @@ struct sg_nfc_poll_felica {
     uint64_t PMm;
 };
 
-struct sg_nfc_resp_poll {
-    struct sg_resp_header resp;
+struct sg_nfc_res_poll {
+    struct sg_res_header res;
     uint8_t count;
     uint8_t payload[250];
 };
 
 struct sg_nfc_req_mifare_select_tag {
-    struct sg_resp_header resp;
+    struct sg_res_header res;
     uint32_t uid;
 };
 
@@ -76,8 +76,8 @@ struct sg_nfc_req_mifare_read_block {
     } payload;
 };
 
-struct sg_nfc_resp_mifare_read_block {
-    struct sg_resp_header resp;
+struct sg_nfc_res_mifare_read_block {
+    struct sg_res_header res;
     uint8_t block[16];
 };
 
@@ -87,8 +87,8 @@ struct sg_nfc_req_felica_encap {
     uint8_t payload[243];
 };
 
-struct sg_nfc_resp_felica_encap {
-    struct sg_resp_header resp;
+struct sg_nfc_res_felica_encap {
+    struct sg_res_header res;
     uint8_t payload[250];
 };
 
@@ -102,14 +102,14 @@ union sg_nfc_req_any {
     struct sg_nfc_req_felica_encap felica_encap;
 };
 
-union sg_nfc_resp_any {
+union sg_nfc_res_any {
     uint8_t bytes[256];
-    struct sg_resp_header simple;
-    struct sg_nfc_resp_get_fw_version get_fw_version;
-    struct sg_nfc_resp_get_hw_version get_hw_version;
-    struct sg_nfc_resp_poll poll;
-    struct sg_nfc_resp_mifare_read_block mifare_read_block;
-    struct sg_nfc_resp_felica_encap felica_encap;
+    struct sg_res_header simple;
+    struct sg_nfc_res_get_fw_version get_fw_version;
+    struct sg_nfc_res_get_hw_version get_hw_version;
+    struct sg_nfc_res_poll poll;
+    struct sg_nfc_res_mifare_read_block mifare_read_block;
+    struct sg_nfc_res_felica_encap felica_encap;
 };
 
 #pragma pack(pop)

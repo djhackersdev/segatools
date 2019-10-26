@@ -19,7 +19,7 @@ struct sg_req_header {
     uint8_t payload_len;
 };
 
-struct sg_resp_header {
+struct sg_res_header {
     struct sg_header hdr;
     uint8_t status;
     uint8_t payload_len;
@@ -28,16 +28,16 @@ struct sg_resp_header {
 typedef HRESULT (*sg_dispatch_fn_t)(
         void *ctx,
         const void *req,
-        void *resp);
+        void *res);
 
 void sg_req_transact(
-        struct iobuf *resp_frame,
+        struct iobuf *res_frame,
         const uint8_t *req_bytes,
         size_t req_nbytes,
         sg_dispatch_fn_t dispatch,
         void *ctx);
 
-void sg_resp_init(
-        struct sg_resp_header *resp,
+void sg_res_init(
+        struct sg_res_header *res,
         const struct sg_req_header *req,
         size_t payload_len);
