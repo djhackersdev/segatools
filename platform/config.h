@@ -32,6 +32,13 @@ struct misc_config {
     bool enable;
 };
 
+struct netenv_config {
+    bool enable;
+    uint8_t addr_suffix;
+    uint8_t router_suffix;
+    uint8_t mac_addr[6];
+};
+
 struct nusec_config {
     bool enable;
     char keychip_id[16];
@@ -61,6 +68,7 @@ struct nu_config {
     struct dns_config dns;
     struct hwmon_config hwmon;
     struct misc_config misc;
+    struct netenv_config netenv;
     struct nusec_config nusec;
     struct vfs_config vfs;
 };
@@ -72,6 +80,7 @@ struct alls_config {
     struct hwmon_config hwmon;
     struct misc_config misc;
     struct pcbid_config pcbid;
+    struct netenv_config netenv;
     struct nusec_config nusec;
     struct vfs_config vfs;
 };
@@ -84,6 +93,7 @@ void clock_config_load(struct clock_config *cfg, const wchar_t *filename);
 void dns_config_load(struct dns_config *cfg, const wchar_t *filename);
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename);
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename);
+void netenv_config_load(struct netenv_config *cfg, const wchar_t *filename);
 void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename);
 void pcbid_config_load(struct pcbid_config *cfg, const wchar_t *filename);
 void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename);

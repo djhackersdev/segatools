@@ -19,6 +19,8 @@ platform_lib = static_library(
         'hwmon.h',
         'misc.c',
         'misc.h',
+        'netenv.c',
+        'netenv.h',
         'nusec.c',
         'nusec.h',
         'pcbid.c',

@@ -22,6 +22,7 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
     pcbid_config_load(&cfg->pcbid, filename);
+    netenv_config_load(&cfg->netenv, filename);
     nusec_config_load(&cfg->nusec, filename);
     vfs_config_load(&cfg->vfs, filename);
 }
@@ -36,6 +37,7 @@ void nu_config_load(struct nu_config *cfg, const wchar_t *filename)
     dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
+    netenv_config_load(&cfg->netenv, filename);
     nusec_config_load(&cfg->nusec, filename);
     vfs_config_load(&cfg->vfs, filename);
 }
@@ -127,6 +129,48 @@ void misc_config_load(struct misc_config *cfg, const wchar_t *filename)
     cfg->enable = GetPrivateProfileIntW(L"misc", L"enable", 1, filename);
 }
 
+void netenv_config_load(struct netenv_config *cfg, const wchar_t *filename)
+{
+    wchar_t mac_addr[18];
+
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    memset(cfg, 0, sizeof(*cfg));
+
+    cfg->enable = GetPrivateProfileIntW(L"netenv", L"enable", 0, filename);
+
+    cfg->addr_suffix = GetPrivateProfileIntW(
+            L"netenv",
+            L"addrSuffix",
+            11,
+            filename);
+
+    cfg->router_suffix = GetPrivateProfileIntW(
+            L"netenv",
+            L"routerSuffix",
+            254,
+            filename);
+
+    GetPrivateProfileStringW(
+            L"netenv",
+            L"macAddr",
+            L"01:02:03:04:05:06",
+            mac_addr,
+            _countof(mac_addr),
+            filename);
+
+    swscanf(mac_addr,
+            L"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+            &cfg->mac_addr[0],
+            &cfg->mac_addr[1],
+            &cfg->mac_addr[2],
+            &cfg->mac_addr[3],
+            &cfg->mac_addr[4],
+            &cfg->mac_addr[5],
+            &cfg->mac_addr[6]);
+}
+
 void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
 {
     wchar_t keychip_id[17];
@@ -199,7 +243,7 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
     }
 
     swscanf(subnet, L"%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
-    cfg->subnet = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3];
+    cfg->subnet = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | 0;
 
     GetPrivateProfileStringW(
             L"keychip",
