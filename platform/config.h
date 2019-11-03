@@ -62,18 +62,7 @@ struct vfs_config {
     wchar_t appdata[MAX_PATH];
 };
 
-struct nu_config {
-    struct amvideo_config amvideo;
-    struct clock_config clock;
-    struct dns_config dns;
-    struct hwmon_config hwmon;
-    struct misc_config misc;
-    struct netenv_config netenv;
-    struct nusec_config nusec;
-    struct vfs_config vfs;
-};
-
-struct alls_config {
+struct platform_config {
     struct amvideo_config amvideo;
     struct clock_config clock;
     struct dns_config dns;
@@ -85,8 +74,9 @@ struct alls_config {
     struct vfs_config vfs;
 };
 
-void alls_config_load(struct alls_config *cfg, const wchar_t *filename);
-void nu_config_load(struct nu_config *cfg, const wchar_t *filename);
+void platform_config_load(
+        struct platform_config *cfg,
+        const wchar_t *filename);
 
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename);
 void clock_config_load(struct clock_config *cfg, const wchar_t *filename);

@@ -39,7 +39,12 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init_nu(&diva_hook_cfg.nu, "SBZV", "AAV0", diva_hook_mod);
+    platform_hook_init(
+            &diva_hook_cfg.platform,
+            "SBZV",
+            "AAV0",
+            diva_hook_mod);
+
     amex_hook_init(&diva_hook_cfg.amex);
 
     if (diva_hook_cfg.amex.jvs.enable) {

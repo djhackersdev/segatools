@@ -16,7 +16,7 @@ void idz_hook_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    nu_config_load(&cfg->nu, filename);
+    platform_config_load(&cfg->platform, filename);
     amex_config_load(&cfg->amex, filename);
     aime_config_load(&cfg->aime, filename);
 }

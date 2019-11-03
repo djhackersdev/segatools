@@ -52,7 +52,12 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init_nu(&chuni_hook_cfg.nu, "SDBT", "AAV1", chuni_hook_mod);
+    platform_hook_init(
+            &chuni_hook_cfg.platform,
+            "SDBT",
+            "AAV1",
+            chuni_hook_mod);
+
     amex_hook_init(&chuni_hook_cfg.amex);
 
     if (chuni_hook_cfg.amex.jvs.enable) {

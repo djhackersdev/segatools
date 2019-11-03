@@ -7,7 +7,7 @@
 #include "platform/config.h"
 
 struct mu3_hook_config {
-    struct alls_config alls;
+    struct platform_config platform;
     struct aime_config aime;
 };
 

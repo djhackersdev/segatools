@@ -14,7 +14,7 @@ struct slider_config {
 };
 
 struct chuni_hook_config {
-    struct nu_config nu;
+    struct platform_config platform;
     struct amex_config amex;
     struct gfx_config gfx;
     struct slider_config slider;

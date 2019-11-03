@@ -29,7 +29,7 @@ void chuni_hook_config_load(
 
     memset(cfg, 0, sizeof(*cfg));
 
-    nu_config_load(&cfg->nu, filename);
+    platform_config_load(&cfg->platform, filename);
     amex_config_load(&cfg->amex, filename);
     gfx_config_load(&cfg->gfx, filename);
     slider_config_load(&cfg->slider, filename);

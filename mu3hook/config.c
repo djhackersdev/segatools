@@ -14,6 +14,6 @@ void mu3_hook_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    alls_config_load(&cfg->alls, filename);
+    platform_config_load(&cfg->platform, filename);
     aime_config_load(&cfg->aime, filename);
 }

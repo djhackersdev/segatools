@@ -34,7 +34,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init_alls(&mu3_hook_cfg.alls, "SDDT", "AAV2", mu3_hook_mod);
+    platform_hook_init(&mu3_hook_cfg.platform, "SDDT", "AAV2", mu3_hook_mod);
     sg_reader_hook_init(&mu3_hook_cfg.aime, 1);
     vfd_hook_init(2);
     mu3_io4_hook_init();

@@ -7,7 +7,7 @@
 #include "platform/config.h"
 
 struct diva_hook_config {
-    struct nu_config nu;
+    struct platform_config platform;
     struct amex_config amex;
     struct aime_config aime;
 };

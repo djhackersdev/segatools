@@ -11,7 +11,7 @@
 
 #include "platform/config.h"
 
-void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
+void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
     assert(filename != NULL);
@@ -22,21 +22,6 @@ void alls_config_load(struct alls_config *cfg, const wchar_t *filename)
     hwmon_config_load(&cfg->hwmon, filename);
     misc_config_load(&cfg->misc, filename);
     pcbid_config_load(&cfg->pcbid, filename);
-    netenv_config_load(&cfg->netenv, filename);
-    nusec_config_load(&cfg->nusec, filename);
-    vfs_config_load(&cfg->vfs, filename);
-}
-
-void nu_config_load(struct nu_config *cfg, const wchar_t *filename)
-{
-    assert(cfg != NULL);
-    assert(filename != NULL);
-
-    amvideo_config_load(&cfg->amvideo, filename);
-    clock_config_load(&cfg->clock, filename);
-    dns_config_load(&cfg->dns, filename);
-    hwmon_config_load(&cfg->hwmon, filename);
-    misc_config_load(&cfg->misc, filename);
     netenv_config_load(&cfg->netenv, filename);
     nusec_config_load(&cfg->nusec, filename);
     vfs_config_load(&cfg->vfs, filename);
