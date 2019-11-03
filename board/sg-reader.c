@@ -39,6 +39,8 @@ static const struct sg_led_ops sg_reader_led_ops = {
 };
 
 static CRITICAL_SECTION sg_reader_lock;
+static bool sg_reader_started;
+static HRESULT sg_reader_start_hr;
 static struct uart sg_reader_uart;
 static uint8_t sg_reader_written_bytes[520];
 static uint8_t sg_reader_readable_bytes[520];
@@ -49,18 +51,10 @@ HRESULT sg_reader_hook_init(
         const struct aime_config *cfg,
         unsigned int port_no)
 {
-    HRESULT hr;
-
     assert(cfg != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
-    }
-
-    hr = aime_io_init();
-
-    if (FAILED(hr)) {
-        return hr;
     }
 
     sg_nfc_init(&sg_reader_nfc, 0x00, &sg_reader_nfc_ops, NULL);
@@ -111,6 +105,31 @@ static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
         dump_iobuf(&sg_reader_uart.readable);
     }
 #endif
+
+    if (irp->op == IRP_OP_OPEN) {
+        /* Unfortunately the card reader UART gets opened and closed
+           repeatedly */
+
+        if (!sg_reader_started) {
+            dprintf("NFC Assembly: Starting backend DLL\n");
+            hr = aime_io_init();
+
+            sg_reader_started = true;
+            sg_reader_start_hr = hr;
+
+            if (FAILED(hr)) {
+                dprintf("NFC Assembly: Backend error: %x\n", (int) hr);
+
+                return hr;
+            }
+        } else {
+            hr = sg_reader_start_hr;
+
+            if (FAILED(hr)) {
+                return hr;
+            }
+        }
+    }
 
     hr = uart_handle_irp(&sg_reader_uart, irp);
 
