@@ -26,15 +26,27 @@ static HANDLE hwmon_fd;
 
 HRESULT hwmon_hook_init(const struct hwmon_config *cfg)
 {
+    HRESULT hr;
+
     assert(cfg != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
     }
 
-    hwmon_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&hwmon_fd);
 
-    return iohook_push_handler(hwmon_handle_irp);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = iohook_push_handler(hwmon_handle_irp);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
 }
 
 static HRESULT hwmon_handle_irp(struct irp *irp)

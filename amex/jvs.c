@@ -50,7 +50,12 @@ HRESULT jvs_hook_init(const struct jvs_config *cfg)
         return S_FALSE;
     }
 
-    jvs_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&jvs_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     hr = iohook_push_handler(jvs_handle_irp);
 
     if (FAILED(hr)) {

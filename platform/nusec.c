@@ -139,7 +139,12 @@ HRESULT nusec_hook_init(
     nusec_nearfull = 0x00010200;
     nusec_play_count = 0;
     nusec_play_limit = 1024;
-    nusec_fd = iohook_open_dummy_fd();
+
+    hr = iohook_open_nul_fd(&nusec_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     hr = iohook_push_handler(nusec_handle_irp);
 

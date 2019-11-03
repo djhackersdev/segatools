@@ -85,7 +85,11 @@ HRESULT ds_hook_init(const struct ds_config *cfg)
         return hr;
     }
 
-    ds_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&ds_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     return S_OK;
 }

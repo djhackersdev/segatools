@@ -99,17 +99,30 @@ static void *io4_ops_ctx;
 
 HRESULT io4_hook_init(const struct io4_ops *ops, void *ctx)
 {
+    HRESULT hr;
+
     assert(ops != NULL);
 
     async_init(&io4_async, NULL);
 
-    io4_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&io4_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     io4_ops = ops;
     io4_ops_ctx = ctx;
     io4_system_status = 0x02; /* idk */
     iohook_push_handler(io4_handle_irp);
 
-    return setupapi_add_phantom_dev(&hid_guid, io4_path);
+    hr = setupapi_add_phantom_dev(&hid_guid, io4_path);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
 }
 
 static HRESULT io4_handle_irp(struct irp *irp)

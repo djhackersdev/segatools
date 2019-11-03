@@ -89,7 +89,12 @@ HRESULT gpio_hook_init(const struct gpio_config *cfg)
 
     memcpy(&gpio_config, cfg, sizeof(*cfg));
 
-    gpio_fd = iohook_open_dummy_fd();
+    hr = iohook_open_nul_fd(&gpio_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     hr = iohook_push_handler(gpio_handle_irp);
 
     if (FAILED(hr)) {
