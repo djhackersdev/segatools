@@ -54,12 +54,12 @@ static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
     IDirect3D9 *api;
     HRESULT hr;
 
-    dprintf("Direct3DCreate9 hook hit\n");
+    dprintf("Gfx: Direct3DCreate9 hook hit\n");
 
     api = next_Direct3DCreate9(sdk_ver);
 
     if (api == NULL) {
-        dprintf("next_Direct3DCreate9 returned NULL\n");
+        dprintf("Gfx: next_Direct3DCreate9 returned NULL\n");
 
         goto fail;
     }
@@ -67,7 +67,7 @@ static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
     hr = com_proxy_wrap(&proxy, api, sizeof(*api->lpVtbl));
 
     if (FAILED(hr)) {
-        dprintf("com_proxy_wrap returned %x\n", (int) hr);
+        dprintf("Gfx: com_proxy_wrap returned %x\n", (int) hr);
 
         goto fail;
     }
@@ -97,7 +97,7 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
     struct com_proxy *proxy;
     IDirect3D9 *real;
 
-    dprintf("IDirect3D9::CreateDevice hook hit\n");
+    dprintf("Gfx: IDirect3D9::CreateDevice hook hit\n");
 
     proxy = com_proxy_downcast(self);
     real = proxy->real;

@@ -180,7 +180,7 @@ static BOOL WINAPI my_GetSystemTime(SYSTEMTIME *out)
 
 static DWORD WINAPI my_GetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo)
 {
-    dprintf("%s\n", __func__);
+    dprintf("Clock: Returning JST timezone\n");
 
     if (tzinfo == NULL) {
         SetLastError(ERROR_INVALID_PARAMETER);
@@ -203,21 +203,21 @@ static DWORD WINAPI my_GetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo)
 
 static BOOL WINAPI my_SetLocalTime(SYSTEMTIME *in)
 {
-    dprintf("Prevented application from screwing with the local time\n");
+    dprintf("Clock: Blocked local time update\n");
 
     return TRUE;
 }
 
 static BOOL WINAPI my_SetSystemTime(SYSTEMTIME *in)
 {
-    dprintf("Prevented application from screwing with the system time\n");
+    dprintf("Clock: Blocked system time update\n");
 
     return TRUE;
 }
 
 static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *in)
 {
-    dprintf("Prevented application from screwing with the timezone\n");
+    dprintf("Clock: Blocked timezone update\n");
 
     return TRUE;
 }
