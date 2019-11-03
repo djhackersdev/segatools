@@ -39,8 +39,9 @@ static HRESULT jvs_ioctl_transact(struct irp *irp);
 
 static HANDLE jvs_fd;
 static struct jvs_node *jvs_root;
+static jvs_provider_t jvs_provider;
 
-HRESULT jvs_hook_init(const struct jvs_config *cfg)
+HRESULT jvs_hook_init(const struct jvs_config *cfg, jvs_provider_t provider)
 {
     HRESULT hr;
 
@@ -48,12 +49,6 @@ HRESULT jvs_hook_init(const struct jvs_config *cfg)
 
     if (!cfg->enable) {
         return S_FALSE;
-    }
-
-    hr = iohook_open_nul_fd(&jvs_fd);
-
-    if (FAILED(hr)) {
-        return hr;
     }
 
     hr = iohook_push_handler(jvs_handle_irp);
@@ -68,12 +63,9 @@ HRESULT jvs_hook_init(const struct jvs_config *cfg)
         return hr;
     }
 
-    return S_OK;
-}
+    jvs_provider = provider;
 
-void jvs_attach(struct jvs_node *root)
-{
-    jvs_root = root;
+    return S_OK;
 }
 
 static HRESULT jvs_handle_irp(struct irp *irp)
@@ -94,11 +86,35 @@ static HRESULT jvs_handle_irp(struct irp *irp)
 
 static HRESULT jvs_handle_open(struct irp *irp)
 {
+    struct jvs_node *root;
+    HRESULT hr;
+
     if (!wstr_eq(irp->open_filename, L"$jvs")) {
         return iohook_invoke_next(irp);
     }
 
+    if (jvs_fd != NULL) {
+        dprintf("JVS Port: Already open\n");
+
+        return HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION);
+    }
+
+    hr = iohook_open_nul_fd(&jvs_fd);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     dprintf("JVS Port: Open device\n");
+
+    if (jvs_provider != NULL) {
+        hr = jvs_provider(&root);
+
+        if (SUCCEEDED(hr)) {
+            jvs_root = root;
+        }
+    }
+
     irp->fd = jvs_fd;
 
     return S_OK;
@@ -107,8 +123,9 @@ static HRESULT jvs_handle_open(struct irp *irp)
 static HRESULT jvs_handle_close(struct irp *irp)
 {
     dprintf("JVS Port: Close device\n");
+    jvs_fd = NULL;
 
-    return S_OK;
+    return iohook_invoke_next(irp);
 }
 
 static HRESULT jvs_handle_ioctl(struct irp *irp)

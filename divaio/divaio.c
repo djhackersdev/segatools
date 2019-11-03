@@ -14,7 +14,7 @@ static uint16_t diva_io_coins;
 static HANDLE diva_io_slider_thread;
 static bool diva_io_slider_stop_flag;
 
-HRESULT diva_io_init(void)
+HRESULT diva_io_jvs_init(void)
 {
     return S_OK;
 }
@@ -67,6 +67,11 @@ void diva_io_jvs_read_coin_counter(uint16_t *out)
 
 void diva_io_jvs_set_coin_blocker(bool open)
 {}
+
+HRESULT diva_io_slider_init(void)
+{
+    return S_OK;
+}
 
 void diva_io_slider_start(diva_io_slider_callback_t callback)
 {

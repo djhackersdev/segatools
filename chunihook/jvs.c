@@ -42,10 +42,25 @@ static const struct chunithm_jvs_ir_mask chunithm_jvs_ir_masks[] = {
 
 static struct io3 chunithm_jvs_io3;
 
-void chunithm_jvs_init(void)
+HRESULT chunithm_jvs_init(struct jvs_node **out)
 {
+    HRESULT hr;
+
+    assert(out != NULL);
+
+    dprintf("JVS I/O: Starting Chunithm backend DLL\n");
+    hr = chuni_io_jvs_init();
+
+    if (FAILED(hr)) {
+        dprintf("JVS I/O: Backend error, I/O disconnected: %x\n", (int) hr);
+
+        return hr;
+    }
+
     io3_init(&chunithm_jvs_io3, NULL, &chunithm_jvs_io3_ops, NULL);
-    jvs_attach(&chunithm_jvs_io3.jvs);
+    *out = io3_to_jvs_node(&chunithm_jvs_io3);
+
+    return S_OK;
 }
 
 static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)

@@ -19,7 +19,7 @@ static const struct idz_io_backend *idz_io_backend;
 static bool idz_io_coin;
 static uint16_t idz_io_coins;
 
-HRESULT idz_io_init(void)
+HRESULT idz_io_jvs_init(void)
 {
     HRESULT hr;
 

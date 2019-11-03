@@ -5,15 +5,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* Initialize the Project Diva IO provider DLL. This is the first function to be
-   called on this DLL. Returning failure from this function will cause the main
-   application to immediately exit.
+/* Initialize JVS-based input. This function will be called before any other
+   diva_io_jvs_*() function calls. Errors returned from this function will
+   manifest as a disconnected JVS bus.
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
    your responsibility. */
 
-HRESULT diva_io_init(void);
+HRESULT diva_io_jvs_init(void);
 
 /* Poll JVS input.
 
@@ -37,6 +37,15 @@ void diva_io_jvs_read_coin_counter(uint16_t *out);
    (i.e. the coin slot should be physically blocked). */
 
 void diva_io_jvs_set_coin_blocker(bool open);
+
+/* Initialize touch slider emulation. This function will be called before any
+   other diva_io_slider_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. */
+
+HRESULT diva_io_slider_init(void);
 
 /* Project Diva touch sliders consist of 32 pressure sensitive cells, where
    cell 1 (array index 0) is the rightmost cell and cell 32 (array index 31) is

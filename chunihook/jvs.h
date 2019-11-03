@@ -1,3 +1,7 @@
 #pragma once
 
-void chunithm_jvs_init(void);
+#include <windows.h>
+
+#include "jvs/jvs-bus.h"
+
+HRESULT chunithm_jvs_init(struct jvs_node **root);

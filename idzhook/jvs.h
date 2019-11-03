@@ -2,4 +2,6 @@
 
 #include <windows.h>
 
-HRESULT idz_jvs_init(void);
+#include "jvs/jvs-bus.h"
+
+HRESULT idz_jvs_init(struct jvs_node **root);

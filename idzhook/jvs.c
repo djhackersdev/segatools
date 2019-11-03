@@ -51,18 +51,23 @@ static const uint16_t idz_jvs_gear_signals[] = {
 
 static struct io3 idz_jvs_io3;
 
-HRESULT idz_jvs_init(void)
+HRESULT idz_jvs_init(struct jvs_node **out)
 {
     HRESULT hr;
 
-    hr = idz_io_init();
+    assert(out != NULL);
+
+    dprintf("JVS I/O: Starting Initial D Zero backend DLL\n");
+    hr = idz_io_jvs_init();
 
     if (FAILED(hr)) {
+        dprintf("JVS I/O: Backend error, I/O disconnected; %x\n", (int) hr);
+
         return hr;
     }
 
     io3_init(&idz_jvs_io3, NULL, &idz_jvs_io3_ops, NULL);
-    jvs_attach(&idz_jvs_io3.jvs);
+    *out = io3_to_jvs_node(&idz_jvs_io3);
 
     return S_OK;
 }

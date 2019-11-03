@@ -28,10 +28,25 @@ static const struct io3_ops diva_jvs_io3_ops = {
 
 static struct io3 diva_jvs_io3;
 
-void diva_jvs_init(void)
+HRESULT diva_jvs_init(struct jvs_node **out)
 {
+    HRESULT hr;
+
+    assert(out != NULL);
+
+    dprintf("JVS I/O: Starting Diva backend DLL\n");
+    hr = diva_io_jvs_init();
+
+    if (FAILED(hr)) {
+        dprintf("JVS I/O: Backend error, I/O disconnected: %x\n", (int) hr);
+
+        return hr;
+    }
+
     io3_init(&diva_jvs_io3, NULL, &diva_jvs_io3_ops, NULL);
-    jvs_attach(&diva_jvs_io3.jvs);
+    *out = io3_to_jvs_node(&diva_jvs_io3);
+
+    return S_OK;
 }
 
 static void diva_jvs_read_switches(void *ctx, struct io3_switch_state *out)

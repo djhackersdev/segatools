@@ -24,7 +24,7 @@ struct idz_io_analog_state {
     uint16_t brake;
 };
 
-HRESULT idz_io_init(void);
+HRESULT idz_io_jvs_init(void);
 
 void idz_io_jvs_read_analogs(struct idz_io_analog_state *out);
 

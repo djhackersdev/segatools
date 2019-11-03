@@ -58,12 +58,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
             "AAV1",
             chuni_hook_mod);
 
-    amex_hook_init(&chuni_hook_cfg.amex);
-
-    if (chuni_hook_cfg.amex.jvs.enable) {
-        chunithm_jvs_init();
-    }
-
+    amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
     slider_hook_init(&chuni_hook_cfg.slider);
 
     /* Initialize debug helpers */
@@ -71,10 +66,6 @@ static DWORD CALLBACK chuni_pre_startup(void)
     spike_hook_init(L".\\segatools.ini");
 
     dprintf("---  End  chuni_pre_startup ---\n");
-
-    /* Initialize IO DLL */
-
-    chuni_io_init();
 
     /* Jump to EXE start address */
 

@@ -9,7 +9,7 @@
 
 #include <assert.h>
 
-HRESULT amex_hook_init(const struct amex_config *cfg)
+HRESULT amex_hook_init(const struct amex_config *cfg, jvs_provider_t jvs)
 {
     HRESULT hr;
 
@@ -33,7 +33,7 @@ HRESULT amex_hook_init(const struct amex_config *cfg)
         return hr;
     }
 
-    hr = jvs_hook_init(&cfg->jvs);
+    hr = jvs_hook_init(&cfg->jvs, jvs);
 
     if (FAILED(hr)) {
         return hr;

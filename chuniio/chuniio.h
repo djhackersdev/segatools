@@ -5,15 +5,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* Initialize the Chunithm IO provider DLL. This is the first function to be
-   called on this DLL. Returning failure from this function will cause the
-   main application to immediately exit.
+/* Initialize JVS-based input. This function will be called before any other
+   chuni_io_jvs_*() function calls. Errors returned from this function will
+   manifest as a disconnected JVS bus.
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
    your responsibility. */
 
-HRESULT chuni_io_init(void);
+HRESULT chuni_io_jvs_init(void);
 
 /* Poll JVS input.
 
@@ -43,6 +43,15 @@ void chuni_io_jvs_read_coin_counter(uint16_t *total);
    (i.e. the coin slot should be physically blocked). */
 
 void chuni_io_jvs_set_coin_blocker(bool open);
+
+/* Initialize touch slider emulation. This function will be called before any
+   other chuni_io_slider_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. */
+
+HRESULT chuni_io_slider_init(void);
 
 /* Chunithm touch slider layout:
 

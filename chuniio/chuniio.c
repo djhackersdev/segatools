@@ -18,7 +18,7 @@ static uint8_t chuni_io_hand_pos;
 static HANDLE chuni_io_slider_thread;
 static bool chuni_io_slider_stop_flag;
 
-HRESULT chuni_io_init(void)
+HRESULT chuni_io_jvs_init(void)
 {
     return S_OK;
 }
@@ -72,6 +72,11 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
 
 void chuni_io_jvs_set_coin_blocker(bool open)
 {}
+
+HRESULT chuni_io_slider_init(void)
+{
+    return S_OK;
+}
 
 void chuni_io_slider_start(chuni_io_slider_callback_t callback)
 {

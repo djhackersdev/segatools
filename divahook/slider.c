@@ -73,6 +73,17 @@ static HRESULT slider_handle_irp_locked(struct irp *irp)
     struct iobuf req_iobuf;
     HRESULT hr;
 
+    if (irp->op == IRP_OP_OPEN) {
+        dprintf("Diva slider: Starting backend DLL\n");
+        hr = diva_io_jvs_init();
+
+        if (FAILED(hr)) {
+            dprintf("Diva slider: Backend DLL error: %x\n", (int) hr);
+
+            return hr;
+        }
+    }
+
     hr = uart_handle_irp(&slider_uart, irp);
 
     if (FAILED(hr) || irp->op != IRP_OP_WRITE) {
