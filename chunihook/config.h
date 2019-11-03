@@ -5,6 +5,8 @@
 
 #include "amex/config.h"
 
+#include "board/config.h"
+
 #include "hooklib/config.h"
 
 #include "platform/config.h"
@@ -16,6 +18,7 @@ struct slider_config {
 struct chuni_hook_config {
     struct platform_config platform;
     struct amex_config amex;
+    struct aime_config aime;
     struct gfx_config gfx;
     struct slider_config slider;
 };

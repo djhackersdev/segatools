@@ -5,6 +5,8 @@
 
 #include "amex/amex.h"
 
+#include "board/sg-reader.h"
+
 #include "chunihook/config.h"
 #include "chunihook/jvs.h"
 #include "chunihook/slider.h"
@@ -60,6 +62,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
     slider_hook_init(&chuni_hook_cfg.slider);
+    sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
 
     /* Initialize debug helpers */
 

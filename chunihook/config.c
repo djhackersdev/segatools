@@ -6,6 +6,8 @@
 
 #include "amex/config.h"
 
+#include "board/config.h"
+
 #include "chunihook/config.h"
 
 #include "hooklib/config.h"
@@ -31,6 +33,7 @@ void chuni_hook_config_load(
 
     platform_config_load(&cfg->platform, filename);
     amex_config_load(&cfg->amex, filename);
+    aime_config_load(&cfg->aime, filename);
     gfx_config_load(&cfg->gfx, filename);
     slider_config_load(&cfg->slider, filename);
 }
