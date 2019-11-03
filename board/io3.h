@@ -33,3 +33,5 @@ void io3_init(
         struct jvs_node *next,
         const struct io3_ops *ops,
         void *ops_ctx);
+
+struct jvs_node *io3_to_jvs_node(struct io3 *io3);

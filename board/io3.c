@@ -150,6 +150,13 @@ void io3_init(
     io3->ops_ctx = ops_ctx;
 }
 
+struct jvs_node *io3_to_jvs_node(struct io3 *io3)
+{
+    assert(io3 != NULL);
+
+    return &io3->jvs;
+}
+
 static void io3_transact(
         struct jvs_node *node,
         const void *bytes,
