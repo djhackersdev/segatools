@@ -68,7 +68,7 @@ static int WSAAPI hook_getaddrinfo(
 
 /* Link pointers */
 
-static DNS_STATUS WINAPI (*next_DnsQuery_A)(
+static DNS_STATUS (WINAPI *next_DnsQuery_A)(
         const char *pszName,
         WORD wType,
         DWORD Options,
@@ -76,7 +76,7 @@ static DNS_STATUS WINAPI (*next_DnsQuery_A)(
         DNS_RECORD **ppQueryResults,
         void *pReserved);
 
-static DNS_STATUS WINAPI (*next_DnsQuery_W)(
+static DNS_STATUS (WINAPI *next_DnsQuery_W)(
         const wchar_t *pszName,
         WORD wType,
         DWORD Options,
@@ -84,12 +84,12 @@ static DNS_STATUS WINAPI (*next_DnsQuery_W)(
         DNS_RECORD **ppQueryResults,
         void *pReserved);
 
-static DNS_STATUS WINAPI (*next_DnsQueryEx)(
+static DNS_STATUS (WINAPI *next_DnsQueryEx)(
         POLYFILL_DNS_QUERY_REQUEST *pRequest,
         void *pQueryResults,
         void *pCancelHandle);
 
-static int WSAAPI (*next_getaddrinfo)(
+static int (WSAAPI *next_getaddrinfo)(
         const char *pNodeName,
         const char *pServiceName,
         const ADDRINFOA *pHints,

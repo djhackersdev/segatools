@@ -77,15 +77,15 @@ static BOOL WINAPI hook_GetFileAttributesExW(
 
 /* Link pointers */
 
-static BOOL WINAPI (*next_CreateDirectoryA)(
+static BOOL (WINAPI *next_CreateDirectoryA)(
         const char *lpFileName,
         SECURITY_ATTRIBUTES *lpSecurityAttributes);
 
-static BOOL WINAPI (*next_CreateDirectoryW)(
+static BOOL (WINAPI *next_CreateDirectoryW)(
         const wchar_t *lpFileName,
         SECURITY_ATTRIBUTES *lpSecurityAttributes);
 
-static HANDLE WINAPI (*next_CreateFileA)(
+static HANDLE (WINAPI *next_CreateFileA)(
         const char *lpFileName,
         uint32_t dwDesiredAccess,
         uint32_t dwShareMode,
@@ -94,7 +94,7 @@ static HANDLE WINAPI (*next_CreateFileA)(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
-static HANDLE WINAPI (*next_CreateFileW)(
+static HANDLE (WINAPI *next_CreateFileW)(
         const wchar_t *lpFileName,
         uint32_t dwDesiredAccess,
         uint32_t dwShareMode,
@@ -103,7 +103,7 @@ static HANDLE WINAPI (*next_CreateFileW)(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
-static HANDLE WINAPI (*next_FindFirstFileExA)(
+static HANDLE (WINAPI *next_FindFirstFileExA)(
         const char *lpFileName,
         FINDEX_INFO_LEVELS fInfoLevelId,
         void *lpFindFileData,
@@ -111,7 +111,7 @@ static HANDLE WINAPI (*next_FindFirstFileExA)(
         void *lpSearchFilter,
         DWORD dwAdditionalFlags);
 
-static HANDLE WINAPI (*next_FindFirstFileExW)(
+static HANDLE (WINAPI *next_FindFirstFileExW)(
         const wchar_t *lpFileName,
         FINDEX_INFO_LEVELS fInfoLevelId,
         void *lpFindFileData,
@@ -119,16 +119,16 @@ static HANDLE WINAPI (*next_FindFirstFileExW)(
         void *lpSearchFilter,
         DWORD dwAdditionalFlags);
 
-static DWORD WINAPI (*next_GetFileAttributesA)(const char *lpFileName);
+static DWORD (WINAPI *next_GetFileAttributesA)(const char *lpFileName);
 
-static DWORD WINAPI (*next_GetFileAttributesW)(const wchar_t *lpFileName);
+static DWORD (WINAPI *next_GetFileAttributesW)(const wchar_t *lpFileName);
 
-static BOOL WINAPI (*next_GetFileAttributesExA)(
+static BOOL (WINAPI *next_GetFileAttributesExA)(
         const char *lpFileName,
         GET_FILEEX_INFO_LEVELS fInfoLevelId,
         void *lpFileInformation);
 
-static BOOL WINAPI (*next_GetFileAttributesExW)(
+static BOOL (WINAPI *next_GetFileAttributesExW)(
         const wchar_t *lpFileName,
         GET_FILEEX_INFO_LEVELS fInfoLevelId,
         void *lpFileInformation);

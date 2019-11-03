@@ -91,14 +91,14 @@ static LSTATUS WINAPI hook_RegSetValueExW(
 
 /* Link pointers */
 
-static LSTATUS WINAPI (*next_RegOpenKeyExW)(
+static LSTATUS (WINAPI *next_RegOpenKeyExW)(
         HKEY parent,
         const wchar_t *name,
         uint32_t flags,
         uint32_t access,
         HKEY *out);
 
-static LSTATUS WINAPI (*next_RegCreateKeyExW)(
+static LSTATUS (WINAPI *next_RegCreateKeyExW)(
         HKEY parent,
         const wchar_t *name,
         uint32_t reserved,
@@ -109,9 +109,9 @@ static LSTATUS WINAPI (*next_RegCreateKeyExW)(
         HKEY *out,
         uint32_t *disposition);
 
-static LSTATUS WINAPI (*next_RegCloseKey)(HKEY handle);
+static LSTATUS (WINAPI *next_RegCloseKey)(HKEY handle);
 
-static LSTATUS WINAPI (*next_RegQueryValueExA)(
+static LSTATUS (WINAPI *next_RegQueryValueExA)(
         HKEY handle,
         const char *name,
         void *reserved,
@@ -119,7 +119,7 @@ static LSTATUS WINAPI (*next_RegQueryValueExA)(
         void *bytes,
         uint32_t *nbytes);
 
-static LSTATUS WINAPI (*next_RegQueryValueExW)(
+static LSTATUS (WINAPI *next_RegQueryValueExW)(
         HKEY handle,
         const wchar_t *name,
         void *reserved,
@@ -127,7 +127,7 @@ static LSTATUS WINAPI (*next_RegQueryValueExW)(
         void *bytes,
         uint32_t *nbytes);
 
-static LSTATUS WINAPI (*next_RegSetValueExW)(
+static LSTATUS (WINAPI *next_RegSetValueExW)(
         HKEY handle,
         const wchar_t *name,
         uint32_t reserved,

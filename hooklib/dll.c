@@ -34,11 +34,11 @@ static void * WINAPI hook_GetProcAddress(HMODULE mod, const char *name);
 
 /* Link pointers */
 
-static HMODULE WINAPI (*next_GetModuleHandleA)(const char *name);
-static HMODULE WINAPI (*next_GetModuleHandleW)(const wchar_t *name);
-static HMODULE WINAPI (*next_LoadLibraryA)(const char *name);
-static HMODULE WINAPI (*next_LoadLibraryW)(const wchar_t *name);
-static void * WINAPI (*next_GetProcAddress)(HMODULE mod, const char *name);
+static HMODULE (WINAPI *next_GetModuleHandleA)(const char *name);
+static HMODULE (WINAPI *next_GetModuleHandleW)(const wchar_t *name);
+static HMODULE (WINAPI *next_LoadLibraryA)(const char *name);
+static HMODULE (WINAPI *next_LoadLibraryW)(const wchar_t *name);
+static void * (WINAPI *next_GetProcAddress)(HMODULE mod, const char *name);
 
 static const struct hook_symbol dll_loader_syms[] = {
     {

@@ -74,7 +74,7 @@ HRESULT idz_di_init(
 {
     HRESULT hr;
     HMODULE dinput8;
-    HRESULT WINAPI (*api_entry)(HINSTANCE,DWORD,REFIID,LPVOID *,LPUNKNOWN);
+    HRESULT (WINAPI *api_entry)(HINSTANCE,DWORD,REFIID,LPVOID *,LPUNKNOWN);
     wchar_t dll_path[MAX_PATH];
     UINT path_pos;
 

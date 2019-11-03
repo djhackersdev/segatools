@@ -68,28 +68,28 @@ static uint32_t WINAPI hook_IcmpSendEcho2(
 
 /* Link pointers */
 
-static uint32_t WINAPI (*next_GetAdaptersAddresses)(
+static uint32_t (WINAPI *next_GetAdaptersAddresses)(
         uint32_t Family,
         uint32_t Flags,
         void *Reserved,
         IP_ADAPTER_ADDRESSES *AdapterAddresses,
         uint32_t *SizePointer);
 
-static uint32_t WINAPI (*next_GetAdaptersInfo)(
+static uint32_t (WINAPI *next_GetAdaptersInfo)(
         IP_ADAPTER_INFO *AdapterInfo,
         uint32_t *SizePointer);
 
-static uint32_t WINAPI (*next_GetBestRoute)(
+static uint32_t (WINAPI *next_GetBestRoute)(
         uint32_t src_ip,
         uint32_t dest_ip,
         MIB_IPFORWARDROW *route);
 
-static uint32_t WINAPI (*next_GetIfTable)(
+static uint32_t (WINAPI *next_GetIfTable)(
         MIB_IFTABLE *pIfTable,
         uint32_t *pdwSize,
         BOOL bOrder);
 
-static uint32_t WINAPI (*next_IcmpSendEcho2)(
+static uint32_t (WINAPI *next_IcmpSendEcho2)(
         HANDLE IcmpHandle,
         HANDLE Event,
         PIO_APC_ROUTINE ApcRoutine,
