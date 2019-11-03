@@ -26,5 +26,7 @@ shared_library(
         'dllmain.c',
         'jvs.c',
         'jvs.h',
+        'zinput.c',
+        'zinput.h',
     ],
 )

@@ -15,6 +15,7 @@
 
 #include "idzhook/config.h"
 #include "idzhook/jvs.h"
+#include "idzhook/zinput.h"
 
 #include "platform/platform.h"
 
@@ -35,6 +36,7 @@ static DWORD CALLBACK idz_pre_startup(void)
     /* Hook Win32 APIs */
 
     serial_hook_init();
+    zinput_hook_init(&idz_hook_cfg.zinput);
 
     /* Initialize emulation hooks */
 

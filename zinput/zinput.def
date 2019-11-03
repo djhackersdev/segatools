@@ -1,4 +1,0 @@
-LIBRARY zinput
-
-EXPORTS
-    DirectInput8Create@20
