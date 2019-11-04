@@ -70,7 +70,7 @@ static HRESULT mu3_io4_poll(void *ctx, struct io4_state *state)
         state->buttons[0] |= 1 << 5;
     }
 
-    if (left & MU3_IO_GAMEBTN_2) {
+    if (left & MU3_IO_GAMEBTN_3) {
         state->buttons[0] |= 1 << 4;
     }
 
@@ -78,7 +78,7 @@ static HRESULT mu3_io4_poll(void *ctx, struct io4_state *state)
         state->buttons[0] |= 1 << 1;
     }
 
-    if (right & MU3_IO_GAMEBTN_3) {
+    if (right & MU3_IO_GAMEBTN_2) {
         state->buttons[1] |= 1 << 0;
     }
 

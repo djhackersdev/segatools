@@ -28,11 +28,11 @@ HRESULT mu3_io_poll(void)
     mu3_left_btn = 0;
     mu3_right_btn = 0;
 
-    if (GetAsyncKeyState(VK_F1) & 0x8000) {
+    if (GetAsyncKeyState('1') & 0x8000) {
         mu3_opbtn |= MU3_IO_OPBTN_TEST;
     }
 
-    if (GetAsyncKeyState(VK_F2) & 0x8000) {
+    if (GetAsyncKeyState('2') & 0x8000) {
         mu3_opbtn |= MU3_IO_OPBTN_SERVICE;
     }
 
@@ -101,8 +101,8 @@ HRESULT mu3_io_poll(void)
     mu3_lever_pos = lever;
 
     xlever = mu3_lever_pos
-                    + xi.Gamepad.bLeftTrigger * 64
-                    - xi.Gamepad.bRightTrigger * 64;
+                    - xi.Gamepad.bLeftTrigger * 64
+                    + xi.Gamepad.bRightTrigger * 64;
 
     if (xlever < INT16_MIN) {
         xlever = INT16_MIN;
