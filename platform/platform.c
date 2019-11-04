@@ -69,7 +69,11 @@ HRESULT platform_hook_init(
         return hr;
     }
 
-    pcbid_hook_init(&cfg->pcbid);
+    hr = pcbid_hook_init(&cfg->pcbid);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     hr = vfs_hook_init(&cfg->vfs);
 

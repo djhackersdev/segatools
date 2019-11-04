@@ -22,22 +22,24 @@ static const struct hook_symbol pcbid_syms[] = {
     }
 };
 
-void pcbid_hook_init(const struct pcbid_config *cfg)
+HRESULT pcbid_hook_init(const struct pcbid_config *cfg)
 {
     assert(cfg != NULL);
 
     if (!cfg->enable) {
-        return;
+        return S_FALSE;
     }
 
     if (wcslen(cfg->serial_no) != 15) {
         dprintf("Pcbid: ERROR: Must be 15 chars! ex: ACAE01A99999999\n");
 
-        return;
+        return E_INVALIDARG;
     }
 
     memcpy(&pcbid_cfg, cfg, sizeof(*cfg));
     hook_table_apply(NULL, "kernel32.dll", pcbid_syms, _countof(pcbid_syms));
+
+    return S_OK;
 }
 
 static BOOL WINAPI pcbid_GetComputerNameA(char *dest, uint32_t *len)
