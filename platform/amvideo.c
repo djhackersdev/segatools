@@ -153,28 +153,28 @@ HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
 
 static int amDllVideoOpen(void *ctx)
 {
-    dprintf("AmVideo: %s(%p)\n", __func__, ctx);
+    dprintf("AmVideo: %s)\n", __func__);
 
     return 0;
 }
 
 static int amDllVideoClose(void *ctx)
 {
-    dprintf("AmVideo: %s(%p)\n", __func__, ctx);
+    dprintf("AmVideo: %s)\n", __func__);
 
     return 0;
 }
 
 static int amDllVideoSetResolution(void *ctx, void *param)
 {
-    dprintf("AmVideo: %s(%p, %p)\n", __func__, ctx, param);
+    dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
 
 static int amDllVideoGetVBiosVersion(void *ctx, char *dest, size_t nchars)
 {
-    dprintf("AmVideo: %s(%p, %p, %i)\n", __func__, ctx, dest, (int) nchars);
+    dprintf("AmVideo: %s\n", __func__);
     strcpy(dest, "01.02.03.04.05");
 
     return 0;
