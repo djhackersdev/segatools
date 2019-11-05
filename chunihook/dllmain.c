@@ -30,6 +30,7 @@ static struct chuni_hook_config chuni_hook_cfg;
 static DWORD CALLBACK chuni_pre_startup(void)
 {
     HMODULE d3dc;
+    HRESULT hr;
 
     dprintf("--- Begin chuni_pre_startup ---\n");
 
@@ -54,15 +55,33 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init(
+    hr = platform_hook_init(
             &chuni_hook_cfg.platform,
             "SDBT",
             "AAV1",
             chuni_hook_mod);
 
-    amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
-    slider_hook_init(&chuni_hook_cfg.slider);
-    sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = slider_hook_init(&chuni_hook_cfg.slider);
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
 
     /* Initialize debug helpers */
 

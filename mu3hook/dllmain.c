@@ -22,6 +22,8 @@ static struct mu3_hook_config mu3_hook_cfg;
 
 static DWORD CALLBACK mu3_pre_startup(void)
 {
+    HRESULT hr;
+
     dprintf("--- Begin mu3_pre_startup ---\n");
 
     /* Load config */
@@ -34,10 +36,33 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init(&mu3_hook_cfg.platform, "SDDT", "AAV2", mu3_hook_mod);
-    sg_reader_hook_init(&mu3_hook_cfg.aime, 1);
-    vfd_hook_init(2);
-    mu3_io4_hook_init();
+    hr = platform_hook_init(
+            &mu3_hook_cfg.platform,
+            "SDDT",
+            "AAV2",
+            mu3_hook_mod);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = sg_reader_hook_init(&mu3_hook_cfg.aime, 1);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = vfd_hook_init(2);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = mu3_io4_hook_init();
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     /* Initialize debug helpers */
 

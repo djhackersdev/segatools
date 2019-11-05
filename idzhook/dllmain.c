@@ -27,6 +27,8 @@ static struct idz_hook_config idz_hook_cfg;
 
 static DWORD CALLBACK idz_pre_startup(void)
 {
+    HRESULT hr;
+
     dprintf("--- Begin idz_pre_startup ---\n");
 
     /* Config load */
@@ -40,9 +42,27 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init(&idz_hook_cfg.platform, "SDDF", "AAV2", idz_hook_mod);
-    amex_hook_init(&idz_hook_cfg.amex, idz_jvs_init);
-    sg_reader_hook_init(&idz_hook_cfg.aime, 10);
+    hr = platform_hook_init(
+            &idz_hook_cfg.platform,
+            "SDDF",
+            "AAV2",
+            idz_hook_mod);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = amex_hook_init(&idz_hook_cfg.amex, idz_jvs_init);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = sg_reader_hook_init(&idz_hook_cfg.aime, 10);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     /* Initialize debug helpers */
 

@@ -27,6 +27,8 @@ static struct diva_hook_config diva_hook_cfg;
 
 static DWORD CALLBACK diva_pre_startup(void)
 {
+    HRESULT hr;
+
     dprintf("--- Begin diva_pre_startup ---\n");
 
     /* Config load */
@@ -39,15 +41,33 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize emulation hooks */
 
-    platform_hook_init(
+    hr = platform_hook_init(
             &diva_hook_cfg.platform,
             "SBZV",
             "AAV0",
             diva_hook_mod);
 
-    amex_hook_init(&diva_hook_cfg.amex, diva_jvs_init);
-    sg_reader_hook_init(&diva_hook_cfg.aime, 10);
-    slider_hook_init();
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = amex_hook_init(&diva_hook_cfg.amex, diva_jvs_init);
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = sg_reader_hook_init(&diva_hook_cfg.aime, 10);
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
+
+    hr = slider_hook_init();
+
+    if (FAILED(hr)) {
+        return EXIT_FAILURE;
+    }
 
     /* Initialize debug helpers */
 
