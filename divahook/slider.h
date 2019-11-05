@@ -1,3 +1,5 @@
 #pragma once
 
-void slider_hook_init(void);
+#include <windows.h>
+
+HRESULT slider_hook_init(void);

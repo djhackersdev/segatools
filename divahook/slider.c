@@ -37,7 +37,7 @@ static struct uart slider_uart;
 static uint8_t slider_written_bytes[520];
 static uint8_t slider_readable_bytes[520];
 
-void slider_hook_init(void)
+HRESULT slider_hook_init(void)
 {
     InitializeCriticalSection(&slider_lock);
 
@@ -47,7 +47,7 @@ void slider_hook_init(void)
     slider_uart.readable.bytes = slider_readable_bytes;
     slider_uart.readable.nbytes = sizeof(slider_readable_bytes);
 
-    iohook_push_handler(slider_handle_irp);
+    return iohook_push_handler(slider_handle_irp);
 }
 
 static HRESULT slider_handle_irp(struct irp *irp)
