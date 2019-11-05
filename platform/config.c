@@ -210,7 +210,7 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
     GetPrivateProfileStringW(
             L"keychip",
             L"subnet",
-            L"0.0.0.0",
+            L"192.168.100.0",
             subnet,
             _countof(subnet),
             filename);
