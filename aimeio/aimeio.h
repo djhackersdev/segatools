@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* THIS API IS UNSTABLE. Please do not build alternative implementations of
+   this DLL just yet unless you are prepared to deal with API breakages. */
+
 HRESULT aime_io_init(void);
 void aime_io_fini(void);
 HRESULT aime_io_nfc_poll(uint8_t unit_no);
