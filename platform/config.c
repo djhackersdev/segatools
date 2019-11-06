@@ -9,7 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "platform/amvideo.h"
+#include "platform/clock.h"
 #include "platform/config.h"
+#include "platform/dns.h"
+#include "platform/hwmon.h"
+#include "platform/misc.h"
+#include "platform/netenv.h"
+#include "platform/nusec.h"
+#include "platform/pcbid.h"
+#include "platform/platform.h"
+#include "platform/vfs.h"
 
 void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
 {

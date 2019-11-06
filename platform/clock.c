@@ -6,7 +6,6 @@
 #include "hook/table.h"
 
 #include "platform/clock.h"
-#include "platform/config.h"
 
 #include "util/dprintf.h"
 

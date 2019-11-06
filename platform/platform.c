@@ -4,7 +4,6 @@
 
 #include "platform/amvideo.h"
 #include "platform/clock.h"
-#include "platform/config.h"
 #include "platform/dns.h"
 #include "platform/hwmon.h"
 #include "platform/misc.h"

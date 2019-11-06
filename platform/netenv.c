@@ -9,8 +9,8 @@
 
 #include "hook/table.h"
 
-#include "platform/config.h"
 #include "platform/netenv.h"
+#include "platform/nusec.h"
 
 #include "util/dprintf.h"
 

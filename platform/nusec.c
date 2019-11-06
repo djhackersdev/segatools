@@ -7,7 +7,6 @@
 
 #include "hooklib/reg.h"
 
-#include "platform/config.h"
 #include "platform/nusec.h"
 
 #include "util/dprintf.h"

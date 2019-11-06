@@ -8,7 +8,6 @@
 #include "hooklib/path.h"
 #include "hooklib/reg.h"
 
-#include "platform/config.h"
 #include "platform/vfs.h"
 
 #include "util/dprintf.h"

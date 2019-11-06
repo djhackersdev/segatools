@@ -5,7 +5,6 @@
 
 #include "hook/iohook.h"
 
-#include "platform/config.h"
 #include "platform/hwmon.h"
 
 #include "util/dprintf.h"

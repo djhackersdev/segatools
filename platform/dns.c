@@ -4,7 +4,6 @@
 
 #include "hooklib/dns.h"
 
-#include "platform/config.h"
 #include "platform/dns.h"
 
 HRESULT dns_platform_hook_init(const struct dns_config *cfg)
