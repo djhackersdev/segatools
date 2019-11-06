@@ -6,7 +6,6 @@
 
 #include "aimeio/aimeio.h"
 
-#include "board/config.h"
 #include "board/sg-led.h"
 #include "board/sg-nfc.h"
 #include "board/sg-reader.h"

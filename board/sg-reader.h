@@ -2,7 +2,11 @@
 
 #include <windows.h>
 
-#include "board/config.h"
+#include <stdbool.h>
+
+struct aime_config {
+    bool enable;
+};
 
 HRESULT sg_reader_hook_init(
         const struct aime_config *cfg,
