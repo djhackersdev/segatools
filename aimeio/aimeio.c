@@ -6,29 +6,25 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "aimeio/aimeio.h"
 
 #include "util/crc.h"
 #include "util/dprintf.h"
 
-enum {
-    AIME_IO_TOUCH_MSEC = 1000,
-};
-
 struct aime_io_config {
     wchar_t aime_path[MAX_PATH];
     wchar_t felica_path[MAX_PATH];
+    bool felica_gen;
     uint8_t vk_scan;
 };
 
 static struct aime_io_config aime_io_cfg;
 static uint8_t aime_io_aime_id[10];
 static uint8_t aime_io_felica_id[8];
-static uint32_t aime_io_touch_t;
 static bool aime_io_aime_id_present;
 static bool aime_io_felica_id_present;
-static bool aime_io_latch;
 
 static void aime_io_config_read(
         struct aime_io_config *cfg,
@@ -39,8 +35,10 @@ static HRESULT aime_io_read_id_file(
         uint8_t *bytes,
         size_t nbytes);
 
-static HRESULT aime_io_nfc_poll_rise(void);
-static void aime_io_nfc_poll_fall(void);
+static HRESULT aime_io_generate_felica(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes);
 
 static void aime_io_config_read(
         struct aime_io_config *cfg,
@@ -63,6 +61,12 @@ static void aime_io_config_read(
             L"DEVICE\\felica.txt",
             cfg->felica_path,
             _countof(cfg->felica_path),
+            filename);
+
+    cfg->felica_gen = GetPrivateProfileIntW(
+            L"aime",
+            L"felicaGen",
+            1,
             filename);
 
     cfg->vk_scan = GetPrivateProfileIntW(
@@ -117,6 +121,47 @@ end:
     return hr;
 }
 
+static HRESULT aime_io_generate_felica(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes)
+{
+    size_t i;
+    FILE *f;
+
+    assert(path != NULL);
+    assert(bytes != NULL);
+    assert(nbytes > 0);
+
+    srand(time(NULL));
+
+    for (i = 0 ; i < nbytes ; i++) {
+        bytes[i] = rand();
+    }
+
+    /* FeliCa IDm values should have a 0 in their high nibble. I think. */
+    bytes[0] &= 0x0F;
+
+    f = _wfopen(path, L"w");
+
+    if (f == NULL) {
+        dprintf("AimeIO DLL: %S: fopen failed: %i\n", path, (int) errno);
+
+        return E_FAIL;
+    }
+
+    for (i = 0 ; i < nbytes ; i++) {
+        fprintf(f, "%02X", bytes[i]);
+    }
+
+    fprintf(f, "\n");
+    fclose(f);
+
+    dprintf("AimeIO DLL: Generated random FeliCa ID\n");
+
+    return S_OK;
+}
+
 HRESULT aime_io_init(void)
 {
     aime_io_config_read(&aime_io_cfg, L"segatools.ini");
@@ -130,50 +175,27 @@ void aime_io_fini(void)
 
 HRESULT aime_io_nfc_poll(uint8_t unit_no)
 {
-    uint32_t dt;
-    uint32_t t;
-    bool level;
+    bool sense;
     HRESULT hr;
 
     if (unit_no != 0) {
-        return S_FALSE;
+        return S_OK;
     }
 
-    t = GetTickCount();
-    level = GetAsyncKeyState(aime_io_cfg.vk_scan) & 0x8000;
+    /* Reset presence flags */
 
-    /* 1. Linger a card for AIME_IO_TOUCH_MSEC after vk_scan has been released.
-       2. Detect rising and falling edges and call the relevant worker fns. */
+    aime_io_aime_id_present = false;
+    aime_io_felica_id_present = false;
 
-    if (level) {
-        aime_io_touch_t = t;
+    /* Don't do anything more if the scan key is not held */
+
+    sense = GetAsyncKeyState(aime_io_cfg.vk_scan) & 0x8000;
+
+    if (!sense) {
+        return S_OK;
     }
 
-    if (aime_io_latch) {
-        dt = aime_io_touch_t - t;
-
-        if (dt < AIME_IO_TOUCH_MSEC) {
-            hr = S_OK;
-        } else {
-            aime_io_nfc_poll_fall();
-            aime_io_latch = false;
-            hr = S_FALSE;
-        }
-    } else {
-        if (level) {
-            hr = aime_io_nfc_poll_rise();
-            aime_io_latch = true;
-        } else {
-            hr = S_FALSE;
-        }
-    }
-
-    return hr;
-}
-
-static HRESULT aime_io_nfc_poll_rise(void)
-{
-    HRESULT hr;
+    /* Try AiMe IC */
 
     hr = aime_io_read_id_file(
             aime_io_cfg.aime_path,
@@ -183,8 +205,10 @@ static HRESULT aime_io_nfc_poll_rise(void)
     if (SUCCEEDED(hr) && hr != S_FALSE) {
         aime_io_aime_id_present = true;
 
-        return hr;
+        return S_OK;
     }
+
+    /* Try FeliCa IC */
 
     hr = aime_io_read_id_file(
             aime_io_cfg.felica_path,
@@ -194,16 +218,25 @@ static HRESULT aime_io_nfc_poll_rise(void)
     if (SUCCEEDED(hr) && hr != S_FALSE) {
         aime_io_felica_id_present = true;
 
-        return hr;
+        return S_OK;
     }
 
-    return S_FALSE;
-}
+    /* Try generating FeliCa IC (if enabled) */
 
-static void aime_io_nfc_poll_fall(void)
-{
-    aime_io_aime_id_present = false;
-    aime_io_felica_id_present = false;
+    if (aime_io_cfg.felica_gen) {
+        hr = aime_io_generate_felica(
+                aime_io_cfg.felica_path,
+                aime_io_felica_id,
+                sizeof(aime_io_felica_id));
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        aime_io_felica_id_present = true;
+    }
+
+    return S_OK;
 }
 
 HRESULT aime_io_nfc_get_aime_id(
