@@ -53,6 +53,18 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
         return S_FALSE;
     }
 
+    if (config->amfs[0] == L'\0') {
+        dprintf("Vfs: FATAL: AMFS path not specified in INI file\n");
+
+        return E_FAIL;
+    }
+
+    if (config->appdata[0] == L'\0') {
+        dprintf("Vfs: FATAL: APPDATA path not specified in INI file\n");
+
+        return E_FAIL;
+    }
+
     home_ok = GetEnvironmentVariableW(
             L"USERPROFILE",
             vfs_nthome_real,

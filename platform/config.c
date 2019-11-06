@@ -283,7 +283,7 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
     GetPrivateProfileStringW(
             L"vfs",
             L"amfs",
-            L"E:\\",
+            L"",
             cfg->amfs,
             _countof(cfg->amfs),
             filename);
@@ -291,7 +291,7 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
     GetPrivateProfileStringW(
             L"vfs",
             L"appdata",
-            L"Y:\\",
+            L"",
             cfg->appdata,
             _countof(cfg->appdata),
             filename);
