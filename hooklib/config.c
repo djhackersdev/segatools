@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "hooklib/config.h"
+#include "hooklib/gfx.h"
 
 void gfx_config_load(struct gfx_config *cfg, const wchar_t *filename)
 {
