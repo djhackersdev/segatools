@@ -2,7 +2,15 @@
 
 #include <windows.h>
 
-#include "amex/config.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+struct ds_config {
+    bool enable;
+    uint8_t region;
+    wchar_t serial_no[17];
+};
 
 DEFINE_GUID(
         ds_guid,

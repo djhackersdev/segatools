@@ -2,7 +2,15 @@
 
 #include <windows.h>
 
-#include "amex/config.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+struct gpio_config {
+    bool enable;
+    uint8_t vk_sw1;
+    uint8_t vk_sw2;
+    bool dipsw[8];
+};
 
 DEFINE_GUID(
         gpio_guid,

@@ -2,7 +2,13 @@
 
 #include <windows.h>
 
-#include "amex/config.h"
+#include <stdbool.h>
+#include <stddef.h>
+
+struct sram_config {
+    bool enable;
+    wchar_t path[MAX_PATH];
+};
 
 DEFINE_GUID(
         sram_guid,

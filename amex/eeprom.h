@@ -2,7 +2,13 @@
 
 #include <windows.h>
 
-#include "amex/config.h"
+#include <stdbool.h>
+#include <stddef.h>
+
+struct eeprom_config {
+    bool enable;
+    wchar_t path[MAX_PATH];
+};
 
 DEFINE_GUID(
         eeprom_guid,

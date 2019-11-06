@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "amex/config.h"
 #include "amex/jvs.h"
 
 #include "hook/iobuf.h"

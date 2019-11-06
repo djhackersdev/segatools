@@ -6,7 +6,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "amex/amex.h"
 #include "amex/config.h"
+#include "amex/ds.h"
+#include "amex/eeprom.h"
+#include "amex/gpio.h"
+#include "amex/jvs.h"
+#include "amex/sram.h"
 
 void ds_config_load(struct ds_config *cfg, const wchar_t *filename)
 {

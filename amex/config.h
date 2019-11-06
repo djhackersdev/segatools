@@ -6,40 +6,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct ds_config {
-    bool enable;
-    uint8_t region;
-    wchar_t serial_no[17];
-};
-
-struct eeprom_config {
-    bool enable;
-    wchar_t path[MAX_PATH];
-};
-
-struct gpio_config {
-    bool enable;
-    uint8_t vk_sw1;
-    uint8_t vk_sw2;
-    bool dipsw[8];
-};
-
-struct jvs_config {
-    bool enable;
-};
-
-struct sram_config {
-    bool enable;
-    wchar_t path[MAX_PATH];
-};
-
-struct amex_config {
-    struct ds_config ds;
-    struct eeprom_config eeprom;
-    struct gpio_config gpio;
-    struct jvs_config jvs;
-    struct sram_config sram;
-};
+#include "amex/amex.h"
+#include "amex/ds.h"
+#include "amex/eeprom.h"
+#include "amex/gpio.h"
+#include "amex/jvs.h"
+#include "amex/sram.h"
 
 void ds_config_load(struct ds_config *cfg, const wchar_t *filename);
 void eeprom_config_load(struct eeprom_config *cfg, const wchar_t *filename);

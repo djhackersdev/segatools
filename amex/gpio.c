@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "amex/config.h"
 #include "amex/gpio.h"
 
 #include "hook/iohook.h"

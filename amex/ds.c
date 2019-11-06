@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "amex/config.h"
 #include "amex/ds.h"
 #include "amex/nvram.h"
 
