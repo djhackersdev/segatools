@@ -1,13 +1,16 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "amex/amex.h"
 #include "amex/config.h"
 
 #include "board/config.h"
+#include "board/sg-reader.h"
 
 #include "divahook/config.h"
 
 #include "platform/config.h"
+#include "platform/platform.h"
 
 void diva_hook_config_load(
         struct diva_hook_config *cfg,

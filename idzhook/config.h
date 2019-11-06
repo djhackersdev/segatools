@@ -3,15 +3,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "amex/config.h"
+#include "amex/amex.h"
 
-#include "board/config.h"
+#include "board/sg-reader.h"
 
-#include "platform/config.h"
+#include "idzhook/zinput.h"
 
-struct zinput_config {
-    bool enable;
-};
+#include "platform/platform.h"
 
 struct idz_hook_config {
     struct platform_config platform;

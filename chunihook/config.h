@@ -3,17 +3,15 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "amex/config.h"
+#include "amex/amex.h"
 
-#include "board/config.h"
+#include "board/sg-reader.h"
 
-#include "hooklib/config.h"
+#include "chunihook/slider.h"
 
-#include "platform/config.h"
+#include "hooklib/gfx.h"
 
-struct slider_config {
-    bool enable;
-};
+#include "platform/platform.h"
 
 struct chuni_hook_config {
     struct platform_config platform;

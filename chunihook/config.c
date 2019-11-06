@@ -4,15 +4,19 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "amex/amex.h"
 #include "amex/config.h"
 
 #include "board/config.h"
+#include "board/sg-reader.h"
 
 #include "chunihook/config.h"
 
 #include "hooklib/config.h"
+#include "hooklib/gfx.h"
 
 #include "platform/config.h"
+#include "platform/platform.h"
 
 void slider_config_load(struct slider_config *cfg, const wchar_t *filename)
 {

@@ -9,7 +9,6 @@
 #include "board/slider-cmd.h"
 #include "board/slider-frame.h"
 
-#include "chunihook/config.h"
 #include "chunihook/slider.h"
 
 #include "chuniio/chuniio.h"

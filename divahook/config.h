@@ -2,9 +2,11 @@
 
 #include <stddef.h>
 
-#include "amex/config.h"
+#include "amex/amex.h"
 
-#include "platform/config.h"
+#include "board/sg-reader.h"
+
+#include "platform/platform.h"
 
 struct diva_hook_config {
     struct platform_config platform;

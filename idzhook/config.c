@@ -1,13 +1,16 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "amex/amex.h"
 #include "amex/config.h"
 
 #include "board/config.h"
+#include "board/sg-reader.h"
 
 #include "idzhook/config.h"
 
 #include "platform/config.h"
+#include "platform/platform.h"
 
 void idz_hook_config_load(
         struct idz_hook_config *cfg,
