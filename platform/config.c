@@ -172,7 +172,7 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
     wchar_t game_id[5];
     wchar_t platform_id[5];
     wchar_t subnet[16];
-    int ip[4];
+    unsigned int ip[4];
     size_t i;
 
     assert(cfg != NULL);
@@ -237,7 +237,7 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename)
         cfg->platform_id[i] = (char) platform_id[i];
     }
 
-    swscanf(subnet, L"%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
+    swscanf(subnet, L"%u.%u.%u.%u", &ip[0], &ip[1], &ip[2], &ip[3]);
     cfg->subnet = (ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | 0;
 
     GetPrivateProfileStringW(
