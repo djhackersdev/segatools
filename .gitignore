@@ -3,6 +3,7 @@
 # Suggested names for build dirs
 _build32/
 _build64/
+_zip/
 
 # External dependencies
 subprojects/capnhook
