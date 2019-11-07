@@ -1,0 +1,88 @@
+#!/bin/sh
+
+# This shell script documents the process that was used to generate our fake
+# P-Ras PKI. It should not need to be run again under normal circumstances.
+
+set -e
+
+D=`dirname $0`
+DAYS=36524
+
+pushd "$D"
+mkdir -p pki
+
+# Generate CA
+
+openssl genpkey \
+        -algorithm RSA \
+        -out pki/ca.key \
+        -pkeyopt rsa_keygen_bits:2048 \
+
+openssl req \
+        -new \
+        -key pki/ca.key \
+        -extensions v3_ca \
+        -batch \
+        -out /tmp/ca.csr \
+        -utf8 \
+        -subj "/CN=DummyCA/O=DummyPKI" \
+
+openssl req \
+        -x509 \
+        -sha256 \
+        -key pki/ca.key \
+        -in /tmp/ca.csr \
+        -out pki/ca.pem \
+        -days $DAYS \
+
+# Convert PEM cert to DER form for emulated keychip.
+# DER must fit in 1024 bytes so it must be small.
+
+openssl x509 \
+        -in pki/ca.pem \
+        -out pki/ca.crt \
+        -outform der \
+
+# Generate server key
+
+openssl genpkey \
+        -algorithm RSA \
+        -out pki/server.key \
+        -pkeyopt rsa_keygen_bits:2048 \
+
+openssl req \
+        -new \
+        -key pki/server.key \
+        -extensions v3_ca \
+        -batch \
+        -out /tmp/server.csr \
+        -utf8 \
+        -subj "/CN=ib.naominet.jp" \
+
+openssl x509 \
+        -req \
+        -sha256 \
+        -days $DAYS \
+        -in /tmp/server.csr \
+        -CAkey pki/ca.key \
+        -CA pki/ca.pem \
+        -set_serial 0 \
+        -out pki/server.pem \
+
+# Generate billing key pair
+
+openssl genpkey \
+        -algorithm RSA \
+        -out pki/billing.key \
+        -pkeyopt rsa_keygen_bits:1024 \
+
+openssl rsa \
+        -pubout \
+        -outform der \
+        -in pki/billing.key \
+        -out pki/billing.pub \
+
+# Clean up
+
+rm -f /tmp/ca.csr
+rm -f /tmp/server.csr
