@@ -395,10 +395,6 @@ static uint32_t WINAPI hook_GetIfTable(
         uint32_t *pdwSize,
         BOOL bOrder)
 {
-    /* This only gets called if the link is down, or something like that.
-       Well, I took the time to write this hook, so let's at least preserve it
-       in the Git history. */
-
     MIB_IFROW *row;
     uint32_t nbytes;
 
@@ -413,7 +409,7 @@ static uint32_t WINAPI hook_GetIfTable(
         return ERROR_BUFFER_OVERFLOW;
     }
 
-    dprintf("Netenv: Virtualized GetIfTable (shouldn't get called?)\n");
+    pIfTable->dwNumEntries = 1;
 
     row = pIfTable->table;
     memset(row, 0, sizeof(*row));
@@ -426,7 +422,7 @@ static uint32_t WINAPI hook_GetIfTable(
     row->dwPhysAddrLen = sizeof(netenv_mac_addr);
     memcpy(row->bPhysAddr, netenv_mac_addr, sizeof(netenv_mac_addr));
     row->dwAdminStatus = 1;
-    row->dwOperStatus = IF_OPER_STATUS_CONNECTED;
+    row->dwOperStatus = IF_OPER_STATUS_OPERATIONAL;
 
     return ERROR_SUCCESS;
 }
