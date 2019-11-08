@@ -1,7 +1,7 @@
 [binaries]
-c = '/usr/bin/x86_64-w64-mingw32-gcc'
-ar = '/usr/bin/x86_64-w64-mingw32-ar'
-strip = '/usr/bin/x86_64-w64-mingw32-strip'
+c = 'x86_64-w64-mingw32-gcc'
+ar = 'x86_64-w64-mingw32-ar'
+strip = 'x86_64-w64-mingw32-strip'
 
 [host_machine]
 system = 'windows'
