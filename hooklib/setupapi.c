@@ -126,6 +126,7 @@ HRESULT setupapi_add_phantom_dev(const GUID *iface_class, const wchar_t *path)
     class_ = &setupapi_classes[setupapi_nclasses++];
     class_->guid = iface_class;
     class_->path = path;
+    hr = S_OK;
 
 end:
     LeaveCriticalSection(&setupapi_lock);
