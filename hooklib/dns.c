@@ -156,7 +156,6 @@ HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
     wchar_t *to;
 
     assert(from_src != NULL);
-    assert(to_src != NULL);
 
     to = NULL;
     from = NULL;
@@ -172,12 +171,14 @@ HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
         goto end;
     }
 
-    to = _wcsdup(to_src);
+    if(to_src != NULL) {
+        to = _wcsdup(to_src);
 
-    if (to == NULL) {
-        hr = E_OUTOFMEMORY;
+        if (to == NULL) {
+            hr = E_OUTOFMEMORY;
 
-        goto end;
+            goto end;
+        }
     }
 
     newmem = realloc(
@@ -250,6 +251,13 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
         pos = &dns_hook_entries[i];
 
         if (_wcsicmp(wstr, pos->from) == 0) {
+            if(pos->to == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                hr = HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
+
+                goto end;
+            }
+
             wcstombs_s(&str_c, NULL, 0, pos->to, 0);
             str = malloc(str_c * sizeof(char));
 
@@ -307,6 +315,11 @@ static DNS_STATUS WINAPI hook_DnsQuery_W(
         pos = &dns_hook_entries[i];
 
         if (_wcsicmp(pszName, pos->from) == 0) {
+            if(pos->to == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
+            }
+
             pszName = pos->to;
 
             break;
@@ -346,6 +359,11 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
         pos = &dns_hook_entries[i];
 
         if (_wcsicmp(pRequest->QueryName, pos->from) == 0) {
+            if(pos->to == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
+            }
+
             pRequest->QueryName = pos->to;
 
             break;
@@ -408,6 +426,13 @@ static int WSAAPI hook_getaddrinfo(
         pos = &dns_hook_entries[i];
 
         if (_wcsicmp(wstr, pos->from) == 0) {
+            if(pos->to == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                result = EAI_NONAME;
+
+                goto end;
+            }
+
             wcstombs_s(&str_c, NULL, 0, pos->to, 0);
             str = malloc(str_c * sizeof(char));
 
