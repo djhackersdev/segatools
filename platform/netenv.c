@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <wincrypt.h>
 #include <iphlpapi.h>
 
 #include <stddef.h>
