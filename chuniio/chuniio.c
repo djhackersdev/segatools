@@ -5,21 +5,21 @@
 #include <stdint.h>
 
 #include "chuniio/chuniio.h"
+#include "chuniio/config.h"
 
 static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx);
-
-static const int chuni_io_slider_keys[] = {
-    'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
-};
 
 static bool chuni_io_coin;
 static uint16_t chuni_io_coins;
 static uint8_t chuni_io_hand_pos;
 static HANDLE chuni_io_slider_thread;
 static bool chuni_io_slider_stop_flag;
+static struct chuni_io_config chuni_io_cfg;
 
 HRESULT chuni_io_jvs_init(void)
 {
+    chuni_io_config_load(&chuni_io_cfg, L".\\segatools.ini");
+
     return S_OK;
 }
 
@@ -29,7 +29,7 @@ void chuni_io_jvs_read_coin_counter(uint16_t *out)
         return;
     }
 
-    if (GetAsyncKeyState('3')) {
+    if (GetAsyncKeyState(chuni_io_cfg.vk_coin)) {
         if (!chuni_io_coin) {
             chuni_io_coin = true;
             chuni_io_coins++;
@@ -45,15 +45,15 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
 {
     size_t i;
 
-    if (GetAsyncKeyState('1')) {
+    if (GetAsyncKeyState(chuni_io_cfg.vk_test)) {
         *opbtn |= 0x01; /* Test */
     }
 
-    if (GetAsyncKeyState('2')) {
+    if (GetAsyncKeyState(chuni_io_cfg.vk_service)) {
         *opbtn |= 0x02; /* Service */
     }
 
-    if (GetAsyncKeyState(VK_SPACE)) {
+    if (GetAsyncKeyState(chuni_io_cfg.vk_ir)) {
         if (chuni_io_hand_pos < 6) {
             chuni_io_hand_pos++;
         }
@@ -114,21 +114,18 @@ void chuni_io_slider_set_leds(const uint8_t *rgb)
 static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx)
 {
     chuni_io_slider_callback_t callback;
-    uint8_t pressure_val;
     uint8_t pressure[32];
     size_t i;
 
     callback = ctx;
 
     while (!chuni_io_slider_stop_flag) {
-        for (i = 0 ; i < 8 ; i++) {
-            if (GetAsyncKeyState(chuni_io_slider_keys[i]) & 0x8000) {
-                pressure_val = 128;
+        for (i = 0 ; i < _countof(pressure) ; i++) {
+            if (GetAsyncKeyState(chuni_io_cfg.vk_cell[i]) & 0x8000) {
+                pressure[i] = 128;
             } else {
-                pressure_val = 0;
+                pressure[i] = 0;
             }
-
-            memset(&pressure[28 - 4 * i], pressure_val, 4);
         }
 
         callback(pressure);

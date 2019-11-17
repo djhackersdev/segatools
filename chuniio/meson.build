@@ -8,5 +8,7 @@ chuniio_dll = shared_library(
     sources : [
         'chuniio.c',
         'chuniio.h',
+        'config.c',
+        'config.h',
     ],
 )
