@@ -123,7 +123,7 @@ static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx)
     while (!chuni_io_slider_stop_flag) {
         for (i = 0 ; i < 8 ; i++) {
             if (GetAsyncKeyState(chuni_io_slider_keys[i]) & 0x8000) {
-                pressure_val = 20;
+                pressure_val = 128;
             } else {
                 pressure_val = 0;
             }
