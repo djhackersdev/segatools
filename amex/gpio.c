@@ -196,11 +196,11 @@ static HRESULT gpio_ioctl_get_psw(struct irp *irp)
     /* Bit 0 == SW1 == Alt. Test */
     /* Bit 1 == SW2 == Alt. Service */
 
-    if (gpio_config.vk_sw1 && (GetAsyncKeyState(gpio_config.vk_sw1) & 0x8000)) {
+    if (GetAsyncKeyState(gpio_config.vk_sw1) & 0x8000) {
         result |= 1 << 0;
     }
 
-    if (gpio_config.vk_sw2 && (GetAsyncKeyState(gpio_config.vk_sw2) & 0x8000)) {
+    if (GetAsyncKeyState(gpio_config.vk_sw2) & 0x8000) {
         result |= 1 << 1;
     }
 

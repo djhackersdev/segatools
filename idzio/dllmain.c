@@ -50,13 +50,11 @@ void idz_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
 
     opbtn = 0;
 
-    if (    idz_io_cfg.vk_test &&
-            (GetAsyncKeyState(idz_io_cfg.vk_test) & 0x8000)) {
+    if (GetAsyncKeyState(idz_io_cfg.vk_test) & 0x8000) {
         opbtn |= IDZ_IO_OPBTN_TEST;
     }
 
-    if (    idz_io_cfg.vk_service &&
-            (GetAsyncKeyState(idz_io_cfg.vk_service) & 0x8000)) {
+    if (GetAsyncKeyState(idz_io_cfg.vk_service) & 0x8000) {
         opbtn |= IDZ_IO_OPBTN_SERVICE;
     }
 
