@@ -64,5 +64,20 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return hr;
     }
 
+    // if your ISP resolves bad domains, it will kill the network. These 2
+    // *cannot* resolve
+
+    hr = dns_hook_push(L"mobirouter.loc", NULL);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = dns_hook_push(L"dslrouter.loc", NULL);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     return S_OK;
 }
