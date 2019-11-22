@@ -18,6 +18,12 @@ struct idz_di_config {
     uint8_t shift_dn;
     uint8_t shift_up;
     uint8_t gear[6];
+    bool reverse_brake_axis;
+    bool reverse_accel_axis;
+};
+
+struct idz_xi_config {
+    bool single_stick_steering;
 };
 
 struct idz_io_config {
@@ -28,9 +34,11 @@ struct idz_io_config {
     int restrict_;
     struct idz_shifter_config shifter;
     struct idz_di_config di;
+    struct idz_xi_config xi;
 };
 
 void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename);
+void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename);
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename);
 void idz_shifter_config_load(
         struct idz_shifter_config *cfg,
