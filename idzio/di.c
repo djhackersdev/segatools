@@ -66,6 +66,8 @@ static uint8_t idz_di_shift_up;
 static uint8_t idz_di_view_chg;
 static uint8_t idz_di_start;
 static uint8_t idz_di_gear[6];
+static bool idz_di_reverse_brake_axis;
+static bool idz_di_reverse_accel_axis;
 
 HRESULT idz_di_init(
         const struct idz_di_config *cfg,
@@ -265,6 +267,8 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
     dprintf("Wheel: Shift Down button . : %i\n", cfg->shift_dn);
     dprintf("Wheel: Shift Up button . . : %i\n", cfg->shift_up);
+    dprintf("Wheel: Reverse Brake Axis  : %i\n", cfg->reverse_brake_axis);
+    dprintf("Wheel: Reverse Accel Axis  : %i\n", cfg->reverse_accel_axis);
     dprintf("Wheel: ---  End  configuration ---\n");
 
     if (cfg->shifter_name[0] != L'\0') {
@@ -287,6 +291,8 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     idz_di_view_chg = cfg->view_chg;
     idz_di_shift_dn = cfg->shift_dn;
     idz_di_shift_up = cfg->shift_up;
+    idz_di_reverse_brake_axis = cfg->reverse_brake_axis;
+    idz_di_reverse_accel_axis = cfg->reverse_accel_axis;
 
     for (i = 0 ; i < 6 ; i++) {
         idz_di_gear[i] = cfg->gear[i];
@@ -501,6 +507,16 @@ static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
     accel = (LONG *) &state.bytes[idz_di_off_accel];
 
     out->wheel = state.st.lX - 32768;
-    out->brake = 65535 - *brake;
-    out->accel = 65535 - *accel;
+
+    if (idz_di_reverse_brake_axis) {
+        out->brake = *brake;
+    } else {
+        out->brake = 65535 - *brake;
+    }
+    
+    if (idz_di_reverse_accel_axis) {
+        out->accel = *accel;
+    } else {
+        out->accel = 65535 - *accel;
+    }
 }

@@ -30,7 +30,7 @@ HRESULT idz_io_jvs_init(void)
     if (wstr_ieq(idz_io_cfg.mode, L"dinput")) {
         hr = idz_di_init(&idz_io_cfg.di, idz_io_hmodule, &idz_io_backend);
     } else if (wstr_ieq(idz_io_cfg.mode, L"xinput")) {
-        hr = idz_xi_init(&idz_io_backend);
+        hr = idz_xi_init(&idz_io_cfg.xi, &idz_io_backend);
     } else {
         hr = E_INVALIDARG;
         dprintf("IDZ IO: Invalid IO mode \"%S\", use dinput or xinput\n",

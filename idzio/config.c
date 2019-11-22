@@ -53,11 +53,34 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
     cfg->shift_dn = GetPrivateProfileIntW(L"dinput", L"shiftDn", 0, filename);
     cfg->shift_up = GetPrivateProfileIntW(L"dinput", L"shiftUp", 0, filename);
 
+    cfg->reverse_brake_axis = GetPrivateProfileIntW(
+                            L"dinput",
+                            L"reverseBrakeAxis",
+                            0,
+                            filename);
+    cfg->reverse_accel_axis = GetPrivateProfileIntW(
+                            L"dinput",
+                            L"reverseAccelAxis",
+                            0,
+                            filename);
+
     for (i = 0 ; i < 6 ; i++) {
         swprintf_s(key, _countof(key), L"gear%i", i + 1);
         cfg->gear[i] = GetPrivateProfileIntW(L"dinput", key, i + 1, filename);
     }
 
+}
+
+void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->single_stick_steering = GetPrivateProfileIntW(
+                                L"io3",
+                                L"singleStickSteering",
+                                0,
+                                filename);
 }
 
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
@@ -80,6 +103,7 @@ void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
 
     idz_shifter_config_load(&cfg->shifter, filename);
     idz_di_config_load(&cfg->di, filename);
+    idz_xi_config_load(&cfg->xi, filename);
 }
 
 void idz_shifter_config_load(

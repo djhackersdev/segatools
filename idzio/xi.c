@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "idzio/backend.h"
+#include "idzio/config.h"
 #include "idzio/idzio.h"
 #include "idzio/shifter.h"
 #include "idzio/xi.h"
@@ -16,18 +17,41 @@ static void idz_xi_jvs_read_buttons(uint8_t *gamebtn_out);
 static void idz_xi_jvs_read_shifter(uint8_t *gear);
 static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out);
 
+static HRESULT idz_xi_config_apply(const struct idz_xi_config *cfg);
+
 static const struct idz_io_backend idz_xi_backend = {
     .jvs_read_buttons   = idz_xi_jvs_read_buttons,
     .jvs_read_shifter   = idz_xi_jvs_read_shifter,
     .jvs_read_analogs   = idz_xi_jvs_read_analogs,
 };
 
-HRESULT idz_xi_init(const struct idz_io_backend **backend)
+static bool idz_xi_single_stick_steering;
+
+HRESULT idz_xi_init(const struct idz_xi_config *cfg, const struct idz_io_backend **backend)
 {
+    HRESULT hr;
+    assert(cfg != NULL);
     assert(backend != NULL);
+
+    hr = idz_xi_config_apply(cfg);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     dprintf("XInput: Using XInput controller\n");
     *backend = &idz_xi_backend;
+
+    return S_OK;
+}
+
+static HRESULT idz_xi_config_apply(const struct idz_xi_config *cfg)
+{
+    dprintf("XInput: --- Begin configuration ---\n");
+    dprintf("XInput: Single Stick Steering : %i\n", cfg->single_stick_steering);
+    dprintf("XInput: ---  End  configuration ---\n");
+
+    idz_xi_single_stick_steering = cfg->single_stick_steering;
 
     return S_OK;
 }
@@ -130,7 +154,12 @@ static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
         right = 0;
     }
 
-    out->wheel = (left + right) / 2;
+    if(idz_xi_single_stick_steering) {
+        out->wheel = left;
+    } else {
+        out->wheel = (left + right) / 2;
+    }
+
     out->accel = xi.Gamepad.bRightTrigger << 8;
     out->brake = xi.Gamepad.bLeftTrigger << 8;
 }
