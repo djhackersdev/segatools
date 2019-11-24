@@ -91,7 +91,7 @@ void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
     cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", '1', filename);
     cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", '2', filename);
     cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", '3', filename);
-    cfg->restrict_ = GetPrivateProfileIntW(L"io3", L"restrict", 196, filename);
+    cfg->restrict_ = GetPrivateProfileIntW(L"io3", L"restrict", 97, filename);
 
     GetPrivateProfileStringW(
             L"io3",
