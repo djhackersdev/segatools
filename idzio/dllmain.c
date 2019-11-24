@@ -85,10 +85,10 @@ void idz_io_jvs_read_analogs(struct idz_io_analog_state *out)
     /* Apply steering wheel restriction. Real cabs only report about 77% of
        the IO-3's max ADC output value when the wheel is turned to either of
        its maximum positions. To match this behavior we set the default value
-       for the wheel restriction config parameter to 196 (out of 256). This
+       for the wheel restriction config parameter to 97 (out of 128). This
        scaling factor is applied using fixed-point arithmetic below. */
 
-    out->wheel = (tmp.wheel * idz_io_cfg.restrict_) / 256;
+    out->wheel = (tmp.wheel * idz_io_cfg.restrict_) / 128;
     out->accel = tmp.accel;
     out->brake = tmp.brake;
 }
