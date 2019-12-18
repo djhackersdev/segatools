@@ -19,12 +19,19 @@ static HRESULT vfs_path_hook_nthome(
         const wchar_t *src,
         wchar_t *dest,
         size_t *count);
+static HRESULT vfs_path_hook_option(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count);
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
 static wchar_t vfs_nthome_real[MAX_PATH];
 static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser\\";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
+
+static const wchar_t vfs_option[] = L"C:\\Mount\\Option\\";
+static const size_t vfs_option_len = _countof(vfs_option) - 1;
 
 static const struct reg_hook_val vfs_reg_vals[] = {
     {
@@ -65,6 +72,10 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
         return E_FAIL;
     }
 
+    if (config->option[0] == L'\0') {
+        dprintf("Vfs: WARNING: OPTION path not specified in INI file\n");
+    }
+
     home_ok = GetEnvironmentVariableW(
             L"USERPROFILE",
             vfs_nthome_real,
@@ -80,9 +91,13 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
 
     memcpy(&vfs_config, config, sizeof(*config));
 
+    vfs_slashify(vfs_nthome_real, _countof(vfs_nthome_real));
     vfs_slashify(vfs_config.amfs, _countof(vfs_config.amfs));
     vfs_slashify(vfs_config.appdata, _countof(vfs_config.appdata));
-    vfs_slashify(vfs_nthome_real, _countof(vfs_nthome_real));
+
+    if (vfs_config.option[0] != L'\0') {
+        vfs_slashify(vfs_config.option, _countof(vfs_config.option));
+    }
 
     hr = vfs_mkdir_rec(vfs_config.amfs);
 
@@ -114,6 +129,8 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
         dprintf("Vfs: Failed to create %S: %x\n", temp, (int) hr);
     }
 
+    /* Not auto-creating option directory as it is normally a read-only mount */
+
     hr = path_hook_push(vfs_path_hook);
 
     if (FAILED(hr)) {
@@ -124,6 +141,14 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
 
     if (FAILED(hr)) {
         return hr;
+    }
+
+    if (vfs_config.option[0] != L'\0') {
+        hr = path_hook_push(vfs_path_hook_option);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
     }
 
     hr = reg_hook_push_key(
@@ -241,7 +266,7 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
         return S_FALSE;
     }
 
-    /* Cut off E:\ prefix, replace with redir path, count NUL terminator */
+    /* Cut off <prefix>\, replace with redir path, count NUL terminator */
 
     redir_len = wcslen(redir);
     required = wcslen(src) - 3 + redir_len + 1;
@@ -289,6 +314,42 @@ static HRESULT vfs_path_hook_nthome(
 
         wcscpy_s(dest, *count, vfs_nthome_real);
         wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_nthome_len);
+    }
+
+    *count = required;
+
+    return S_OK;
+}
+
+static HRESULT vfs_path_hook_option(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count)
+{
+    size_t required;
+    size_t redir_len;
+
+    assert(src != NULL);
+    assert(count != NULL);
+
+    /* Case-insensitive check to see if src starts with vfs_option */
+
+    if (path_compare_w(src, vfs_option, vfs_option_len) != 0) {
+        return S_FALSE;
+    }
+
+    /* Cut off the matched prefix, add the replaced prefix, count NUL */
+
+    redir_len = wcslen(vfs_config.option);
+    required = wcslen(src) - vfs_option_len + redir_len + 1;
+
+    if (dest != NULL) {
+        if (required > *count) {
+            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+        }
+
+        wcscpy_s(dest, *count, vfs_config.option);
+        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_option_len);
     }
 
     *count = required;

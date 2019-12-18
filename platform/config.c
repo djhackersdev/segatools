@@ -295,5 +295,13 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
             cfg->appdata,
             _countof(cfg->appdata),
             filename);
+
+    GetPrivateProfileStringW(
+            L"vfs",
+            L"option",
+            L"",
+            cfg->option,
+            _countof(cfg->option),
+            filename);
 }
 
