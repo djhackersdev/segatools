@@ -45,6 +45,14 @@ static HANDLE WINAPI hook_CreateFileW(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
+static HANDLE WINAPI hook_FindFirstFileA(
+        const char *lpFileName,
+        LPWIN32_FIND_DATAA lpFindFileData);
+
+static HANDLE WINAPI hook_FindFirstFileW(
+        const wchar_t *lpFileName,
+        LPWIN32_FIND_DATAW lpFindFileData);
+
 static HANDLE WINAPI hook_FindFirstFileExA(
         const char *lpFileName,
         FINDEX_INFO_LEVELS fInfoLevelId,
@@ -103,6 +111,14 @@ static HANDLE (WINAPI *next_CreateFileW)(
         uint32_t dwFlagsAndAttributes,
         HANDLE hTemplateFile);
 
+static HANDLE (WINAPI *next_FindFirstFileA)(
+        const char *lpFileName,
+        LPWIN32_FIND_DATAA lpFindFileData);
+
+static HANDLE (WINAPI *next_FindFirstFileW)(
+        const wchar_t *lpFileName,
+        LPWIN32_FIND_DATAW lpFindFileData);
+
 static HANDLE (WINAPI *next_FindFirstFileExA)(
         const char *lpFileName,
         FINDEX_INFO_LEVELS fInfoLevelId,
@@ -152,6 +168,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "CreateFileW",
         .patch  = hook_CreateFileW,
         .link   = (void **) &next_CreateFileW,
+    }, {
+        .name   = "FindFirstFileA",
+        .patch  = hook_FindFirstFileA,
+        .link   = (void **) &next_FindFirstFileA,
+    }, {
+        .name   = "FindFirstFileW",
+        .patch  = hook_FindFirstFileW,
+        .link   = (void **) &next_FindFirstFileW,
     }, {
         .name   = "FindFirstFileExA",
         .patch  = hook_FindFirstFileExA,
@@ -474,6 +498,48 @@ static HANDLE WINAPI hook_CreateFileW(
             dwCreationDisposition,
             dwFlagsAndAttributes,
             hTemplateFile);
+
+    free(trans);
+
+    return result;
+}
+
+static HANDLE WINAPI hook_FindFirstFileA(
+        const char *lpFileName,
+        LPWIN32_FIND_DATAA lpFindFileData)
+{
+    char *trans;
+    HANDLE result;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, lpFileName);
+
+    if (!ok) {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    result = next_FindFirstFileA(trans ? trans : lpFileName, lpFindFileData);
+
+    free(trans);
+
+    return result;
+}
+
+static HANDLE WINAPI hook_FindFirstFileW(
+        const wchar_t *lpFileName,
+        LPWIN32_FIND_DATAW lpFindFileData)
+{
+    wchar_t *trans;
+    HANDLE result;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpFileName);
+
+    if (!ok) {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    result = next_FindFirstFileW(trans ? trans : lpFileName, lpFindFileData);
 
     free(trans);
 
