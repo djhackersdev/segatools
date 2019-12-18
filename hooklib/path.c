@@ -388,6 +388,35 @@ end:
     return ok;
 }
 
+int path_compare_w(const wchar_t *string1, const wchar_t *string2, size_t count)
+{
+    size_t i;
+    wchar_t c1, c2;
+
+    assert(string1 != NULL);
+    assert(string2 != NULL);
+
+    for (i = 0; i < count && string1[i] && string2[i]; i++) {
+        c1 = towlower(string1[i]);
+
+        if (c1 == '/') {
+            c1 = '\\';
+        }
+
+        c2 = towlower(string2[i]);
+
+        if (c2 == '/') {
+            c2 = '\\';
+        }
+
+        if (c1 != c2) {
+            break;
+        }
+    }
+
+    return i == count ? 0 : string2[i] - string1[i];
+}
+
 /* Dumping ground for kernel32 file system ops whose path parameters we have to
    hook into and translate. This list will grow over time as we go back and
    fix up older games that don't pay attention to the mount point registry. */

@@ -10,3 +10,4 @@ typedef HRESULT (*path_hook_t)(
         size_t *count);
 
 HRESULT path_hook_push(path_hook_t hook);
+int path_compare_w(const wchar_t *string1, const wchar_t *string2, size_t count);
