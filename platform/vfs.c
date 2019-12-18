@@ -273,7 +273,7 @@ static HRESULT vfs_path_hook_nthome(
 
     /* Case-insensitive check to see if src starts with vfs_nthome */
 
-    if (_wcsnicmp(src, vfs_nthome, vfs_nthome_len) != 0) {
+    if (path_compare_w(src, vfs_nthome, vfs_nthome_len) != 0) {
         return S_FALSE;
     }
 
