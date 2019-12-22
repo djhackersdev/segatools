@@ -26,6 +26,7 @@ if meson.get_compiler('c').get_id() != 'msvc'
 endif
 
 cc = meson.get_compiler('c')
+shlwapi_lib = cc.find_library('shlwapi')
 dinput8_lib = cc.find_library('dinput8')
 dxguid_lib = cc.find_library('dxguid')
 xinput_lib = cc.find_library('xinput')

@@ -5,6 +5,7 @@ platform_lib = static_library(
     c_pch : '../precompiled.h',
     dependencies : [
         capnhook.get_variable('hook_dep'),
+        shlwapi_lib,
     ],
     sources : [
         'amvideo.c',
