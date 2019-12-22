@@ -5,6 +5,7 @@ add_project_arguments(
     '-DDIRECTINPUT_VERSION=0x0800',
     '-DWIN32_LEAN_AND_MEAN',
     '-D_WIN32_WINNT=_WIN32_WINNT_WIN7',
+    '-DMINGW_HAS_SECURE_API=1',
     language: 'c',
 )
 
