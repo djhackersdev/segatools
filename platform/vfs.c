@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <shlwapi.h>
 
 #include <assert.h>
 #include <stdint.h>
@@ -12,7 +13,7 @@
 
 #include "util/dprintf.h"
 
-static void vfs_slashify(wchar_t *path, size_t max_count);
+static void vfs_fixup_path(wchar_t *path, size_t max_count);
 static HRESULT vfs_mkdir_rec(const wchar_t *path);
 static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count);
 static HRESULT vfs_path_hook_nthome(
@@ -91,12 +92,12 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
 
     memcpy(&vfs_config, config, sizeof(*config));
 
-    vfs_slashify(vfs_nthome_real, _countof(vfs_nthome_real));
-    vfs_slashify(vfs_config.amfs, _countof(vfs_config.amfs));
-    vfs_slashify(vfs_config.appdata, _countof(vfs_config.appdata));
+    vfs_fixup_path(vfs_nthome_real, _countof(vfs_nthome_real));
+    vfs_fixup_path(vfs_config.amfs, _countof(vfs_config.amfs));
+    vfs_fixup_path(vfs_config.appdata, _countof(vfs_config.appdata));
 
     if (vfs_config.option[0] != L'\0') {
-        vfs_slashify(vfs_config.option, _countof(vfs_config.option));
+        vfs_fixup_path(vfs_config.option, _countof(vfs_config.option));
     }
 
     hr = vfs_mkdir_rec(vfs_config.amfs);
@@ -164,24 +165,46 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
     return S_OK;
 }
 
-static void vfs_slashify(wchar_t *path, size_t max_count)
+static void vfs_fixup_path(wchar_t *path, size_t max_count)
 {
     size_t count;
+    wchar_t abspath[MAX_PATH];
 
     assert(path != NULL);
+    /* Requirement for PathIsRelativeW */
+    assert(max_count <= MAX_PATH);
 
-    count = wcslen(path);
+    if (PathIsRelativeW(path)) {
+        count = GetFullPathNameW(path, _countof(abspath), abspath, NULL);
+
+        /* GetFullPathName's length return value is tricky, because it includes
+           the NUL terminator on failure, but doesn't on success.
+           Check if it fits the temp buf (else it's a failure and includes NUL
+           anyway), then if it fits the target buf, NUL included. */
+        if (count == 0 || count > _countof(abspath) || count >= max_count) {
+            goto fail;
+        }
+
+        wcscpy_s(path, max_count, abspath);
+    } else {
+        count = wcslen(path);
+    }
 
     if (path[count - 1] == L'\\' || path[count - 1] == L'/') {
         return;
     }
 
     if (count + 2 > max_count) {
-        abort();
+        goto fail;
     }
 
     path[count + 0] = L'\\';
     path[count + 1] = L'\0';
+    return;
+
+fail:
+    dprintf("Vfs: FATAL: Path too long: %S\n", path);
+    abort();
 }
 
 static HRESULT vfs_mkdir_rec(const wchar_t *path)
