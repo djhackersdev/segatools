@@ -37,8 +37,13 @@ static struct uart slider_uart;
 static uint8_t slider_written_bytes[520];
 static uint8_t slider_readable_bytes[520];
 
-HRESULT slider_hook_init(void)
+HRESULT slider_hook_init(const struct slider_config *cfg)
 {
+    assert(cfg != NULL);
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
     InitializeCriticalSection(&slider_lock);
 
     uart_init(&slider_uart, 11);

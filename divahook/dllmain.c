@@ -63,7 +63,7 @@ static DWORD CALLBACK diva_pre_startup(void)
         return EXIT_FAILURE;
     }
 
-    hr = slider_hook_init();
+    hr = slider_hook_init(&diva_hook_cfg.slider);
 
     if (FAILED(hr)) {
         return EXIT_FAILURE;
