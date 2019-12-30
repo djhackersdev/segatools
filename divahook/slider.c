@@ -41,6 +41,7 @@ static uint8_t slider_readable_bytes[520];
 HRESULT slider_hook_init(const struct slider_config *cfg)
 {
     assert(cfg != NULL);
+
     if (!cfg->enable) {
         return S_FALSE;
     }
@@ -162,7 +163,7 @@ static HRESULT slider_req_nop(uint8_t cmd)
 {
     struct slider_hdr resp;
 
-    dprintf("Diva slider: No-op cmd 0x%02x\n", cmd);
+    dprintf("Diva slider: No-op cmd 0x%#02x\n", cmd);
 
     resp.sync = SLIDER_FRAME_SYNC;
     resp.cmd = cmd;
