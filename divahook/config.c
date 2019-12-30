@@ -12,7 +12,8 @@
 #include "platform/config.h"
 #include "platform/platform.h"
 
-void slider_config_load(struct slider_config *cfg, const wchar_t *filename) {
+void slider_config_load(struct slider_config *cfg, const wchar_t *filename)
+{
     assert(cfg != NULL);
     assert(filename != NULL);
 
