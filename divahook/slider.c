@@ -145,7 +145,7 @@ static HRESULT slider_req_dispatch(const union slider_req_any *req)
     case SLIDER_CMD_AUTO_SCAN_STOP:
         return slider_req_auto_scan_stop();
 
-    case SLIDER_CMD_SET_LED_DIVA:
+    case SLIDER_CMD_SET_LED:
         return slider_req_set_led(&req->set_led);
 
     case SLIDER_CMD_DIVA_UNK_09:
