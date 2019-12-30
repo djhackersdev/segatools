@@ -139,7 +139,7 @@ static HRESULT slider_req_dispatch(const union slider_req_any *req)
     case SLIDER_CMD_GET_BOARD_INFO:
         return slider_req_get_board_info();
 
-    case SLIDER_CMD_SET_LED_CHUNI:
+    case SLIDER_CMD_SET_LED:
         return slider_req_set_led(&req->set_led);
 
     case SLIDER_CMD_AUTO_SCAN_START:
