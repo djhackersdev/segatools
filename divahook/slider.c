@@ -24,6 +24,7 @@ static HRESULT slider_handle_irp(struct irp *irp);
 static HRESULT slider_handle_irp_locked(struct irp *irp);
 
 static HRESULT slider_req_dispatch(const union slider_req_any *req);
+static HRESULT slider_req_nop(uint8_t cmd);
 static HRESULT slider_req_reset(void);
 static HRESULT slider_req_get_board_info(void);
 static HRESULT slider_req_auto_scan_start(void);
@@ -146,11 +147,28 @@ static HRESULT slider_req_dispatch(const union slider_req_any *req)
     case SLIDER_CMD_SET_LED_DIVA:
         return slider_req_set_led(&req->set_led);
 
+    case SLIDER_CMD_DIVA_UNK_09:
+    case SLIDER_CMD_DIVA_UNK_0A:
+        return slider_req_nop(req->hdr.cmd);
+
     default:
         dprintf("Unhandled command %02x\n", req->hdr.cmd);
 
         return S_OK;
     }
+}
+
+static HRESULT slider_req_nop(uint8_t cmd)
+{
+    struct slider_hdr resp;
+
+    dprintf("Diva slider: No-op cmd 0x%02x\n", cmd);
+
+    resp.sync = SLIDER_FRAME_SYNC;
+    resp.cmd = cmd;
+    resp.nbytes = 0;
+
+    return slider_frame_encode(&slider_uart.readable, &resp, sizeof(resp));
 }
 
 static HRESULT slider_req_reset(void)
@@ -181,7 +199,7 @@ static HRESULT slider_req_get_board_info(void)
     strcpy_s(
             resp.version,
             sizeof(resp.version),
-            "15275   \xA0" "06712\xFF" "\x90");
+            "15275   \xA0" "06687\xFF" "\x90");
 
     return slider_frame_encode(&slider_uart.readable, &resp, sizeof(resp));
 }

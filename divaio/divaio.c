@@ -122,7 +122,7 @@ static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx)
                 pressure_val = 0;
             }
 
-            memset(&pressure[28 - 4 * i], pressure_val, 4);
+            memset(&pressure[4 * i], pressure_val, 4);
         }
 
         callback(pressure);
