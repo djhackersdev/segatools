@@ -28,10 +28,10 @@ static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
 static wchar_t vfs_nthome_real[MAX_PATH];
-static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser\\";
+static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
 
-static const wchar_t vfs_option[] = L"C:\\Mount\\Option\\";
+static const wchar_t vfs_option[] = L"C:\\Mount\\Option";
 static const size_t vfs_option_len = _countof(vfs_option) - 1;
 
 static const struct reg_hook_val vfs_reg_vals[] = {
@@ -190,7 +190,7 @@ static void vfs_fixup_path(wchar_t *path, size_t max_count)
         count = wcslen(path);
     }
 
-    if (path[count - 1] == L'\\' || path[count - 1] == L'/') {
+    if (path_is_separator_w(path[count - 1])) {
         return;
     }
 
@@ -268,7 +268,7 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
     assert(src != NULL);
     assert(count != NULL);
 
-    if (src[0] == L'\0' || src[1] != L':' || src[2] != L'\\') {
+    if (src[0] == L'\0' || src[1] != L':' || !path_is_separator_w(src[2])) {
         return S_FALSE;
     }
 
@@ -315,6 +315,7 @@ static HRESULT vfs_path_hook_nthome(
 {
     size_t required;
     size_t redir_len;
+    size_t shift;
 
     assert(src != NULL);
     assert(count != NULL);
@@ -325,10 +326,20 @@ static HRESULT vfs_path_hook_nthome(
         return S_FALSE;
     }
 
-    /* Cut off the matched prefix, add the replaced prefix, count NUL */
+    /* Check if the character after vfs_nthome is a separator or the end of
+       the string */
 
+    if (!path_is_separator_w(src[vfs_nthome_len]) &&
+            src[vfs_nthome_len] != L'\0')
+    {
+        return S_FALSE;
+    }
+
+    /* Cut off the matched <prefix>\, add the replaced prefix, count NUL */
+
+    shift = path_is_separator_w(src[vfs_nthome_len]) ? 1 : 0;
     redir_len = wcslen(vfs_nthome_real);
-    required = wcslen(src) - vfs_nthome_len + redir_len + 1;
+    required = wcslen(src) - vfs_nthome_len - shift + redir_len + 1;
 
     if (dest != NULL) {
         if (required > *count) {
@@ -336,7 +347,7 @@ static HRESULT vfs_path_hook_nthome(
         }
 
         wcscpy_s(dest, *count, vfs_nthome_real);
-        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_nthome_len);
+        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_nthome_len + shift);
     }
 
     *count = required;
@@ -351,6 +362,7 @@ static HRESULT vfs_path_hook_option(
 {
     size_t required;
     size_t redir_len;
+    size_t shift;
 
     assert(src != NULL);
     assert(count != NULL);
@@ -361,10 +373,20 @@ static HRESULT vfs_path_hook_option(
         return S_FALSE;
     }
 
-    /* Cut off the matched prefix, add the replaced prefix, count NUL */
+    /* Check if the character after vfs_nthome is a separator or the end of
+       the string */
 
+    if (!path_is_separator_w(src[vfs_option_len]) &&
+            src[vfs_option_len] != L'\0')
+    {
+        return S_FALSE;
+    }
+
+    /* Cut off the matched <prefix>\, add the replaced prefix, count NUL */
+
+    shift = path_is_separator_w(src[vfs_option_len]) ? 1 : 0;
     redir_len = wcslen(vfs_config.option);
-    required = wcslen(src) - vfs_option_len + redir_len + 1;
+    required = wcslen(src) - vfs_option_len - shift + redir_len + 1;
 
     if (dest != NULL) {
         if (required > *count) {
@@ -372,7 +394,7 @@ static HRESULT vfs_path_hook_option(
         }
 
         wcscpy_s(dest, *count, vfs_config.option);
-        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_option_len);
+        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_option_len + shift);
     }
 
     *count = required;
