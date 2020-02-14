@@ -11,6 +11,7 @@ typedef HRESULT (*path_hook_t)(
         size_t *count);
 
 HRESULT path_hook_push(path_hook_t hook);
+void path_hook_insert_hooks(HMODULE target);
 int path_compare_w(const wchar_t *string1, const wchar_t *string2, size_t count);
 
 static inline bool path_is_separator_w(wchar_t c)

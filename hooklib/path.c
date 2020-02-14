@@ -252,8 +252,13 @@ static void path_hook_init(void)
     path_hook_initted = true;
     InitializeCriticalSection(&path_hook_lock);
 
+    path_hook_insert_hooks(NULL);
+}
+
+void path_hook_insert_hooks(HMODULE target)
+{
     hook_table_apply(
-            NULL,
+            target,
             "kernel32.dll",
             path_hook_syms,
             _countof(path_hook_syms));
@@ -668,6 +673,7 @@ static DWORD WINAPI hook_GetFileAttributesW(const wchar_t *lpFileName)
     }
 
     result = next_GetFileAttributesW(trans ? trans : lpFileName);
+
     free(trans);
 
     return result;
