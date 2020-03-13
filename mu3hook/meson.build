@@ -24,5 +24,7 @@ shared_library(
         'dllmain.c',
         'io4.c',
         'io4.h',
+        'unity.h',
+        'unity.c',
     ],
 )
