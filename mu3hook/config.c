@@ -3,6 +3,9 @@
 
 #include "board/config.h"
 
+#include "hooklib/config.h"
+#include "hooklib/gfx.h"
+
 #include "mu3hook/config.h"
 
 #include "platform/config.h"
@@ -16,4 +19,5 @@ void mu3_hook_config_load(
 
     platform_config_load(&cfg->platform, filename);
     aime_config_load(&cfg->aime, filename);
+    gfx_config_load(&cfg->gfx, filename);
 }
