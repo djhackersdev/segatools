@@ -35,14 +35,13 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     gfx_hook_init(&mu3_hook_cfg.gfx);
     serial_hook_init();
-    unity_hook_init();
 
     /* Initialize emulation hooks */
 
     hr = platform_hook_init(
             &mu3_hook_cfg.platform,
             "SDDT",
-            "AAV2",
+            "ACA1",
             mu3_hook_mod);
 
     if (FAILED(hr)) {
@@ -66,6 +65,13 @@ static DWORD CALLBACK mu3_pre_startup(void)
     if (FAILED(hr)) {
         return hr;
     }
+
+    /* Initialize Unity native plugin DLL hooks
+
+       There seems to be an issue with other DLL hooks if `LoadLibraryW` is
+       hooked earlier in the `mu3hook` initialization. */
+
+    unity_hook_init();
 
     /* Initialize debug helpers */
 
