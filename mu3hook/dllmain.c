@@ -33,6 +33,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     /* Hook Win32 APIs */
 
+    gfx_hook_init(&mu3_hook_cfg.gfx);
     serial_hook_init();
     unity_hook_init();
 
