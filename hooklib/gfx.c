@@ -9,9 +9,12 @@
 #include "hook/table.h"
 
 #include "hooklib/config.h"
+#include "hooklib/dll.h"
 #include "hooklib/gfx.h"
 
 #include "util/dprintf.h"
+
+typedef IDirect3D9 * (WINAPI *Direct3DCreate9_t)(UINT sdk_ver);
 
 static HRESULT STDMETHODCALLTYPE my_CreateDevice(
         IDirect3D9 *self,
@@ -22,7 +25,7 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
         D3DPRESENT_PARAMETERS *pp,
         IDirect3DDevice9 **pdev);
 static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver);
-static IDirect3D9 * (WINAPI *next_Direct3DCreate9)(UINT sdk_ver);
+static Direct3DCreate9_t next_Direct3DCreate9;
 static HRESULT gfx_frame_window(HWND hwnd);
 
 static struct gfx_config gfx_config;
@@ -37,6 +40,8 @@ static const struct hook_symbol gfx_hooks[] = {
 
 void gfx_hook_init(const struct gfx_config *cfg)
 {
+    HMODULE d3d9;
+
     assert(cfg != NULL);
 
     if (!cfg->enable) {
@@ -45,6 +50,31 @@ void gfx_hook_init(const struct gfx_config *cfg)
 
     memcpy(&gfx_config, cfg, sizeof(*cfg));
     hook_table_apply(NULL, "d3d9.dll", gfx_hooks, _countof(gfx_hooks));
+
+    if (next_Direct3DCreate9 == NULL) {
+        d3d9 = LoadLibraryW(L"d3d9.dll");
+
+        if (d3d9 == NULL) {
+            dprintf("Gfx: d3d9.dll not found or failed initialization\n");
+
+            goto fail;
+        }
+
+        next_Direct3DCreate9 = (Direct3DCreate9_t) GetProcAddress(d3d9, "Direct3DCreate9");
+
+        if (next_Direct3DCreate9 == NULL) {
+            dprintf("Gfx: Direct3DCreate9 not found in loaded d3d9.dll\n");
+
+            FreeLibrary(d3d9);
+
+            goto fail;
+        }
+    }
+
+    dll_hook_push(NULL, L"d3d9.dll", gfx_hooks, _countof(gfx_hooks));
+
+fail:
+    return;
 }
 
 static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
@@ -55,6 +85,12 @@ static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
     HRESULT hr;
 
     dprintf("Gfx: Direct3DCreate9 hook hit\n");
+
+    if (next_Direct3DCreate9 == NULL) {
+        dprintf("Gfx: next_Direct3DCreate9 == NULL\n");
+
+        goto fail;
+    }
 
     api = next_Direct3DCreate9(sdk_ver);
 
