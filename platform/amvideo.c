@@ -153,14 +153,14 @@ HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
 
 static int amDllVideoOpen(void *ctx)
 {
-    dprintf("AmVideo: %s)\n", __func__);
+    dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
 
 static int amDllVideoClose(void *ctx)
 {
-    dprintf("AmVideo: %s)\n", __func__);
+    dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
