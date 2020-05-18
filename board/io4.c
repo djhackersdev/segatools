@@ -193,10 +193,16 @@ static HRESULT io4_handle_write(struct irp *irp)
     case IO4_CMD_SET_COMM_TIMEOUT:
         dprintf("USB I/O: Set comm timeout\n");
 
+        // Ongeki Summer expects the system status to be 0x30 at this point
+        io4_system_status = 0x30;
+
         return S_OK;
 
     case IO4_CMD_SET_SAMPLING_COUNT:
         dprintf("USB I/O: Set sampling count\n");
+
+        // Ongeki Summer expects the system status to be 0x30 at this point
+        io4_system_status = 0x30;
 
         return S_OK;
 
