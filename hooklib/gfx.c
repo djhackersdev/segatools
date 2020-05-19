@@ -147,7 +147,9 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
         gfx_frame_window(hwnd);
     }
 
-    return IDirect3D9_CreateDevice(real, adapter, type, hwnd, flags, pp, pdev);
+    dprintf("Gfx: IDirect3D9:: Using Display No %x\n", gfx_config.monitor);
+
+    return IDirect3D9_CreateDevice(real, gfx_config.monitor, type, hwnd, flags, pp, pdev);
 }
 
 static HRESULT gfx_frame_window(HWND hwnd)
