@@ -8,5 +8,7 @@ divaio_dll = shared_library(
     sources : [
         'divaio.c',
         'divaio.h',
+        'config.c',
+        'config.h',
     ],
 )
