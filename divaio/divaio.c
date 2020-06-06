@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "divaio/divaio.h"
+#include "divaio/config.h"
 
 static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx);
 
@@ -13,32 +14,33 @@ static bool diva_io_coin;
 static uint16_t diva_io_coins;
 static HANDLE diva_io_slider_thread;
 static bool diva_io_slider_stop_flag;
+static struct diva_io_config diva_io_cfg;
 
 HRESULT diva_io_jvs_init(void)
 {
+    diva_io_config_load(&diva_io_cfg, L".\\segatools.ini");
+
     return S_OK;
 }
 
 void diva_io_jvs_poll(uint8_t *opbtn_out, uint8_t *gamebtn_out)
 {
-    static const int opbtn_vk[] = { '1', '2' };
-    static const int gamebtn_vk[] = { 'L', 'J', 'F', 'S', ' ' };
-
     uint8_t opbtn;
     uint8_t gamebtn;
     size_t i;
 
     opbtn = 0;
-    gamebtn = 0;
 
-    for (i = 0 ; i < _countof(opbtn_vk) ; i++) {
-        if (GetAsyncKeyState(opbtn_vk[i]) & 0x8000) {
-            opbtn |= 1 << i;
-        }
+    if (GetAsyncKeyState(diva_io_cfg.vk_test) & 0x8000) {
+        opbtn |= 1;
     }
 
-    for (i = 0 ; i < _countof(gamebtn_vk) ; i++) {
-        if (GetAsyncKeyState(gamebtn_vk[i]) & 0x8000) {
+    if (GetAsyncKeyState(diva_io_cfg.vk_service) & 0x8000) {
+        opbtn |= 2;
+    }
+
+    for (i = 0 ; i < _countof(diva_io_cfg.vk_buttons) ; i++) {
+        if (GetAsyncKeyState(diva_io_cfg.vk_buttons[i]) & 0x8000) {
             gamebtn |= 1 << i;
         }
     }
@@ -53,7 +55,7 @@ void diva_io_jvs_read_coin_counter(uint16_t *out)
         return;
     }
 
-    if (GetAsyncKeyState('3')) {
+    if (GetAsyncKeyState(diva_io_cfg.vk_coin) & 0x8000) {
         if (!diva_io_coin) {
             diva_io_coin = true;
             diva_io_coins++;
@@ -103,10 +105,6 @@ void diva_io_slider_set_leds(const uint8_t *rgb)
 
 static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx)
 {
-    static const int keys[] = {
-        'Q', 'W', 'E', 'R', 'U', 'I', 'O', 'P',
-    };
-
     diva_io_slider_callback_t callback;
     uint8_t pressure_val;
     uint8_t pressure[32];
@@ -116,7 +114,7 @@ static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx)
 
     while (!diva_io_slider_stop_flag) {
         for (i = 0 ; i < 8 ; i++) {
-            if(GetAsyncKeyState(keys[i]) & 0x8000) {
+            if (GetAsyncKeyState(diva_io_cfg.vk_slider[i]) & 0x8000) {
                 pressure_val = 20;
             } else {
                 pressure_val = 0;
