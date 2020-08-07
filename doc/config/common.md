@@ -293,7 +293,8 @@ values include:
 - `AAW1`: NuSX 1.1
 - `ACA0`: ALLS UX
 - `ACA1`: ALLS HX
-- `ACA2`: ALLS HX2
+- `ACA2`: ALLS UX (without dedicated GPU)
+- `ACA4`: ALLS MX
 
 ## `region`
 
