@@ -134,14 +134,12 @@ static HRESULT eeprom_ioctl_get_geometry(struct irp *irp)
 
     dprintf("EEPROM: Get geometry\n");
 
-    /* Not the real values, just bullshitting something for now */
-
     memset(&out, 0, sizeof(out));
-    out.Cylinders.QuadPart = 0x800;
-    out.MediaType = 0;
-    out.TracksPerCylinder = 1;
-    out.SectorsPerTrack = 2;
-    out.BytesPerSector = 4;
+    out.Cylinders.QuadPart = 1;
+    out.MediaType = FixedMedia;
+    out.TracksPerCylinder = 224;
+    out.SectorsPerTrack = 32;
+    out.BytesPerSector = 1;
 
     hr = iobuf_write(&irp->read, &out, sizeof(out));
 
