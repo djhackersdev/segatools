@@ -18,6 +18,8 @@ platform_lib = static_library(
         'dns.h',
         'hwmon.c',
         'hwmon.h',
+        'hwreset.c',
+        'hwreset.h',
         'misc.c',
         'misc.h',
         'netenv.c',

@@ -14,6 +14,7 @@
 #include "platform/config.h"
 #include "platform/dns.h"
 #include "platform/hwmon.h"
+#include "platform/hwreset.h"
 #include "platform/misc.h"
 #include "platform/netenv.h"
 #include "platform/nusec.h"
@@ -30,6 +31,7 @@ void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
     clock_config_load(&cfg->clock, filename);
     dns_config_load(&cfg->dns, filename);
     hwmon_config_load(&cfg->hwmon, filename);
+    hwreset_config_load(&cfg->hwreset, filename);
     misc_config_load(&cfg->misc, filename);
     pcbid_config_load(&cfg->pcbid, filename);
     netenv_config_load(&cfg->netenv, filename);
@@ -117,9 +119,18 @@ void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename)
     cfg->enable = GetPrivateProfileIntW(L"hwmon", L"enable", 1, filename);
 }
 
+void hwreset_config_load(struct hwreset_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"hwreset", L"enable", 1, filename);
+}
+
 void misc_config_load(struct misc_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
+    assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"misc", L"enable", 1, filename);
 }
