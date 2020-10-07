@@ -15,6 +15,7 @@ struct mu3_hook_config {
     struct platform_config platform;
     struct aime_config aime;
     struct dvd_config dvd;
+    struct io4_config io4;
     struct gfx_config gfx;
     struct mu3_dll_config dll;
 };

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "board/config.h"
 #include "board/guid.h"
 #include "board/io4.h"
 
@@ -97,11 +98,19 @@ static uint8_t io4_system_status;
 static const struct io4_ops *io4_ops;
 static void *io4_ops_ctx;
 
-HRESULT io4_hook_init(const struct io4_ops *ops, void *ctx)
+HRESULT io4_hook_init(
+        const struct io4_config *cfg,
+        const struct io4_ops *ops,
+        void *ctx)
 {
     HRESULT hr;
 
+    assert(cfg != NULL);
     assert(ops != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
 
     async_init(&io4_async, NULL);
 
