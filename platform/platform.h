@@ -6,6 +6,7 @@
 #include "platform/clock.h"
 #include "platform/dns.h"
 #include "platform/hwmon.h"
+#include "platform/hwreset.h"
 #include "platform/misc.h"
 #include "platform/netenv.h"
 #include "platform/nusec.h"
@@ -17,6 +18,7 @@ struct platform_config {
     struct clock_config clock;
     struct dns_config dns;
     struct hwmon_config hwmon;
+    struct hwreset_config hwreset;
     struct misc_config misc;
     struct pcbid_config pcbid;
     struct netenv_config netenv;
