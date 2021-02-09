@@ -30,6 +30,7 @@ static struct chuni_hook_config chuni_hook_cfg;
 static DWORD CALLBACK chuni_pre_startup(void)
 {
     HMODULE d3dc;
+    HMODULE dbghelp;
     HRESULT hr;
 
     dprintf("--- Begin chuni_pre_startup ---\n");
@@ -42,6 +43,16 @@ static DWORD CALLBACK chuni_pre_startup(void)
         dprintf("Pinned shader compiler, hMod=%p\n", d3dc);
     } else {
         dprintf("Failed to load shader compiler!\n");
+    }
+
+    /* Pin dbghelp so the path hooks apply to it. */
+
+    dbghelp = LoadLibraryW(L"dbghelp.dll");
+
+    if (dbghelp != NULL) {
+        dprintf("Pinned debug helper library, hMod=%p\n", dbghelp);
+    } else {
+        dprintf("Failed to load debug helper library!\n");
     }
 
     /* Config load */
