@@ -1,42 +1,43 @@
-# Introduction
+# Segatools common configuration settings
 
 This file describes configuration settings for Segatools that are common to
 all games.
 
-Keyboard binding settings use [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
+Keyboard binding settings use
+[Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
 
-# `[aime]`
+## `[aime]`
 
 Controls emulation of the Aime card reader assembly.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
 Enable Aime card reader assembly emulation. Disable to use a real SEGA Aime
 reader (COM port number varies by game).
 
-## `aimePath`
+### `aimePath`
 
 Default: `DEVICE\aime.txt`
 
 Path to a text file containing a classic Aime IC card ID. **This does not
 currently work**.
 
-## `felicaPath`
+### `felicaPath`
 
 Default: `DEVICE\felica.txt`
 
 Path to a text file containing a FeliCa e-cash card IDm serial number.
 
-## `felicaGen`
+### `felicaGen`
 
 Default: `1`
 
 Whether to generate a random FeliCa ID if the file at `felicaPath` does not
 exist.
 
-## `scan`
+### `scan`
 
 Default: `0x0D` (`VK_RETURN`)
 
@@ -45,13 +46,13 @@ emulates an IC card in its proximity. A variety of different IC cards can be
 emulated; the exact choice of card that is emulated depends on the presence or
 absence of the configured card ID files.
 
-# `[amvideo]`
+## `[amvideo]`
 
 Controls the `amvideo.dll` stub built into Segatools. This is a DLL that is
 normally present on the SEGA operating system image which is responsible for
 changing screen resolution and orientation.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
@@ -60,11 +61,11 @@ you must have the correct registry settings installed and you must use the
 version of `amvideo.dll` that matches your GPU vendor (since these DLLs make
 use of vendor-specific APIs).
 
-# `[clock]`
+## `[clock]`
 
 Controls hooks for Windows time-of-day APIs.
 
-## `timezone`
+### `timezone`
 
 Default: `1`
 
@@ -73,7 +74,7 @@ ways if the system time zone is not JST. There should not be any reason to
 disable this hook other than possible implementation bugs, but the option is
 provided if you need it.
 
-## `timewarp`
+### `timewarp`
 
 Default: `0`
 
@@ -82,18 +83,18 @@ maintenance period. Causes an incorrect in-game time-of-day to be reported.
 Better solutions for this problem exist and this feature will probably be
 removed soon.
 
-## `writeable`
+### `writeable`
 
 Default: `0`
 
 Allow game to adjust system clock and time zone settings. This should normally
 be left at `0`, but the option is provided if you need it.
 
-# `[dns]`
+## `[dns]`
 
 Controls redirection of network server hostname lookups
 
-## `default`
+### `default`
 
 Default: `localhost`
 
@@ -103,45 +104,45 @@ setting. Also, loopback addresses are specifically checked for and rejected by
 the games themselves; this needs to be a LAN or WAN IP (or a hostname that
 resolves to one).
 
-## `router`
+### `router`
 
 Default: Empty string (i.e. use value from `default` setting)
 
 Overrides the target of the `tenporouter.loc` and `bbrouter.loc` hostname
 lookups.
 
-## `startup`
+### `startup`
 
 Default: Empty string (i.e. use value from `default` setting)
 
 Overrides the target of the `naominet.jp` host lookup.
 
-## `billing`
+### `billing`
 
 Default: Empty string (i.e. use value from `default` setting)
 
 Overrides the target of the `ib.naominet.jp` host lookup.
 
-## `aimedb`
+### `aimedb`
 
 Default: Empty string (i.e. use value from `default` setting)
 
 Overrides the target of the `aime.naominet.jp` host lookup.
 
-# `[ds]`
+## `[ds]`
 
 Controls emulation of the "DS (Dallas Semiconductor) EEPROM" chip on the AMEX
 PCIe board. This is a small (32 byte) EEPROM that contains serial number and
 region code information. It is not normally written to outside of inital
 factory provisioning of a Sega Nu.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
 Enable DS EEPROM emulation. Disable to use the DS EEPROM chip on a real AMEX.
 
-## `region`
+### `region`
 
 Default: `1`
 
@@ -152,7 +153,7 @@ AMEX Board region code. This appears to be a bit mask?
 - `4`: Export
 - `8`: China
 
-## `serialNo`
+### `serialNo`
 
 Default `AAVE-01A99999999`
 
@@ -162,19 +163,19 @@ Default `AAVE-01A99999999`
 - `AAW`: NuSX-series
 - `ACA`: ALLS-series
 
-# `[eeprom]`
+## `[eeprom]`
 
 Controls emulation of the bulk EEPROM on the AMEX PCIe board. This chip stores
 status and configuration information.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
 Enable bulk EEPROM emulation. Disable to use the bulk EEPROM chip on a real
 AMEX.
 
-## `path`
+### `path`
 
 Default: `DEVICE\eeprom.bin`
 
@@ -182,30 +183,30 @@ Path to the storage file for EEPROM emulation. This file is automatically
 created and initialized with a suitable number of zero bytes if it does not
 already exist.
 
-# `[gpio]`
+## `[gpio]`
 
 Configure emulation of the AMEX PCIe GPIO (General Purpose Input Output)
 controller.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
 Enable GPIO emulation. Disable to use the GPIO controller on a real AMEX.
 
-## `sw1`
+### `sw1`
 
 Default `0x70` (`VK_F1`)
 
 Keyboard binding for Nu chassis SW1 button (alternative Test)
 
-## `sw2`
+### `sw2`
 
 Default `0x71` (`VK_F2`)
 
 Keyboard binding for Nu chassis SW2 button (alternative Service)
 
-## `dipsw1` .. `dipsw8`
+### `dipsw1` .. `dipsw8`
 
 Defaults: `1`, `0`, `0`, `0`, `0`, `0`, `0`, `0`
 
@@ -232,52 +233,52 @@ Nu chassis DIP switch settings:
     - `111`: 1920x1080
 - Switch 8: Game-specific. Not used in any shipping game.
 
-# `[hwmon]`
+## `[hwmon]`
 
 Configure stub implementation of the platform hardware monitor driver. The
 real implementation of this driver monitors CPU temperatures by reading from
 Intel Model Specific Registers, which is an action that is only permitted from
 kernel mode.
 
-## `enable`
+### `enable`
 
 Default `1`
 
 Enable hwmon emulation. Disable to use the real hwmon driver.
 
-# `[jvs]`
+## `[jvs]`
 
 Configure emulation of the AMEX PCIe JVS *controller* (not IO board!)
 
-## `enable`
+### `enable`
 
 Default `1`
 
 Enable JVS port emulation. Disable to use the JVS port on a real AMEX.
 
-# `[keychip]`
+## `[keychip]`
 
 Configure keychip emulation.
 
-## `enable`
+### `enable`
 
 Enable keychip emulation. Disable to use a real keychip.
 
-## `id`
+### `id`
 
 Default: `A69E-01A88888888`
 
 Keychip serial number. Keychip serials observed in the wild follow this
 pattern: `A6xE-01Ayyyyyyyy`.
 
-## `gameId`
+### `gameId`
 
 Default: (Varies depending on game)
 
 Override the game's four-character model code. Changing this from the game's
 expected value will probably just cause a system error.
 
-## `platformId`
+### `platformId`
 
 Default: (Varies depending on game)
 
@@ -296,7 +297,7 @@ values include:
 - `ACA2`: ALLS UX (without dedicated GPU)
 - `ACA4`: ALLS MX
 
-## `region`
+### `region`
 
 Default: `1`
 
@@ -311,7 +312,7 @@ Bit values are:
 - 3: EXP: Export (for Asian markets)
 - 4: CHS: China (Simplified Chinese?)
 
-## `systemFlag`
+### `systemFlag`
 
 Default: `0x64`
 
@@ -324,19 +325,19 @@ Other values observed in the wild:
 - `0x04`: SDCH, SDCA
 - `0x20`: SDCA
 
-## `subnet`
+### `subnet`
 
 Default `192.168.100.0`
 
 The LAN IP range that the game will expect. The prefix length is hardcoded into
 the game program: for some games this is `/24`, for others it is `/20`.
 
-# `[netenv]`
+## `[netenv]`
 
 Configure network environment virtualization. This module helps bypass various
 restrictions placed upon the game's LAN environment.
 
-## `enable`
+### `enable`
 
 Default `1`
 
@@ -346,7 +347,7 @@ you want to do any head-to-head play on your LAN.
 Note: The virtualized LAN IP range is taken from the emulated keychip's
 `subnet` setting.
 
-## `addrSuffix`
+### `addrSuffix`
 
 Default: `11`
 
@@ -354,26 +355,26 @@ The final octet of the local host's IP address on the virtualized subnet (so,
 if the keychip subnet is `192.168.32.0` and this value is set to `11`, then the
 local host's virtualized LAN IP is `192.168.32.11`).
 
-## `routerSuffix`
+### `routerSuffix`
 
 Default: `1`
 
 The final octet of the default gateway's IP address on the virtualized subnet.
 
-## `macAddr`
+### `macAddr`
 
 Default: `01:02:03:04:05:06`
 
 The MAC address of the virtualized Ethernet adapter. The exact value shouldn't
 ever matter.
 
-# `[pcbid]`
+## `[pcbid]`
 
 Configure Windows host name virtualization. The ALLS-series platform no longer
 has an AMEX board, so the MAIN ID serial number is stored in the Windows
 hostname.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
@@ -382,49 +383,49 @@ games (since the ALLS lacks an AMEX and therefore has no DS EEPROM, so it needs
 another way to store the PCB serial), but it does no harm on games that run on
 earlier hardware.
 
-## `serialNo`
+### `serialNo`
 
 Default: `ACAE01A99999999`
 
 Set the Windows host name. This should be an ALLS MAIN ID, without the
 hyphen (which is not a valid character in a Windows host name).
 
-# `[sram]`
+## `[sram]`
 
 Configure emulation of the AMEX PCIe battery-backed SRAM. This stores
 bookkeeping state and settings. This file is automatically created and
 initialized with a suitable number of zero bytes if it does not already exist.
 
-## `enable`
+### `enable`
 
 Default `1`
 
 Enable SRAM emulation. Disable to use the SRAM on a real AMEX.
 
-## `path`
+### `path`
 
 Default `DEVICE\sram.bin`
 
 Path to the storage file for SRAM emulation.
 
-# `[vfs]`
+## `[vfs]`
 
 Configure Windows path redirection hooks.
 
-## `enable`
+### `enable`
 
 Default: `1`
 
 Enable path redirection.
 
-## `amfs`
+### `amfs`
 
 Default: Empty string (causes a startup error)
 
 Configure the location of the SEGA AMFS volume. Stored on the `E` partition on
 real hardware.
 
-## `appdata`
+### `appdata`
 
 Default: Empty string (causes a startup error)
 
@@ -432,7 +433,7 @@ Configure the location of the SEGA "APPDATA" volume (nothing to do with the
 Windows user's `%APPDATA%` directory). Stored on the `Y` partition on real
 hardware.
 
-## `option`
+### `option`
 
 Default: Empty string
 
