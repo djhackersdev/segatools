@@ -3,6 +3,7 @@ shared_library(
     name_prefix : '',
     include_directories : inc,
     implicit_include_directories : false,
+    vs_module_defs : 'chunihook.def',
     c_pch : '../precompiled.h',
     dependencies : [
         capnhook.get_variable('hook_dep'),
