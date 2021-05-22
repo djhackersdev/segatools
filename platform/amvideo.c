@@ -15,11 +15,6 @@
 
 /* Hook functions */
 
-static int amDllVideoOpen(void *ctx);
-static int amDllVideoClose(void *ctx);
-static int amDllVideoSetResolution(void *ctx, void *param);
-static int amDllVideoGetVBiosVersion(void *ctx, char *dest, size_t nchars);
-
 static HRESULT amvideo_reg_read_name(void *bytes, uint32_t *nbytes);
 static HRESULT amvideo_reg_read_port_X(void *bytes, uint32_t *nbytes);
 static HRESULT amvideo_reg_read_resolution_1(void *bytes, uint32_t *nbytes);
@@ -88,26 +83,6 @@ static const struct reg_hook_val amvideo_reg_mode_vals[] = {
     }
 };
 
-static const struct hook_symbol amvideo_syms[] = {
-    {
-        .ordinal    = 1,
-        .name       = "amDllVideoOpen",
-        .patch      = amDllVideoOpen,
-    }, {
-        .ordinal    = 2,
-        .name       = "amDllVideoClose",
-        .patch      = amDllVideoClose,
-    }, {
-        .ordinal    = 3,
-        .name       = "amDllVideoSetResolution",
-        .patch      = amDllVideoSetResolution,
-    }, {
-        .ordinal    = 4,
-        .name       = "amDllVideoGetVBiosVersion",
-        .patch      = amDllVideoGetVBiosVersion,
-    }
-};
-
 HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
 {
     HRESULT hr;
@@ -138,11 +113,7 @@ HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
         return hr;
     }
 
-    hr = dll_hook_push(
-            redir_mod,
-            amvideo_dll_name,
-            amvideo_syms,
-            _countof(amvideo_syms));
+    hr = dll_hook_push(redir_mod, amvideo_dll_name);
 
     if (FAILED(hr)) {
         return hr;
@@ -151,28 +122,28 @@ HRESULT amvideo_hook_init(const struct amvideo_config *cfg, HMODULE redir_mod)
     return S_OK;
 }
 
-static int amDllVideoOpen(void *ctx)
+int amDllVideoOpen(void *ctx)
 {
     dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
 
-static int amDllVideoClose(void *ctx)
+int amDllVideoClose(void *ctx)
 {
     dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
 
-static int amDllVideoSetResolution(void *ctx, void *param)
+int amDllVideoSetResolution(void *ctx, void *param)
 {
     dprintf("AmVideo: %s\n", __func__);
 
     return 0;
 }
 
-static int amDllVideoGetVBiosVersion(void *ctx, char *dest, size_t nchars)
+int amDllVideoGetVBiosVersion(void *ctx, char *dest, size_t nchars)
 {
     dprintf("AmVideo: %s\n", __func__);
     strcpy(dest, "01.02.03.04.05");

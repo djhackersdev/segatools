@@ -15,8 +15,6 @@
 struct dll_hook_reg {
     const wchar_t *name;
     HMODULE redir_mod;
-    const struct hook_symbol *syms;
-    size_t nsyms;
 };
 
 /* Helper functions */
@@ -26,6 +24,7 @@ static HMODULE dll_hook_search_dll(const wchar_t *name);
 
 /* Hook functions */
 
+static BOOL WINAPI hook_FreeLibrary(HMODULE mod);
 static HMODULE WINAPI hook_GetModuleHandleA(const char *name);
 static HMODULE WINAPI hook_GetModuleHandleW(const wchar_t *name);
 static HMODULE WINAPI hook_LoadLibraryA(const char *name);
@@ -34,6 +33,7 @@ static void * WINAPI hook_GetProcAddress(HMODULE mod, const char *name);
 
 /* Link pointers */
 
+static BOOL (WINAPI *next_FreeLibrary)(HMODULE mod);
 static HMODULE (WINAPI *next_GetModuleHandleA)(const char *name);
 static HMODULE (WINAPI *next_GetModuleHandleW)(const wchar_t *name);
 static HMODULE (WINAPI *next_LoadLibraryA)(const char *name);
@@ -42,6 +42,10 @@ static void * (WINAPI *next_GetProcAddress)(HMODULE mod, const char *name);
 
 static const struct hook_symbol dll_loader_syms[] = {
     {
+        .name   = "FreeLibrary",
+        .patch  = hook_FreeLibrary,
+        .link   = (void **) &next_FreeLibrary,
+    }, {
         .name   = "GetModuleHandleA",
         .patch  = hook_GetModuleHandleA,
         .link   = (void **) &next_GetModuleHandleA,
@@ -57,10 +61,6 @@ static const struct hook_symbol dll_loader_syms[] = {
         .name   = "LoadLibraryW",
         .patch  = hook_LoadLibraryW,
         .link   = (void **) &next_LoadLibraryW,
-    }, {
-        .name   = "GetProcAddress",
-        .patch  = hook_GetProcAddress,
-        .link   = (void **) &next_GetProcAddress,
     }
 };
 
@@ -71,16 +71,13 @@ static size_t dll_hook_count;
 
 HRESULT dll_hook_push(
         HMODULE redir_mod,
-        const wchar_t *name,
-        const struct hook_symbol *syms,
-        size_t nsyms)
+        const wchar_t *name)
 {
     struct dll_hook_reg *new_item;
     struct dll_hook_reg *new_mem;
     HRESULT hr;
 
     assert(name != NULL);
-    assert(syms != NULL);
 
     dll_hook_init();
 
@@ -99,8 +96,6 @@ HRESULT dll_hook_push(
     new_item = &new_mem[dll_hook_count];
     new_item->name = name;
     new_item->redir_mod = redir_mod;
-    new_item->syms = syms;
-    new_item->nsyms = nsyms;
 
     dll_hook_list = new_mem;
     dll_hook_count++;
@@ -165,6 +160,39 @@ static HMODULE dll_hook_search_dll(const wchar_t *name)
     LeaveCriticalSection(&dll_hook_lock);
 
     return result;
+}
+
+static BOOL WINAPI hook_FreeLibrary(HMODULE mod)
+{
+    bool match;
+    size_t i;
+
+    match = false;
+    EnterCriticalSection(&dll_hook_lock);
+
+    for (i = 0 ; i < dll_hook_count ; i++) {
+        if (mod == dll_hook_list[i].redir_mod) {
+            match = true;
+
+            break;
+        }
+    }
+
+    LeaveCriticalSection(&dll_hook_lock);
+
+    if (match) {
+        /* Block attempts to unload redirected modules, since this could cause
+           a hook DLL to unexpectedly vanish and crash the whole application.
+
+           Reference counting might be another solution, although it is
+           possible that a buggy application might cause a hook DLL unload in
+           that case. */
+        SetLastError(ERROR_SUCCESS);
+
+        return TRUE;
+    }
+
+    return next_FreeLibrary(mod);
 }
 
 static HMODULE WINAPI hook_GetModuleHandleA(const char *name)
@@ -262,69 +290,3 @@ static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
 }
 
 /* TODO LoadLibraryExA, LoadLibraryExW */
-
-static void * WINAPI hook_GetProcAddress(HMODULE mod, const char *name)
-{
-    const struct hook_symbol *syms;
-    uintptr_t ordinal;
-    size_t nsyms;
-    size_t i;
-
-    if (name == NULL) {
-        SetLastError(ERROR_INVALID_PARAMETER);
-
-        return NULL;
-    }
-
-    syms = NULL;
-    nsyms = 0;
-
-    EnterCriticalSection(&dll_hook_lock);
-
-    for (i = 0 ; i < dll_hook_count ; i++) {
-        if (dll_hook_list[i].redir_mod == mod) {
-            syms = dll_hook_list[i].syms;
-            nsyms = dll_hook_list[i].nsyms;
-
-            break;
-        }
-    }
-
-    LeaveCriticalSection(&dll_hook_lock);
-
-    if (syms == NULL) {
-        return next_GetProcAddress(mod, name);
-    }
-
-    ordinal = (uintptr_t) name;
-
-    if (ordinal > 0xFFFF) {
-        /* Import by name */
-
-        for (i = 0 ; i < nsyms ; i++) {
-            if (strcmp(name, syms[i].name) == 0) {
-                break;
-            }
-        }
-    } else {
-        /* Import by ordinal (and name != NULL so ordinal != 0) */
-
-        for (i = 0 ; i < nsyms ; i++) {
-            if (ordinal == syms[i].ordinal) {
-                break;
-            }
-        }
-    }
-
-    if (i < nsyms) {
-        SetLastError(ERROR_SUCCESS);
-
-        return syms[i].patch;
-    } else {
-        /* GetProcAddress sets this error on failure, although of course MSDN
-           does not see fit to document the exact error code. */
-        SetLastError(ERROR_PROC_NOT_FOUND);
-
-        return NULL;
-    }
-}

@@ -24,21 +24,20 @@ static HRESULT STDMETHODCALLTYPE my_CreateDevice(
         DWORD flags,
         D3DPRESENT_PARAMETERS *pp,
         IDirect3DDevice9 **pdev);
-static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver);
-static Direct3DCreate9_t next_Direct3DCreate9;
 static HRESULT gfx_frame_window(HWND hwnd);
 
 static struct gfx_config gfx_config;
+static Direct3DCreate9_t next_Direct3DCreate9;
 
 static const struct hook_symbol gfx_hooks[] = {
     {
         .name   = "Direct3DCreate9",
-        .patch  = my_Direct3DCreate9,
+        .patch  = Direct3DCreate9,
         .link   = (void **) &next_Direct3DCreate9
     },
 };
 
-void gfx_hook_init(const struct gfx_config *cfg)
+void gfx_hook_init(const struct gfx_config *cfg, HINSTANCE self)
 {
     HMODULE d3d9;
 
@@ -71,13 +70,15 @@ void gfx_hook_init(const struct gfx_config *cfg)
         }
     }
 
-    dll_hook_push(NULL, L"d3d9.dll", gfx_hooks, _countof(gfx_hooks));
+    if (self != NULL) {
+        dll_hook_push(self, L"d3d9.dll");
+    }
 
 fail:
     return;
 }
 
-static IDirect3D9 * WINAPI my_Direct3DCreate9(UINT sdk_ver)
+IDirect3D9 * WINAPI Direct3DCreate9(UINT sdk_ver)
 {
     struct com_proxy *proxy;
     IDirect3D9Vtbl *vtbl;

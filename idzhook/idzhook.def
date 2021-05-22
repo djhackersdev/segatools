@@ -1,1 +1,8 @@
 LIBRARY idzhook
+
+EXPORTS
+    Direct3DCreate9
+    amDllVideoClose @2
+    amDllVideoGetVBiosVersion @4
+    amDllVideoOpen @1
+    amDllVideoSetResolution @3

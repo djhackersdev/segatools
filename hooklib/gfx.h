@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 #include <stdbool.h>
 
 struct gfx_config {
@@ -9,4 +11,4 @@ struct gfx_config {
     int monitor;
 };
 
-void gfx_hook_init(const struct gfx_config *cfg);
+void gfx_hook_init(const struct gfx_config *cfg, HINSTANCE self);
