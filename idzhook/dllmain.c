@@ -1,6 +1,5 @@
 #include <windows.h>
 
-#include <stddef.h>
 #include <stdlib.h>
 
 #include "amex/amex.h"
@@ -49,19 +48,19 @@ static DWORD CALLBACK idz_pre_startup(void)
             idz_hook_mod);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     hr = amex_hook_init(&idz_hook_cfg.amex, idz_jvs_init);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     hr = sg_reader_hook_init(&idz_hook_cfg.aime, 10);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     /* Initialize debug helpers */
@@ -73,6 +72,9 @@ static DWORD CALLBACK idz_pre_startup(void)
     /* Jump to EXE start address */
 
     return idz_startup();
+
+fail:
+    ExitProcess(EXIT_FAILURE);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)

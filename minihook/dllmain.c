@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include <stdlib.h>
+
 #include "amex/config.h"
 #include "amex/ds.h"
 
@@ -20,6 +22,7 @@ static DWORD CALLBACK app_pre_startup(void)
     struct clock_config clock_cfg;
     struct ds_config ds_cfg;
     struct nusec_config nusec_cfg;
+    HRESULT hr;
 
     dprintf("--- Begin %s ---\n", __func__);
 
@@ -28,13 +31,30 @@ static DWORD CALLBACK app_pre_startup(void)
     nusec_config_load(&nusec_cfg, L".\\segatools.ini");
     spike_hook_init(L".\\segatools.ini");
 
-    clock_hook_init(&clock_cfg);
-    nusec_hook_init(&nusec_cfg, "SSSS", "AAV0");
-    ds_hook_init(&ds_cfg);
+    hr = clock_hook_init(&clock_cfg);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = nusec_hook_init(&nusec_cfg, "SSSS", "AAV0");
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = ds_hook_init(&ds_cfg);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
 
     dprintf("---  End  %s ---\n", __func__);
 
     return app_startup();
+
+fail:
+    ExitProcess(EXIT_FAILURE);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)
