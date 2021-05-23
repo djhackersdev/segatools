@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include <stdlib.h>
+
 #include "board/io4.h"
 #include "board/sg-reader.h"
 #include "board/vfd.h"
@@ -45,25 +47,25 @@ static DWORD CALLBACK mu3_pre_startup(void)
             mu3_hook_mod);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     hr = sg_reader_hook_init(&mu3_hook_cfg.aime, 1);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     hr = vfd_hook_init(2);
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     hr = mu3_io4_hook_init();
 
     if (FAILED(hr)) {
-        return hr;
+        goto fail;
     }
 
     /* Initialize Unity native plugin DLL hooks
@@ -82,6 +84,9 @@ static DWORD CALLBACK mu3_pre_startup(void)
     /* Jump to EXE start address */
 
     return mu3_startup();
+
+fail:
+    ExitProcess(EXIT_FAILURE);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)

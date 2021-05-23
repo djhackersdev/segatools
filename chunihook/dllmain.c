@@ -1,6 +1,5 @@
 #include <windows.h>
 
-#include <stddef.h>
 #include <stdlib.h>
 
 #include "amex/amex.h"
@@ -73,25 +72,25 @@ static DWORD CALLBACK chuni_pre_startup(void)
             chuni_hook_mod);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = slider_hook_init(&chuni_hook_cfg.slider);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     /* Initialize debug helpers */
@@ -103,6 +102,9 @@ static DWORD CALLBACK chuni_pre_startup(void)
     /* Jump to EXE start address */
 
     return chuni_startup();
+
+fail:
+    ExitProcess(EXIT_FAILURE);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)

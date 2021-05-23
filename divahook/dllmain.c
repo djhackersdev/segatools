@@ -1,6 +1,5 @@
 #include <windows.h>
 
-#include <stddef.h>
 #include <stdlib.h>
 
 #include "amex/amex.h"
@@ -48,25 +47,25 @@ static DWORD CALLBACK diva_pre_startup(void)
             diva_hook_mod);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = amex_hook_init(&diva_hook_cfg.amex, diva_jvs_init);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = sg_reader_hook_init(&diva_hook_cfg.aime, 10);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     hr = slider_hook_init(&diva_hook_cfg.slider);
 
     if (FAILED(hr)) {
-        return EXIT_FAILURE;
+        goto fail;
     }
 
     /* Initialize debug helpers */
@@ -78,6 +77,9 @@ static DWORD CALLBACK diva_pre_startup(void)
     /* Jump to EXE start address */
 
     return diva_startup();
+
+fail:
+    ExitProcess(EXIT_FAILURE);
 }
 
 BOOL WINAPI DllMain(HMODULE mod, DWORD cause, void *ctx)
