@@ -9,7 +9,6 @@
    this DLL just yet unless you are prepared to deal with API breakages. */
 
 HRESULT aime_io_init(void);
-void aime_io_fini(void);
 HRESULT aime_io_nfc_poll(uint8_t unit_no);
 HRESULT aime_io_nfc_get_aime_id(
         uint8_t unit_no,
