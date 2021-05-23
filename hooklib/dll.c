@@ -98,6 +98,7 @@ HRESULT dll_hook_push(
 
     new_item = &new_mem[dll_hook_count];
     new_item->name = name;
+    new_item->redir_mod = redir_mod;
     new_item->syms = syms;
     new_item->nsyms = nsyms;
 
