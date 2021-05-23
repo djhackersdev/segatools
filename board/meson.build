@@ -10,6 +10,8 @@ board_lib = static_library(
         iccard_lib,
     ],
     sources : [
+        'aime-dll.c',
+        'aime-dll.h',
         'config.c',
         'config.h',
         'guid.c',

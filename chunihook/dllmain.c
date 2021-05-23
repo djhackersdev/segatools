@@ -87,7 +87,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&chuni_hook_cfg.aime, 12);
+    hr = sg_reader_hook_init(&chuni_hook_cfg.aime, 12, chuni_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

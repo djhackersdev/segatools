@@ -50,7 +50,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&mu3_hook_cfg.aime, 1);
+    hr = sg_reader_hook_init(&mu3_hook_cfg.aime, 1, mu3_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
