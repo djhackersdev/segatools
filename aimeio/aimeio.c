@@ -162,6 +162,11 @@ static HRESULT aime_io_generate_felica(
     return S_OK;
 }
 
+uint16_t aime_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
 HRESULT aime_io_init(void)
 {
     aime_io_config_read(&aime_io_cfg, L".\\segatools.ini");
