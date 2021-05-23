@@ -11,7 +11,7 @@ shared_library(
         xinput_lib,
     ],
     link_with : [
-        aimeio_dll,
+        aimeio_lib,
         amex_lib,
         board_lib,
         hooklib_lib,
