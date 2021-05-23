@@ -169,10 +169,6 @@ HRESULT aime_io_init(void)
     return S_OK;
 }
 
-void aime_io_fini(void)
-{
-}
-
 HRESULT aime_io_nfc_poll(uint8_t unit_no)
 {
     bool sense;
