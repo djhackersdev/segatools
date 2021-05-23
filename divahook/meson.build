@@ -10,7 +10,7 @@ shared_library(
         capnhook.get_variable('hooklib_dep'),
     ],
     link_with : [
-        aimeio_dll,
+        aimeio_lib,
         amex_lib,
         board_lib,
         divaio_dll,
