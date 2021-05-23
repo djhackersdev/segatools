@@ -11,6 +11,8 @@ util_lib = static_library(
         'async.h',
         'crc.c',
         'crc.h',
+        'dll-bind.c',
+        'dll-bind.h',
         'dprintf.c',
         'dprintf.h',
         'dump.c',
