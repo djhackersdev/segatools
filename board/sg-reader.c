@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "aimeio/aimeio.h"
-
+#include "board/aime-dll.h"
 #include "board/sg-led.h"
 #include "board/sg-nfc.h"
 #include "board/sg-reader.h"
@@ -48,12 +47,22 @@ static struct sg_led sg_reader_led;
 
 HRESULT sg_reader_hook_init(
         const struct aime_config *cfg,
-        unsigned int port_no)
+        unsigned int port_no,
+        HINSTANCE self)
 {
+    HRESULT hr;
+
     assert(cfg != NULL);
+    assert(self != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
+    }
+
+    hr = aime_dll_init(&cfg->dll, self);
+
+    if (FAILED(hr)) {
+        return hr;
     }
 
     sg_nfc_init(&sg_reader_nfc, 0x00, &sg_reader_nfc_ops, NULL);
@@ -111,7 +120,7 @@ static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
 
         if (!sg_reader_started) {
             dprintf("NFC Assembly: Starting backend DLL\n");
-            hr = aime_io_init();
+            hr = aime_dll.init();
 
             sg_reader_started = true;
             sg_reader_start_hr = hr;
@@ -155,7 +164,7 @@ static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
 
 static HRESULT sg_reader_nfc_poll(void *ctx)
 {
-    return aime_io_nfc_poll(0);
+    return aime_dll.nfc_poll(0);
 }
 
 static HRESULT sg_reader_nfc_get_aime_id(
@@ -163,15 +172,15 @@ static HRESULT sg_reader_nfc_get_aime_id(
         uint8_t *luid,
         size_t luid_size)
 {
-    return aime_io_nfc_get_aime_id(0, luid, luid_size);
+    return aime_dll.nfc_get_aime_id(0, luid, luid_size);
 }
 
 static HRESULT sg_reader_nfc_get_felica_id(void *ctx, uint64_t *IDm)
 {
-    return aime_io_nfc_get_felica_id(0, IDm);
+    return aime_dll.nfc_get_felica_id(0, IDm);
 }
 
 static void sg_reader_led_set_color(void *ctx, uint8_t r, uint8_t g, uint8_t b)
 {
-    aime_io_led_set_color(0, r, g, b);
+    aime_dll.led_set_color(0, r, g, b);
 }
