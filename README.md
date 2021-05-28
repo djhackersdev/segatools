@@ -62,3 +62,21 @@ make build-docker
 ```
 
 Once completed successfully, the build output is located in the `build/docker/zip` sub-folder.
+
+#### Building with docker on Windows using WSL2
+
+In order to use docker for building on Windows, follow these steps:
+
+* [Install WSL2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* Regarding Linux distribution, we recommend using Ubuntu 20.04
+* Run the "Ubuntu 20.04 LTS" App which opens a Linux shell
+* Install `make` and `docker` by running
+  * `sudo apt-get update`
+  * `sudo apt-get install make docker.io`
+* Add the current user to the docker group that you don't have to run docker commands with root:
+`sudo usermod -a -G docker $USER`
+* Run the docker daemon in the background: `sudo dockerd > /dev/null 2>&1 &`
+* Navigate to your segatools folder. If it is located on the `C:` drive, WSL automatically provides
+a mountpoint for that under `/mnt/c`, e.g. `cd /mnt/c/segatools` (if the folder `segatools` is
+located under `C:\segatools` on Windows).
+* Build segatools: `make build-docker`
