@@ -9,7 +9,7 @@
 
 #include "board/io3.h"
 
-#include "chuniio/chuniio.h"
+#include "chunihook/chuni-dll.h"
 
 #include "jvs/jvs-bus.h"
 
@@ -47,9 +47,10 @@ HRESULT chunithm_jvs_init(struct jvs_node **out)
     HRESULT hr;
 
     assert(out != NULL);
+    assert(chuni_dll.jvs_init != NULL);
 
-    dprintf("JVS I/O: Starting Chunithm backend DLL\n");
-    hr = chuni_io_jvs_init();
+    dprintf("JVS I/O: Starting IO backend\n");
+    hr = chuni_dll.jvs_init();
 
     if (FAILED(hr)) {
         dprintf("JVS I/O: Backend error, I/O disconnected: %x\n", (int) hr);
@@ -70,11 +71,12 @@ static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     size_t i;
 
     assert(out != NULL);
+    assert(chuni_dll.jvs_poll != NULL);
 
     opbtn = 0;
     beams = 0;
 
-    chuni_io_jvs_poll(&opbtn, &beams);
+    chuni_dll.jvs_poll(&opbtn, &beams);
 
     out->system = 0x00;
     out->p1 = 0x0000;
@@ -105,10 +107,11 @@ static void chunithm_jvs_read_coin_counter(
         uint16_t *out)
 {
     assert(out != NULL);
+    assert(chuni_dll.jvs_read_coin_counter != NULL);
 
     if (slot_no > 0) {
         return;
     }
 
-    chuni_io_jvs_read_coin_counter(out);
+    chuni_dll.jvs_read_coin_counter(out);
 }
