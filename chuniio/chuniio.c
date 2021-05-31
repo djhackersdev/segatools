@@ -16,6 +16,11 @@ static HANDLE chuni_io_slider_thread;
 static bool chuni_io_slider_stop_flag;
 static struct chuni_io_config chuni_io_cfg;
 
+uint16_t chuni_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
 HRESULT chuni_io_jvs_init(void)
 {
     chuni_io_config_load(&chuni_io_cfg, L".\\segatools.ini");
