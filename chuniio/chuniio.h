@@ -1,5 +1,15 @@
 #pragma once
 
+/*
+   CHUNITHM CUSTOM IO API
+
+   Changelog:
+
+   - 0x0100: Initial API version (assumed if chuni_io_get_api_version is not
+     exported)
+   - 0x0101: Fix IR beam mappings
+*/
+
 #include <windows.h>
 
 #include <stdbool.h>
@@ -10,7 +20,7 @@
    the major version and the low byte is the minor version (as defined by the
    Semantic Versioning standard).
 
-   The latest API version as of this writing is 0x0100. */
+   The latest API version as of this writing is 0x0101. */
 
 uint16_t chuni_io_get_api_version(void);
 
@@ -41,7 +51,12 @@ HRESULT chuni_io_jvs_init(void);
    a gradual raising and lowering of the hands. Consult the proof-of-concept
    implementation for details.
 
-   Minimum API version: 0x0100 */
+   NOTE: Previous releases of Segatools mapped the IR beam inputs incorrectly.
+   Please ensure that you advertise an API version of at least 0x0101 so that
+   the correct mapping can be used.
+
+   Minimum API version: 0x0100
+   Latest API version: 0x0101 */
 
 void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams);
 
