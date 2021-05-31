@@ -5,13 +5,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/* Get the version of the Chunithm IO API that this DLL supports. This
+   function should return a positive 16-bit integer, where the high byte is
+   the major version and the low byte is the minor version (as defined by the
+   Semantic Versioning standard).
+
+   The latest API version as of this writing is 0x0100. */
+
+uint16_t chuni_io_get_api_version(void);
+
 /* Initialize JVS-based input. This function will be called before any other
    chuni_io_jvs_*() function calls. Errors returned from this function will
    manifest as a disconnected JVS bus.
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
-   your responsibility. */
+   your responsibility.
+
+   Minimum API version: 0x0100 */
 
 HRESULT chuni_io_jvs_init(void);
 
@@ -28,13 +39,17 @@ HRESULT chuni_io_jvs_init(void);
    Note that you cannot instantly break the entire IR grid in a single frame to
    simulate hand movement; this will be judged as a miss. You need to simulate
    a gradual raising and lowering of the hands. Consult the proof-of-concept
-   implementation for details. */
+   implementation for details.
+
+   Minimum API version: 0x0100 */
 
 void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams);
 
 /* Read the current state of the coin counter. This value should be incremented
    for every coin detected by the coin acceptor mechanism. This count does not
-   need to persist beyond the lifetime of the process. */
+   need to persist beyond the lifetime of the process.
+
+   Minimum API version: 0x0100 */
 
 void chuni_io_jvs_read_coin_counter(uint16_t *total);
 
@@ -49,7 +64,9 @@ void chuni_io_jvs_set_coin_blocker(bool open);
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
-   your responsibility. */
+   your responsibility.
+
+   Minimum API version: 0x0100 */
 
 HRESULT chuni_io_slider_init(void);
 
@@ -83,7 +100,9 @@ typedef void (*chuni_io_slider_callback_t)(const uint8_t *state);
    preferred interval then 1 kHz is a reasonable maximum frequency.
 
    Note that you do have to have to call the callback "occasionally" even if
-   nothing is changing, otherwise the game will raise a comm timeout error. */
+   nothing is changing, otherwise the game will raise a comm timeout error.
+
+   Minimum API version: 0x0100 */
 
 void chuni_io_slider_start(chuni_io_slider_callback_t callback);
 
@@ -96,13 +115,17 @@ void chuni_io_slider_start(chuni_io_slider_callback_t callback);
 
    Following on from the above, the slider polling loop *will* be restarted
    after being stopped in the course of regular operation. Do not permanently
-   tear down your input driver in response to this function call. */
+   tear down your input driver in response to this function call.
+
+   Minimum API version: 0x0100 */
 
 void chuni_io_slider_stop(void);
 
 /* Update the RGB lighting on the slider. A pointer to an array of 32 * 3 = 96
    bytes is supplied. The illuminated areas on the touch slider are some
    combination of rectangular regions and dividing lines between these regions
-   but the exact mapping of this lighting control buffer is still TBD. */
+   but the exact mapping of this lighting control buffer is still TBD.
+
+   Minimum API version: 0x0100 */
 
 void chuni_io_slider_set_leds(const uint8_t *rgb);
