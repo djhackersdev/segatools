@@ -75,6 +75,12 @@ static DWORD CALLBACK chuni_pre_startup(void)
         goto fail;
     }
 
+    hr = chuni_dll_init(&chuni_hook_cfg.dll, chuni_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
     hr = amex_hook_init(&chuni_hook_cfg.amex, chunithm_jvs_init);
 
     if (FAILED(hr)) {

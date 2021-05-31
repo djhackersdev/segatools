@@ -9,9 +9,8 @@
 #include "board/slider-cmd.h"
 #include "board/slider-frame.h"
 
+#include "chunihook/chuni-dll.h"
 #include "chunihook/slider.h"
-
-#include "chuniio/chuniio.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
@@ -41,6 +40,7 @@ static uint8_t slider_readable_bytes[520];
 HRESULT slider_hook_init(const struct slider_config *cfg)
 {
     assert(cfg != NULL);
+    assert(chuni_dll.slider_init != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
@@ -81,11 +81,11 @@ static HRESULT slider_handle_irp_locked(struct irp *irp)
     HRESULT hr;
 
     if (irp->op == IRP_OP_OPEN) {
-        dprintf("Chunithm slider: Starting backend DLL\n");
-        hr = chuni_io_slider_init();
+        dprintf("Chunithm slider: Starting backend\n");
+        hr = chuni_dll.slider_init();
 
         if (FAILED(hr)) {
-            dprintf("Chunithm slider: Backend DLL error: %x\n", (int) hr);
+            dprintf("Chunithm slider: Backend error: %x\n", (int) hr);
 
             return hr;
         }
@@ -189,8 +189,10 @@ static HRESULT slider_req_get_board_info(void)
 
 static HRESULT slider_req_auto_scan_start(void)
 {
+    assert(chuni_dll.slider_start != NULL);
+
     dprintf("Chunithm slider: Start slider notifications\n");
-    chuni_io_slider_start(slider_res_auto_scan);
+    chuni_dll.slider_start(slider_res_auto_scan);
 
     /* This message is not acknowledged */
 
@@ -201,6 +203,8 @@ static HRESULT slider_req_auto_scan_stop(void)
 {
     struct slider_hdr resp;
 
+    assert(chuni_dll.slider_stop != NULL);
+
     dprintf("Chunithm slider: Stop slider notifications\n");
 
     /* IO DLL worker thread might attempt to invoke the callback (which needs
@@ -209,7 +213,7 @@ static HRESULT slider_req_auto_scan_stop(void)
        situation. */
 
     LeaveCriticalSection(&slider_lock);
-    chuni_io_slider_stop();
+    chuni_dll.slider_stop();
     EnterCriticalSection(&slider_lock);
 
     resp.sync = SLIDER_FRAME_SYNC;
@@ -221,7 +225,9 @@ static HRESULT slider_req_auto_scan_stop(void)
 
 static HRESULT slider_req_set_led(const struct slider_req_set_led *req)
 {
-    chuni_io_slider_set_leds(req->payload.rgb);
+    assert(chuni_dll.slider_set_leds != NULL);
+
+    chuni_dll.slider_set_leds(req->payload.rgb);
 
     /* This message is not acknowledged */
 

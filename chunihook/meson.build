@@ -20,6 +20,8 @@ shared_library(
         util_lib,
     ],
     sources : [
+        'chuni-dll.c',
+        'chuni-dll.h',
         'config.c',
         'config.h',
         'dllmain.c',
