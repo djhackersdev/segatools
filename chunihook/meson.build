@@ -13,7 +13,7 @@ shared_library(
         aimeio_lib,
         amex_lib,
         board_lib,
-        chuniio_dll,
+        chuniio_lib,
         hooklib_lib,
         jvs_lib,
         platform_lib,
