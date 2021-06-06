@@ -16,6 +16,11 @@ static HANDLE diva_io_slider_thread;
 static bool diva_io_slider_stop_flag;
 static struct diva_io_config diva_io_cfg;
 
+uint16_t diva_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
 HRESULT diva_io_jvs_init(void)
 {
     diva_io_config_load(&diva_io_cfg, L".\\segatools.ini");
