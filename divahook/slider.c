@@ -8,9 +8,8 @@
 #include "board/slider-cmd.h"
 #include "board/slider-frame.h"
 
+#include "divahook/diva-dll.h"
 #include "divahook/slider.h"
-
-#include "divaio/divaio.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
@@ -80,9 +79,11 @@ static HRESULT slider_handle_irp_locked(struct irp *irp)
     struct iobuf req_iobuf;
     HRESULT hr;
 
+    assert(diva_dll.slider_init != NULL);
+
     if (irp->op == IRP_OP_OPEN) {
         dprintf("Diva slider: Starting backend DLL\n");
-        hr = diva_io_slider_init();
+        hr = diva_dll.slider_init();
 
         if (FAILED(hr)) {
             dprintf("Diva slider: Backend DLL error: %x\n", (int) hr);
@@ -207,8 +208,10 @@ static HRESULT slider_req_get_board_info(void)
 
 static HRESULT slider_req_auto_scan_start(void)
 {
+    assert(diva_dll.slider_start != NULL);
+
     dprintf("Diva slider: Start slider thread\n");
-    diva_io_slider_start(slider_res_auto_scan);
+    diva_dll.slider_start(slider_res_auto_scan);
 
     /* This message is not acknowledged */
 
@@ -219,6 +222,8 @@ static HRESULT slider_req_auto_scan_stop(void)
 {
     struct slider_hdr resp;
 
+    assert(diva_dll.slider_stop != NULL);
+
     dprintf("Diva slider: Stop slider thread\n");
 
     /* IO DLL worker thread might attempt to invoke the callback (which needs
@@ -227,7 +232,7 @@ static HRESULT slider_req_auto_scan_stop(void)
        situation. */
 
     LeaveCriticalSection(&slider_lock);
-    diva_io_slider_stop();
+    diva_dll.slider_stop();
     EnterCriticalSection(&slider_lock);
 
     resp.sync = SLIDER_FRAME_SYNC;
@@ -239,8 +244,10 @@ static HRESULT slider_req_auto_scan_stop(void)
 
 static HRESULT slider_req_set_led(const struct slider_req_set_led *req)
 {
+    assert(diva_dll.slider_set_leds != NULL);
+
     /* This message is not acknowledged */
-    diva_io_slider_set_leds(req->payload.rgb);
+    diva_dll.slider_set_leds(req->payload.rgb);
 
     return S_OK;
 }
