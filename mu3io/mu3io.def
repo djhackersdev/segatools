@@ -1,8 +1,0 @@
-LIBRARY mu3io
-
-EXPORTS
-    mu3_io_get_gamebtns
-    mu3_io_get_lever
-    mu3_io_get_opbtns
-    mu3_io_init
-    mu3_io_poll

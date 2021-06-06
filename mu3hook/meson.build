@@ -14,7 +14,7 @@ shared_library(
         aimeio_lib,
         board_lib,
         hooklib_lib,
-        mu3io_dll,
+        mu3io_lib,
         platform_lib,
         util_lib,
     ],
