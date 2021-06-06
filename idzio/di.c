@@ -98,10 +98,11 @@ HRESULT idz_di_init(
     }
 
     /* Initial D Zero has some built-in DirectInput support that is not
-       particularly useful. We short this out by dropping a no-op dinput8.dll
-       into the install directory. However, this DLL does need to talk to the
-       real operating system implementation of DirectInput without the stub DLL
-       interfering, so build a path to C:\Windows\System32\dinput.dll here. */
+       particularly useful. idzhook shorts this out by redirecting dinput8.dll
+       to a no-op implementation of DirectInput. However, idzio does need to
+       talk to the real operating system implementation of DirectInput without
+       the stub DLL interfering, so build a path to
+       C:\Windows\System32\dinput.dll here. */
 
     dll_path[0] = L'\0';
     path_pos = GetSystemDirectoryW(dll_path, _countof(dll_path));
