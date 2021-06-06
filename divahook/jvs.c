@@ -9,7 +9,7 @@
 
 #include "board/io3.h"
 
-#include "divaio/divaio.h"
+#include "divahook/diva-dll.h"
 
 #include "jvs/jvs-bus.h"
 
@@ -33,9 +33,10 @@ HRESULT diva_jvs_init(struct jvs_node **out)
     HRESULT hr;
 
     assert(out != NULL);
+    assert(diva_dll.jvs_init != NULL);
 
     dprintf("JVS I/O: Starting Diva backend DLL\n");
-    hr = diva_io_jvs_init();
+    hr = diva_dll.jvs_init();
 
     if (FAILED(hr)) {
         dprintf("JVS I/O: Backend error, I/O disconnected: %x\n", (int) hr);
@@ -55,11 +56,12 @@ static void diva_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     uint8_t gamebtn;
 
     assert(out != NULL);
+    assert(diva_dll.jvs_poll != NULL);
 
     opbtn = 0;
     gamebtn = 0;
 
-    diva_io_jvs_poll(&opbtn, &gamebtn);
+    diva_dll.jvs_poll(&opbtn, &gamebtn);
 
     if (gamebtn & 0x01) {
         out->p1 |= 1 << 6;
@@ -97,9 +99,11 @@ static void diva_jvs_read_coin_counter(
         uint8_t slot_no,
         uint16_t *out)
 {
+    assert(diva_dll.jvs_read_coin_counter != NULL);
+
     if (slot_no > 0) {
         return;
     }
 
-    diva_io_jvs_read_coin_counter(out);
+    diva_dll.jvs_read_coin_counter(out);
 }

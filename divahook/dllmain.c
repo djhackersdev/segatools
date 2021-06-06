@@ -7,6 +7,7 @@
 #include "board/sg-reader.h"
 
 #include "divahook/config.h"
+#include "divahook/diva-dll.h"
 #include "divahook/jvs.h"
 #include "divahook/slider.h"
 
@@ -45,6 +46,12 @@ static DWORD CALLBACK diva_pre_startup(void)
             "SBZV",
             "AAV0",
             diva_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = diva_dll_init(&diva_hook_cfg.dll, diva_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

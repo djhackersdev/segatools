@@ -22,6 +22,8 @@ shared_library(
     sources : [
         'config.c',
         'config.h',
+        'diva-dll.c',
+        'diva-dll.h',
         'dllmain.c',
         'jvs.c',
         'jvs.h',
