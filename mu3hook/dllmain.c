@@ -13,6 +13,7 @@
 
 #include "mu3hook/config.h"
 #include "mu3hook/io4.h"
+#include "mu3hook/mu3-dll.h"
 #include "mu3hook/unity.h"
 
 #include "platform/platform.h"
@@ -57,6 +58,12 @@ static DWORD CALLBACK mu3_pre_startup(void)
     }
 
     hr = vfd_hook_init(2);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = mu3_dll_init(&mu3_hook_cfg.dll, mu3_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

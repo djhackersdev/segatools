@@ -6,7 +6,7 @@
 
 #include "board/io4.h"
 
-#include "mu3io/mu3io.h"
+#include "mu3hook/mu3-dll.h"
 
 #include "util/dprintf.h"
 
@@ -20,13 +20,15 @@ HRESULT mu3_io4_hook_init(void)
 {
     HRESULT hr;
 
+    assert(mu3_dll.init != NULL);
+
     hr = io4_hook_init(&mu3_io4_ops, NULL);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    return mu3_io_init();
+    return mu3_dll.init();
 }
 
 static HRESULT mu3_io4_poll(void *ctx, struct io4_state *state)
@@ -37,9 +39,14 @@ static HRESULT mu3_io4_poll(void *ctx, struct io4_state *state)
     int16_t lever;
     HRESULT hr;
 
+    assert(mu3_dll.poll != NULL);
+    assert(mu3_dll.get_opbtns != NULL);
+    assert(mu3_dll.get_gamebtns != NULL);
+    assert(mu3_dll.get_lever != NULL);
+
     memset(state, 0, sizeof(*state));
 
-    hr = mu3_io_poll();
+    hr = mu3_dll.poll();
 
     if (FAILED(hr)) {
         return hr;
@@ -50,9 +57,9 @@ static HRESULT mu3_io4_poll(void *ctx, struct io4_state *state)
     right = 0;
     lever = 0;
 
-    mu3_io_get_opbtns(&opbtn);
-    mu3_io_get_gamebtns(&left, &right);
-    mu3_io_get_lever(&lever);
+    mu3_dll.get_opbtns(&opbtn);
+    mu3_dll.get_gamebtns(&left, &right);
+    mu3_dll.get_lever(&lever);
 
     if (opbtn & MU3_IO_OPBTN_TEST) {
         state->buttons[0] |= IO4_BUTTON_TEST;
