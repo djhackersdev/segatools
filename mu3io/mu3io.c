@@ -12,6 +12,11 @@ static uint8_t mu3_right_btn;
 static int16_t mu3_lever_pos;
 static int16_t mu3_lever_xpos;
 
+uint16_t mu3_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
 HRESULT mu3_io_init(void)
 {
     return S_OK;

@@ -17,6 +17,8 @@ enum {
     MU3_IO_GAMEBTN_MENU = 0x10,
 };
 
+uint16_t mu3_io_get_api_version(void);
+
 HRESULT mu3_io_init(void);
 
 HRESULT mu3_io_poll(void);
