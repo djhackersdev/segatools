@@ -513,7 +513,7 @@ static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
     } else {
         out->brake = 65535 - *brake;
     }
-    
+
     if (idz_di_reverse_accel_axis) {
         out->accel = *accel;
     } else {
