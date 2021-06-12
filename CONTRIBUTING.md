@@ -32,6 +32,15 @@ report
 are mandatory to provide a comprehensive report if not stated otherwise
 1. When finished, submit the issue
 
+## Git history
+
+The project is aiming for a linear git history approach since we are convinced that it beneifts
+maintenance of the project a lot in the long term.
+
+For further details on that topic, please refer to
+[the many external articles](https://dev.to/bladesensei/avoid-messy-git-history-3g26) available
+about this topic by using your favorite search engine.
+
 ## Merge requests: bugfixes, new features or other code contributions
 
 Merge requests are welcome! May it be a merge request to an already known issue or a new feature that
