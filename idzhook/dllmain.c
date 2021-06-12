@@ -13,6 +13,7 @@
 #include "hooklib/spike.h"
 
 #include "idzhook/config.h"
+#include "idzhook/idz-dll.h"
 #include "idzhook/jvs.h"
 #include "idzhook/zinput.h"
 
@@ -46,6 +47,12 @@ static DWORD CALLBACK idz_pre_startup(void)
             "SDDF",
             "AAV2",
             idz_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = idz_dll_init(&idz_hook_cfg.dll, idz_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

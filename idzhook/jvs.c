@@ -8,9 +8,8 @@
 
 #include "board/io3.h"
 
+#include "idzhook/idz-dll.h"
 #include "idzhook/jvs.h"
-
-#include "idzio/idzio.h"
 
 #include "jvs/jvs-bus.h"
 
@@ -56,9 +55,10 @@ HRESULT idz_jvs_init(struct jvs_node **out)
     HRESULT hr;
 
     assert(out != NULL);
+    assert(idz_dll.jvs_init != NULL);
 
     dprintf("JVS I/O: Starting Initial D Zero backend DLL\n");
-    hr = idz_io_jvs_init();
+    hr = idz_dll.jvs_init();
 
     if (FAILED(hr)) {
         dprintf("JVS I/O: Backend error, I/O disconnected; %x\n", (int) hr);
@@ -79,13 +79,15 @@ static void idz_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     uint8_t gear;
 
     assert(out != NULL);
+    assert(idz_dll.jvs_read_buttons != NULL);
+    assert(idz_dll.jvs_read_shifter != NULL);
 
     opbtn = 0;
     gamebtn = 0;
     gear = 0;
 
-    idz_io_jvs_read_buttons(&opbtn, &gamebtn);
-    idz_io_jvs_read_shifter(&gear);
+    idz_dll.jvs_read_buttons(&opbtn, &gamebtn);
+    idz_dll.jvs_read_shifter(&gear);
 
     /* Update gameplay buttons */
 
@@ -142,9 +144,10 @@ static void idz_jvs_read_analogs(
     struct idz_io_analog_state state;
 
     assert(analogs != NULL);
+    assert(idz_dll.jvs_read_analogs != NULL);
 
     memset(&state, 0, sizeof(state));
-    idz_io_jvs_read_analogs(&state);
+    idz_dll.jvs_read_analogs(&state);
 
     if (nanalogs > 0) {
         analogs[0] = 0x8000 + state.wheel;
@@ -164,9 +167,11 @@ static void idz_jvs_read_coin_counter(
         uint8_t slot_no,
         uint16_t *out)
 {
+    assert(idz_dll.jvs_read_coin_counter != NULL);
+
     if (slot_no > 0) {
         return;
     }
 
-    idz_io_jvs_read_coin_counter(out);
+    idz_dll.jvs_read_coin_counter(out);
 }

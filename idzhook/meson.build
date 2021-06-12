@@ -24,6 +24,8 @@ shared_library(
         'config.c',
         'config.h',
         'dllmain.c',
+        'idz-dll.c',
+        'idz-dll.h',
         'jvs.c',
         'jvs.h',
         'zinput.c',
