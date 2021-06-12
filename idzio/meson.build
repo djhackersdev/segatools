@@ -1,9 +1,8 @@
-idzio_dll = shared_library(
+idzio_lib = static_library(
     'idzio',
     name_prefix : '',
     include_directories : inc,
     implicit_include_directories : false,
-    vs_module_defs : 'idzio.def',
     c_pch : '../precompiled.h',
     dependencies : [
         dinput8_lib,
