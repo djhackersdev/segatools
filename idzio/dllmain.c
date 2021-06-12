@@ -18,6 +18,11 @@ static const struct idz_io_backend *idz_io_backend;
 static bool idz_io_coin;
 static uint16_t idz_io_coins;
 
+uint16_t idz_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
 HRESULT idz_io_jvs_init(void)
 {
     HINSTANCE inst;
