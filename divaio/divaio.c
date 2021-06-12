@@ -72,9 +72,6 @@ void diva_io_jvs_read_coin_counter(uint16_t *out)
     *out = diva_io_coins;
 }
 
-void diva_io_jvs_set_coin_blocker(bool open)
-{}
-
 HRESULT diva_io_slider_init(void)
 {
     return S_OK;
