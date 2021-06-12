@@ -75,9 +75,6 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
     }
 }
 
-void chuni_io_jvs_set_coin_blocker(bool open)
-{}
-
 HRESULT chuni_io_slider_init(void)
 {
     return S_OK;

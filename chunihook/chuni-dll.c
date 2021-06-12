@@ -19,9 +19,6 @@ const struct dll_bind_sym chuni_dll_syms[] = {
         .sym = "chuni_io_jvs_read_coin_counter",
         .off = offsetof(struct chuni_dll, jvs_read_coin_counter),
     }, {
-        .sym = "chuni_io_jvs_set_coin_blocker",
-        .off = offsetof(struct chuni_dll, jvs_set_coin_blocker),
-    }, {
         .sym = "chuni_io_slider_init",
         .off = offsetof(struct chuni_dll, slider_init),
     }, {

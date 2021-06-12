@@ -47,12 +47,6 @@ void diva_io_jvs_poll(uint8_t *opbtn, uint8_t *gamebtn);
 
 void diva_io_jvs_read_coin_counter(uint16_t *out);
 
-/* Set the state of the coin blocker. Parameter is true if the blocker is
-   disengaged (i.e. coins can be inserted) and false if the blocker is engaged
-   (i.e. the coin slot should be physically blocked). */
-
-void diva_io_jvs_set_coin_blocker(bool open);
-
 /* Initialize touch slider emulation. This function will be called before any
    other diva_io_slider_*() function calls.
 

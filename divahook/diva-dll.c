@@ -19,9 +19,6 @@ const struct dll_bind_sym diva_dll_syms[] = {
         .sym = "diva_io_jvs_read_coin_counter",
         .off = offsetof(struct diva_dll, jvs_read_coin_counter),
     }, {
-        .sym = "diva_io_jvs_set_coin_blocker",
-        .off = offsetof(struct diva_dll, jvs_set_coin_blocker),
-    }, {
         .sym = "diva_io_slider_init",
         .off = offsetof(struct diva_dll, slider_init),
     }, {
