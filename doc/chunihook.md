@@ -41,7 +41,7 @@ amfs=../../amfs
 appdata=../../appdata
 option=../../option
 ```
-1. In the `[dns]` section, set `default=` to your computer's hostname or LAN IP. Do not put 
+1. In the `[dns]` section, set `default=` to your computer's hostname or LAN IP. Do not put
 `127.0.0.1` here, the game specifically checks for and rejects loopback addresses. This setting
 controls the address of the network services server
 1. Right click `start.bat` in `app/bin` and run it as Administrator. I think you need to run it as
@@ -82,12 +82,12 @@ you do this.
 ## Segatools configuration
 
 Configurable settings are exposed in the `segatools.ini` file. For a detailed description, please
-refer to [this document](config/chunihook.md).
+refer to [this document](doc/config/common.md).
 
 ## Chunithm specific configuration
 
 For configuring chuinthm specific features, e.g. IO, please refer to
-[this document](doc/chunithm.md).
+[this document](doc/config/chunithm.md).
 
 ## FAQ
 
@@ -116,4 +116,4 @@ This requires additional server support which might not be implemented currently
 ### How do I unlock a character other than the penguin?
 
 Pick any map other than the default. You will see characters available as potential rewards for
-those maps. 
+those maps.
