@@ -34,7 +34,7 @@ HRESULT idz_io_jvs_init(void)
 
     if (inst == NULL) {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        dprintf("GetModuleHandleW failed: %x\n", hr);
+        dprintf("GetModuleHandleW failed: %lx\n", hr);
 
         return hr;
     }

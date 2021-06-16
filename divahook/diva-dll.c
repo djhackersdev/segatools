@@ -57,7 +57,7 @@ HRESULT diva_dll_init(const struct diva_dll_config *cfg, HINSTANCE self)
 
         if (owned == NULL) {
             hr = HRESULT_FROM_WIN32(GetLastError());
-            dprintf("Diva IO: Failed to load IO DLL: %x: %S\n",
+            dprintf("Diva IO: Failed to load IO DLL: %lx: %S\n",
                     hr,
                     cfg->path);
 
