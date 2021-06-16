@@ -8,7 +8,7 @@
 
 #include "hook/process.h"
 
-#include "hooklib/gfx.h"
+#include "hooklib/dvd.h"
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
@@ -39,6 +39,7 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     serial_hook_init();
     zinput_hook_init(&idz_hook_cfg.zinput);
+    dvd_hook_init(&idz_hook_cfg.dvd, idz_hook_mod);
 
     /* Initialize emulation hooks */
 

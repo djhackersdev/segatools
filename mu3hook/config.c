@@ -4,6 +4,7 @@
 #include "board/config.h"
 
 #include "hooklib/config.h"
+#include "hooklib/dvd.h"
 #include "hooklib/gfx.h"
 
 #include "mu3hook/config.h"
@@ -35,6 +36,7 @@ void mu3_hook_config_load(
 
     platform_config_load(&cfg->platform, filename);
     aime_config_load(&cfg->aime, filename);
+    dvd_config_load(&cfg->dvd, filename);
     gfx_config_load(&cfg->gfx, filename);
     mu3_dll_config_load(&cfg->dll, filename);
 }

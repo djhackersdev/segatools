@@ -13,6 +13,8 @@ hooklib_lib = static_library(
         'dll.h',
         'dns.c',
         'dns.h',
+        'dvd.c',
+        'dvd.h',
         'fdshark.c',
         'fdshark.h',
         'gfx.c',
