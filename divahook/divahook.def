@@ -1,7 +1,6 @@
 LIBRARY divahook
 
 EXPORTS
-    Direct3DCreate9
     aime_io_get_api_version
     aime_io_init
     aime_io_led_set_color
