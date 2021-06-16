@@ -7,6 +7,9 @@
 #include "board/config.h"
 #include "board/sg-reader.h"
 
+#include "hooklib/config.h"
+#include "hooklib/dvd.h"
+
 #include "idzhook/config.h"
 #include "idzhook/idz-dll.h"
 
@@ -41,6 +44,7 @@ void idz_hook_config_load(
     aime_config_load(&cfg->aime, filename);
     idz_dll_config_load(&cfg->dll, filename);
     zinput_config_load(&cfg->zinput, filename);
+    dvd_config_load(&cfg->dvd, filename);
 }
 
 void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)

@@ -8,6 +8,7 @@
 
 #include "hook/process.h"
 
+#include "hooklib/dvd.h"
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
@@ -36,6 +37,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
 
     /* Hook Win32 APIs */
 
+    dvd_hook_init(&mu3_hook_cfg.dvd, mu3_hook_mod);
     gfx_hook_init(&mu3_hook_cfg.gfx, mu3_hook_mod);
     serial_hook_init();
 
