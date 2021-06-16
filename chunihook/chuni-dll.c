@@ -57,7 +57,7 @@ HRESULT chuni_dll_init(const struct chuni_dll_config *cfg, HINSTANCE self)
 
         if (owned == NULL) {
             hr = HRESULT_FROM_WIN32(GetLastError());
-            dprintf("Chunithm IO: Failed to load IO DLL: %x: %S\n",
+            dprintf("Chunithm IO: Failed to load IO DLL: %lx: %S\n",
                     hr,
                     cfg->path);
 

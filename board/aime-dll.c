@@ -51,7 +51,7 @@ HRESULT aime_dll_init(const struct aime_dll_config *cfg, HINSTANCE self)
 
         if (owned == NULL) {
             hr = HRESULT_FROM_WIN32(GetLastError());
-            dprintf("NFC Assembly: Failed to load IO DLL: %x: %S\n",
+            dprintf("NFC Assembly: Failed to load IO DLL: %lx: %S\n",
                     hr,
                     cfg->path);
 

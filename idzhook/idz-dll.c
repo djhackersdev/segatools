@@ -51,7 +51,7 @@ HRESULT idz_dll_init(const struct idz_dll_config *cfg, HINSTANCE self)
 
         if (owned == NULL) {
             hr = HRESULT_FROM_WIN32(GetLastError());
-            dprintf("IDZ IO: Failed to load IO DLL: %x: %S\n",
+            dprintf("IDZ IO: Failed to load IO DLL: %lx: %S\n",
                     hr,
                     cfg->path);
 
