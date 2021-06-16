@@ -18,6 +18,7 @@ if meson.get_compiler('c').get_id() != 'msvc'
     )
 
     add_project_link_arguments(
+        '-Wl,--enable-stdcall-fixup',
         '-Wl,--exclude-all-symbols',
         '-Wl,--gc-sections',
         '-static-libgcc',
