@@ -13,7 +13,7 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * [Chunithm Amazon (Plus)](doc/chunihook.md)
   * [Chunithm Crystal (Plus)](doc/chunihook.md)
 * Initial D
-  * Initial D Zero
+  * [Initial D Arcade Stage Zero](doc/idzhook.md)
 
 ## End-users
 
