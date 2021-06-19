@@ -31,6 +31,7 @@ $(BUILD_DIR_ZIP)/idz.zip:
 $(BUILD_DIR_ZIP)/doc.zip: \
 		$(DOC_DIR)/config \
 		$(DOC_DIR)/chunihook.md \
+		$(DOC_DIR)/idzhook.md \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -r $@ $^
