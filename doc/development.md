@@ -6,7 +6,7 @@ you start developing/contributing.
 ## Goals
 
 We want you to understand what this project is about and its goals. The following list serves as a guidance for all
-developers to identify valuable contributions for this project. As the project evolves, these gaols might do as well.
+developers to identify valuable contributions for this project. As the project evolves, these goals might do as well.
 
 * Allow running Sega arcade (rhythm) games on arbitrary hardware
   * Emulate required software and hardware features
