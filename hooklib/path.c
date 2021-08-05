@@ -93,6 +93,10 @@ static BOOL WINAPI hook_GetFileAttributesExW(
         GET_FILEEX_INFO_LEVELS fInfoLevelId,
         void *lpFileInformation);
 
+static BOOL WINAPI hook_RemoveDirectoryA(const char *lpFileName);
+
+static BOOL WINAPI hook_RemoveDirectoryW(const wchar_t *lpFileName);
+
 /* Link pointers */
 
 static BOOL (WINAPI *next_CreateDirectoryA)(
@@ -169,6 +173,10 @@ static BOOL (WINAPI *next_GetFileAttributesExW)(
         GET_FILEEX_INFO_LEVELS fInfoLevelId,
         void *lpFileInformation);
 
+static BOOL (WINAPI *next_RemoveDirectoryA)(const char *lpFileName);
+
+static BOOL (WINAPI *next_RemoveDirectoryW)(const wchar_t *lpFileName);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -228,6 +236,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "GetFileAttributesExW",
         .patch  = hook_GetFileAttributesExW,
         .link   = (void **) &next_GetFileAttributesExW,
+    }, {
+        .name   = "RemoveDirectoryA",
+        .patch  = hook_RemoveDirectoryA,
+        .link   = (void **) &next_RemoveDirectoryA,
+    }, {
+        .name   = "RemoveDirectoryW",
+        .patch  = hook_RemoveDirectoryW,
+        .link   = (void **) &next_RemoveDirectoryW,
     }
 };
 
@@ -797,6 +813,42 @@ static BOOL WINAPI hook_GetFileAttributesExW(
             trans ? trans : lpFileName,
             fInfoLevelId,
             lpFileInformation);
+
+    free(trans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_RemoveDirectoryA(const char *lpFileName)
+{
+    char *trans;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, lpFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_RemoveDirectoryA(trans ? trans : lpFileName);
+
+    free(trans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_RemoveDirectoryW(const wchar_t *lpFileName)
+{
+    wchar_t *trans;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_RemoveDirectoryW(trans ? trans : lpFileName);
 
     free(trans);
 
