@@ -29,6 +29,8 @@ static HMODULE WINAPI hook_GetModuleHandleA(const char *name);
 static HMODULE WINAPI hook_GetModuleHandleW(const wchar_t *name);
 static HMODULE WINAPI hook_LoadLibraryA(const char *name);
 static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name);
+static HMODULE WINAPI hook_LoadLibraryExA(const char *name, HANDLE file, DWORD flags);
+static HMODULE WINAPI hook_LoadLibraryExW(const wchar_t *name, HANDLE file, DWORD flags);
 
 /* Link pointers */
 
@@ -37,6 +39,8 @@ static HMODULE (WINAPI *next_GetModuleHandleA)(const char *name);
 static HMODULE (WINAPI *next_GetModuleHandleW)(const wchar_t *name);
 static HMODULE (WINAPI *next_LoadLibraryA)(const char *name);
 static HMODULE (WINAPI *next_LoadLibraryW)(const wchar_t *name);
+static HMODULE (WINAPI *next_LoadLibraryExA)(const char *name, HANDLE file, DWORD flags);
+static HMODULE (WINAPI *next_LoadLibraryExW)(const wchar_t *name, HANDLE file, DWORD flags);
 
 static const struct hook_symbol dll_loader_syms[] = {
     {
@@ -59,6 +63,14 @@ static const struct hook_symbol dll_loader_syms[] = {
         .name   = "LoadLibraryW",
         .patch  = hook_LoadLibraryW,
         .link   = (void **) &next_LoadLibraryW,
+    }, {
+        .name   = "LoadLibraryExA",
+        .patch  = hook_LoadLibraryExA,
+        .link   = (void **) &next_LoadLibraryExA,
+    }, {
+        .name   = "LoadLibraryExW",
+        .patch  = hook_LoadLibraryExW,
+        .link   = (void **) &next_LoadLibraryExW,
     }
 };
 
@@ -287,4 +299,51 @@ static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
     return result;
 }
 
-/* TODO LoadLibraryExA, LoadLibraryExW */
+static HMODULE WINAPI hook_LoadLibraryExA(const char *name, HANDLE file, DWORD flags)
+{
+    HMODULE result;
+    wchar_t *name_w;
+    size_t name_c;
+
+    if (name == NULL) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+
+        return NULL;
+    }
+
+    mbstowcs_s(&name_c, NULL, 0, name, 0);
+    name_w = malloc(name_c * sizeof(wchar_t));
+
+    if (name_w == NULL) {
+        SetLastError(ERROR_OUTOFMEMORY);
+
+        return NULL;
+    }
+
+    mbstowcs_s(NULL, name_w, name_c, name, name_c - 1);
+    result = hook_LoadLibraryExW(name_w, file, flags);
+    free(name_w);
+
+    return result;
+}
+
+static HMODULE WINAPI hook_LoadLibraryExW(const wchar_t *name, HANDLE file, DWORD flags)
+{
+    HMODULE result;
+
+    if (name == NULL) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+
+        return NULL;
+    }
+
+    result = dll_hook_search_dll(name);
+
+    if (result != NULL) {
+        SetLastError(ERROR_SUCCESS);
+    } else {
+        result = next_LoadLibraryExW(name, file, flags);
+    }
+
+    return result;
+}
