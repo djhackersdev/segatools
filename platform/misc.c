@@ -5,15 +5,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hook/table.h"
+
 #include "hooklib/reg.h"
 
 #include "platform/misc.h"
+
+#include "util/dprintf.h"
+
+static BOOL WINAPI misc_ExitWindowsEx(unsigned int flags, uint32_t reason);
 
 static HRESULT misc_read_os_version(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_app_loader_count(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_cpu_temp_error(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_cpu_temp_warning(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_platform_id(void *bytes, uint32_t *nbytes);
+
+static const struct hook_symbol misc_syms[] = {
+    {
+        .name   = "ExitWindowsEx",
+        .patch  = misc_ExitWindowsEx,
+    }
+};
 
 static const struct reg_hook_val misc_root_keys[] = {
     {
@@ -109,7 +122,18 @@ HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
         return hr;
     }
 
+    /* Apply function hooks */
+
+    hook_table_apply(NULL, "user32.dll", misc_syms, _countof(misc_syms));
+
     return S_OK;
+}
+
+static BOOL WINAPI misc_ExitWindowsEx(unsigned int flags, uint32_t reason)
+{
+    dprintf("Misc: Blocked system reboot\n");
+
+    return TRUE;
 }
 
 static HRESULT misc_read_os_version(void *bytes, uint32_t *nbytes)
