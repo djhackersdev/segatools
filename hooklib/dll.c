@@ -131,7 +131,8 @@ static void dll_hook_init(void)
     InitializeCriticalSection(&dll_hook_lock);
 
     /* Protect against the (probably impossible) scenario where nothing in the
-       process imports LoadLibraryW but something imports LoadLibraryA.
+       process imports LoadLibraryW but something imports LoadLibraryA. Also
+       do the same with LoadLibraryExW.
 
        We know something imports GetModuleHandleW because we do, right here.
 
@@ -140,6 +141,7 @@ static void dll_hook_init(void)
 
     kernel32 = GetModuleHandleW(L"kernel32.dll");
     next_LoadLibraryW = (void *) GetProcAddress(kernel32, "LoadLibraryW");
+    next_LoadLibraryExW = (void *) GetProcAddress(kernel32, "LoadLibraryExW");
 
     /* Now we can apply the hook table */
 
