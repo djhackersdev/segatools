@@ -11,6 +11,7 @@ EXPORTS
     amDllVideoGetVBiosVersion @4
     amDllVideoOpen @1
     amDllVideoSetResolution @3
+    idz_io_get_api_version
     idz_io_jvs_init
     idz_io_jvs_read_analogs
     idz_io_jvs_read_buttons
