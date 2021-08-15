@@ -12,6 +12,7 @@ EXPORTS
     amDllVideoGetVBiosVersion @4
     amDllVideoOpen @1
     amDllVideoSetResolution @3
+    mu3_io_get_api_version
     mu3_io_get_gamebtns
     mu3_io_get_lever
     mu3_io_get_opbtns
