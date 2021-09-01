@@ -22,8 +22,9 @@
 #pragma pack(push, 1)
 
 enum {
-    DS_IOCTL_SETUP          = 0x80006004,
-    DS_IOCTL_READ_SECTOR    = 0x80006010,
+    DS_IOCTL_GET_ABI_VERSION = 0x80006000,
+    DS_IOCTL_SETUP           = 0x80006004,
+    DS_IOCTL_READ_SECTOR     = 0x80006010,
 };
 
 struct ds_eeprom {
@@ -44,6 +45,7 @@ static HRESULT ds_handle_close(struct irp *irp);
 static HRESULT ds_handle_ioctl(struct irp *irp);
 
 static HRESULT ds_ioctl_get_geometry(struct irp *irp);
+static HRESULT ds_ioctl_get_abi_version(struct irp *irp);
 static HRESULT ds_ioctl_setup(struct irp *irp);
 static HRESULT ds_ioctl_read_sector(struct irp *irp);
 
@@ -134,6 +136,9 @@ static HRESULT ds_handle_ioctl(struct irp *irp)
     case IOCTL_DISK_GET_DRIVE_GEOMETRY:
         return ds_ioctl_get_geometry(irp);
 
+    case DS_IOCTL_GET_ABI_VERSION:
+        return ds_ioctl_get_abi_version(irp);
+
     case DS_IOCTL_SETUP:
         return ds_ioctl_setup(irp);
 
@@ -171,6 +176,11 @@ static HRESULT ds_ioctl_get_geometry(struct irp *irp)
     }
 
     return hr;
+}
+
+static HRESULT ds_ioctl_get_abi_version(struct irp *irp)
+{
+    return iobuf_write_le16(&irp->read, 256);
 }
 
 static HRESULT ds_ioctl_setup(struct irp *irp)
