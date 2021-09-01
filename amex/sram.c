@@ -20,12 +20,17 @@
 #include "util/dprintf.h"
 #include "util/str.h"
 
+enum {
+    SRAM_IOCTL_GET_ABI_VERSION = 0x80006000,
+};
+
 static HRESULT sram_handle_irp(struct irp *irp);
 static HRESULT sram_handle_open(struct irp *irp);
 static HRESULT sram_handle_close(struct irp *irp);
 static HRESULT sram_handle_ioctl(struct irp *irp);
 
 static HRESULT sram_ioctl_get_geometry(struct irp *irp);
+static HRESULT sram_ioctl_get_abi_version(struct irp *irp);
 
 static struct sram_config sram_config;
 static HANDLE sram_file;
@@ -113,6 +118,9 @@ static HRESULT sram_handle_ioctl(struct irp *irp)
     case IOCTL_DISK_GET_DRIVE_GEOMETRY:
         return sram_ioctl_get_geometry(irp);
 
+    case SRAM_IOCTL_GET_ABI_VERSION:
+        return sram_ioctl_get_abi_version(irp);
+
     default:
         dprintf("SRAM: Unknown ioctl %x, write %i read %i\n",
                 irp->ioctl,
@@ -144,4 +152,9 @@ static HRESULT sram_ioctl_get_geometry(struct irp *irp)
     }
 
     return hr;
+}
+
+static HRESULT sram_ioctl_get_abi_version(struct irp *irp)
+{
+    return iobuf_write_le16(&irp->read, 256);
 }
