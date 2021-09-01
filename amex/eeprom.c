@@ -20,6 +20,10 @@
 #include "util/dprintf.h"
 #include "util/str.h"
 
+enum {
+    EEPROM_IOCTL_GET_ABI_VERSION = 0x80006000,
+};
+
 static HRESULT eeprom_handle_irp(struct irp *irp);
 static HRESULT eeprom_handle_open(struct irp *irp);
 static HRESULT eeprom_handle_close(struct irp *irp);
@@ -28,6 +32,7 @@ static HRESULT eeprom_handle_read(struct irp *irp);
 static HRESULT eeprom_handle_write(struct irp *irp);
 
 static HRESULT eeprom_ioctl_get_geometry(struct irp *irp);
+static HRESULT eeprom_ioctl_get_abi_version(struct irp *irp);
 
 static struct eeprom_config eeprom_config;
 static HANDLE eeprom_file;
@@ -117,6 +122,9 @@ static HRESULT eeprom_handle_ioctl(struct irp *irp)
     case IOCTL_DISK_GET_DRIVE_GEOMETRY:
         return eeprom_ioctl_get_geometry(irp);
 
+    case EEPROM_IOCTL_GET_ABI_VERSION:
+        return eeprom_ioctl_get_abi_version(irp);
+
     default:
         dprintf("EEPROM: Unknown ioctl %x, write %i read %i\n",
                 irp->ioctl,
@@ -148,6 +156,11 @@ static HRESULT eeprom_ioctl_get_geometry(struct irp *irp)
     }
 
     return hr;
+}
+
+static HRESULT eeprom_ioctl_get_abi_version(struct irp *irp)
+{
+    return iobuf_write_le16(&irp->read, 256);
 }
 
 static HRESULT eeprom_handle_read(struct irp *irp)
