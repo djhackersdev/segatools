@@ -31,9 +31,12 @@ uint64_t felica_get_generic_PMm(void)
     /* A FeliCa PMm contains low-level protocol timing information for
        communicating with a particular IC card. The exact values are not
        particularly important for our purposes, so we'll just return a hard-
-       coded PMm. This was taken from a SuiCa train pass I bought in Japan. */
+       coded PMm. This current value has been taken from an iPhone, emulating
+       a suica pass via apple wallet, which seems to be one of the few
+       universally accepted felica types for these games. Certain older
+       suica passes etc do not seem to be supported anymore. */
 
-    return 0x053143454682B7FFULL;
+    return 0x01168B868FBECBFFULL;
 }
 
 HRESULT felica_transact(
