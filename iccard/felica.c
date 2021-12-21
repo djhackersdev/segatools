@@ -32,9 +32,10 @@ uint64_t felica_get_generic_PMm(void)
        communicating with a particular IC card. The exact values are not
        particularly important for our purposes, so we'll just return a hard-
        coded PMm. This current value has been taken from an iPhone, emulating
-       a suica pass via apple wallet, which seems to be one of the few
-       universally accepted felica types for these games. Certain older
-       suica passes etc do not seem to be supported anymore. */
+       a Suica pass via Apple Wallet, which seems to be one of the few
+       universally accepted FeliCa types for these games. Certain older
+       Suica passes and other payment and transportation cards
+       do not seem to be supported anymore. */
 
     return 0x01168B868FBECBFFULL;
 }
