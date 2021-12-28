@@ -5,6 +5,19 @@ This file describes configuration settings specific to Chunithm.
 Keyboard binding settings use
 [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
 
+## `[chuniio]`
+
+Controls the input driver.
+
+### `path`
+
+Specify a path for a third-party Chunithm input driver DLL. Default is empty
+(use built-in keyboard IO emulation).
+
+In previous versions of Segatools this was accomplished by replacing the
+CHUNIIO.DLL file that came with Segatools. Segatools no longer ships with a
+separate CHUNIIO.DLL file (its functionality is now built into CHUNIHOOK.DLL).
+
 ## `[io3]`
 
 Cabinet specific inputs.
