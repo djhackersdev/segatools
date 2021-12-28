@@ -6,6 +6,19 @@ Zero.
 Keyboard binding settings use
 [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
 
+## `[idzio]`
+
+Controls the input driver.
+
+### `path`
+
+Specify a path for a third-party Initial D Zero input driver DLL. Default is
+empty (use built-in DirectInput and XInput based IO emulation).
+
+In previous versions of Segatools this was accomplished by replacing the
+IDZIO.DLL file that came with Segatools. Segatools no longer ships with a
+separate IDZIO.DLL file (its functionality is now built into IDZHOOK.DLL).
+
 ## `[io3]`
 
 Cabinet specific inputs.

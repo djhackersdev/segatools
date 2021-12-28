@@ -6,6 +6,20 @@ all games.
 Keyboard binding settings use
 [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
 
+## `[aimeio]`
+
+Controls the card reader driver.
+
+### `path`
+
+Specify a path for a third-party card reader driver DLL. Default is empty
+(use built-in emulation based on text files and keyboard input).
+
+In previous versions of Segatools this was accomplished by replacing the
+AIMEIO.DLL file that came with Segatools. Segatools no longer ships with a
+separate AIMEIO.DLL file (its functionality is now built into the various hook
+DLLs).
+
 ## `[aime]`
 
 Controls emulation of the Aime card reader assembly.
