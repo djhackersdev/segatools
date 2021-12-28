@@ -1,3 +1,18 @@
+# v005
+
+* Allow custom IO DLLs to be specified in INI files:
+  * `[aimeio] path=` for aime reader drivers
+  * `[chuniio] path=` for Chunithm input drivers
+  * `[idzio] path=` for Initial D Zero input drivers
+* Add INI documentation
+* Build system and contribution workflow improvements (contributed by icex2)
+* Add hook to hide DVD drives (contributed by BemaniWitch)
+* Add option to disable Diva slider emulation (contributed by dogtopus)
+* AMEX board accuracy fixes (contributed by seika1, Felix)
+* Improve multi-monitor support (contributed by BemaniWitch)
+* Various Ongeki fixes (contributed by Felix)
+* Various Diva slider fixes (contributed by dogtopus)
+
 # v004
 
 * Add initial support for mounting DLC package dumps (contributed by Shiz)
