@@ -409,7 +409,7 @@ static uint8_t idz_di_decode_pov(DWORD pov)
         case 9000:  return IDZ_IO_GAMEBTN_RIGHT;
         case 13500: return IDZ_IO_GAMEBTN_RIGHT | IDZ_IO_GAMEBTN_DOWN;
         case 18000: return IDZ_IO_GAMEBTN_DOWN;
-        case 22500: return IDZ_IO_GAMEBTN_DOWN | IDZ_IO_GAMEBTN_RIGHT;
+        case 22500: return IDZ_IO_GAMEBTN_DOWN | IDZ_IO_GAMEBTN_LEFT;
         case 27000: return IDZ_IO_GAMEBTN_LEFT;
         case 31500: return IDZ_IO_GAMEBTN_LEFT | IDZ_IO_GAMEBTN_UP;
         default:    return 0;
